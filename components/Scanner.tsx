@@ -15,35 +15,73 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   const [result, setResult] = useState<AnalyzedFood | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        const base64 = reader.result as string;
-        setImage(base64);
-        analyze(base64);
-      };
-      reader.readAsDataURL(file);
+  // Resize/compress image in browser to avoid high memory usage and very large uploads
+  const resizeImageFile = async (file: File, maxSize = 1024, outputType = 'image/jpeg', quality = 0.8) => {
+    // use createImageBitmap for efficient decoding where available
+    const bitmap = await createImageBitmap(file as Blob);
+    try {
+      const { width, height } = bitmap;
+      const maxDim = Math.max(width, height);
+      const scale = maxDim > maxSize ? maxSize / maxDim : 1;
+      const newW = Math.round(width * scale);
+      const newH = Math.round(height * scale);
+
+      const canvas = document.createElement('canvas');
+      canvas.width = newW;
+      canvas.height = newH;
+      const ctx = canvas.getContext('2d');
+      if (!ctx) throw new Error('Canvas not supported');
+      ctx.drawImage(bitmap, 0, 0, newW, newH);
+
+      // Attempt to free the bitmap (some browsers implement close())
+      try { (bitmap as any).close?.(); } catch (e) { /* ignore */ }
+
+      // Export to Data URL (compressed). For transparency keep png if original has alpha.
+      const hasAlpha = file.type === 'image/png' || file.type === 'image/webp';
+      const outType = hasAlpha ? 'image/png' : outputType;
+      const dataUrl = canvas.toDataURL(outType, quality);
+      return dataUrl;
+    } finally {
+      try { (bitmap as any).close?.(); } catch (e) { /* ignore */ }
     }
   };
 
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (!file) return;
+
+    (async () => {
+      try {
+        setIsAnalyzing(true);
+        // Resize/compress to reduce memory and upload size
+        const resized = await resizeImageFile(file, 1024, 'image/jpeg', 0.8);
+        setImage(resized);
+        await analyze(resized);
+      } catch (err) {
+        console.error('Image processing failed', err);
+        alert('Não foi possível processar a imagem (memória ou formato). Tente uma foto menor.');
+      } finally {
+        setIsAnalyzing(false);
+      }
+    })();
+  };
+
   const analyze = async (base64Full: string) => {
-    setIsAnalyzing(true);
+    // Expect a dataURL (e.g. data:image/jpeg;base64,....)
     try {
+      setIsAnalyzing(true);
       const base64Data = base64Full.split(',')[1];
       const context = `${user?.somatotype} with goal to ${user?.goal}`;
-      
+
       const data = await geminiService.analyzeFoodImage(base64Data, context);
       setResult(data);
-      
-      if (data.reasoning) {
-         geminiService.speakMessage(`I found ${data.foodName}. ${data.reasoning}`);
-      }
 
+      if (data.reasoning) {
+        geminiService.speakMessage(`I found ${data.foodName}. ${data.reasoning}`);
+      }
     } catch (error) {
-      alert("Não foi possível analisar a imagem. Tente novamente.");
       console.error(error);
+      alert('Não foi possível analisar a imagem. Tente novamente com uma foto menor ou mais nítida.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -71,7 +109,11 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   const handleRetake = () => {
     setImage(null);
     setResult(null);
-    fileInputRef.current?.click();
+    if (fileInputRef.current) {
+      // clear the value so same file can be reselected
+      fileInputRef.current.value = '';
+      fileInputRef.current.click();
+    }
   };
 
   return (

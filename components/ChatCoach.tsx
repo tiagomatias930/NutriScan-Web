@@ -1,0 +1,152 @@
+import React, { useState, useRef, useEffect } from 'react';
+import { geminiService } from '../services/geminiService';
+import { useAppStore } from '../store';
+
+export const ChatCoach: React.FC = () => {
+  const { user, chatHistory, addMessage } = useAppStore();
+  const [input, setInput] = useState('');
+  const [loading, setLoading] = useState(false);
+  const messagesEndRef = useRef<HTMLDivElement>(null);
+
+  const scrollToBottom = () => {
+    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
+  }, [chatHistory, loading]);
+
+  const handleSend = async () => {
+    if (!input.trim() || !user) return;
+
+    const userMsg = { 
+        id: Date.now().toString(), 
+        role: 'user' as const, 
+        text: input, 
+        timestamp: Date.now() 
+    };
+    addMessage(userMsg);
+    setInput('');
+    setLoading(true);
+
+    const userContext = `${user.age}yo ${user.gender}, ${user.somatotype} body type, goal: ${user.goal}.`;
+    const apiHistory = chatHistory.slice(-10).map(m => ({ role: m.role, text: m.text }));
+    
+    const response = await geminiService.chatWithCoach(apiHistory, userMsg.text, userContext);
+    
+    const modelMsg = {
+        id: (Date.now() + 1).toString(),
+        role: 'model' as const,
+        text: response.text,
+        timestamp: Date.now(),
+        sources: response.groundingChunks?.map((chunk: any) => {
+            const web = chunk.web;
+            if (web) return { title: web.title, uri: web.uri };
+            return null;
+        }).filter(Boolean) as any
+    };
+    addMessage(modelMsg);
+    setLoading(false);
+  };
+
+  return (
+    <div className="flex flex-col h-full bg-dark pb-24 relative font-sans">
+        {/* Header */}
+        <div className="px-6 py-4 bg-dark/90 backdrop-blur-md border-b border-gray-800 shadow-sm sticky top-0 z-20 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-900/50">
+                <span className="material-icons text-white"><img className="w-12 h-12" src="/running.png" alt="" /></span>
+            </div>
+            <div>
+                <h2 className="text-lg font-bold text-white leading-tight">NutriCoach AI</h2>
+                <p className="text-xs text-primary font-medium flex items-center gap-1">
+                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span> Ativo
+                </p>
+            </div>
+        </div>
+
+        {/* Messages */}
+        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+            {chatHistory.length === 0 && (
+                <div className="flex flex-col items-center justify-center min-h-[60vh] animate-fade-in px-4">
+                    <div className="w-20 h-20 rounded-3xl bg-gray-800/50 flex items-center justify-center mb-6">
+                        <span className="material-icons text-gray-600 text-4xl">forum</span>
+                    </div>
+                    <h3 className="text-xl font-bold text-white mb-2">Ola, {user?.name}!</h3>
+                    <p className="text-gray-400 text-center text-sm mb-8 max-w-xs">Estou aqui para te ajudar com sua dieta, rotina de exercícios ou informações nutricionais.</p>
+                    
+                    <div className="w-full max-w-sm space-y-3">
+                        <SuggestionButton text="What should I eat for breakfast?" onClick={setInput} />
+                        <SuggestionButton text="How much protein do I need?" onClick={setInput} />
+                        <SuggestionButton text="Explain carb cycling" onClick={setInput} />
+                    </div>
+                </div>
+            )}
+            
+            {chatHistory.map((msg) => (
+                <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-slide-up`}>
+                    <div className={`max-w-[85%] rounded-2xl p-4 shadow-sm ${
+                        msg.role === 'user' 
+                        ? 'bg-primary text-black rounded-tr-sm' 
+                        : 'bg-card text-gray-100 border border-gray-800 rounded-tl-sm'
+                    }`}>
+                        <div className="whitespace-pre-wrap text-[15px] leading-relaxed">{msg.text}</div>
+                        {msg.sources && msg.sources.length > 0 && (
+                            <div className="mt-3 pt-3 border-t border-black/10 flex flex-col gap-1">
+                                <p className="text-[10px] font-bold uppercase opacity-60 mb-1">Sources</p>
+                                {msg.sources.map((src, i) => (
+                                    <a key={i} href={src.uri} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs opacity-80 hover:opacity-100 truncate">
+                                        <span className="material-icons text-[10px]">link</span>
+                                        <span className="truncate">{src.title}</span>
+                                    </a>
+                                ))}
+                            </div>
+                        )}
+                    </div>
+                </div>
+            ))}
+            
+            {loading && (
+                <div className="flex justify-start">
+                    <div className="bg-card border border-gray-800 rounded-2xl rounded-tl-sm p-4 flex items-center gap-2">
+                        <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
+                        <div className="w-2 h-2 bg-primary rounded-full animate-bounce delay-75"></div>
+                        <div className="w-2 h-2 bg-primary rounded-full animate-bounce delay-150"></div>
+                    </div>
+                </div>
+            )}
+            <div ref={messagesEndRef} />
+        </div>
+
+        {/* Input Area */}
+        <div className="p-4 bg-dark border-t border-gray-800 sticky bottom-[70px] z-20">
+            <div className="bg-card rounded-full p-1.5 pl-5 flex items-center gap-2 border border-gray-800 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 transition-all shadow-lg">
+                <input 
+                    type="text" 
+                    value={input}
+                    onChange={(e) => setInput(e.target.value)}
+                    onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                    placeholder="Ask me anything..."
+                    className="flex-1 bg-transparent text-white placeholder-gray-500 focus:outline-none text-base py-2"
+                />
+                <button 
+                    onClick={handleSend}
+                    disabled={loading || !input.trim()}
+                    className="w-10 h-10 rounded-full bg-primary text-black flex items-center justify-center disabled:opacity-50 disabled:bg-gray-700 disabled:text-gray-500 transition-colors shadow-md"
+                >
+                    <span className="material-icons text-xl">arrow_upward</span>
+                </button>
+            </div>
+        </div>
+    </div>
+  );
+};
+
+const SuggestionButton = ({ text, onClick }: { text: string, onClick: (t: string) => void }) => (
+    <button 
+        onClick={() => onClick(text)} 
+        className="w-full p-3 bg-card hover:bg-gray-800 border border-gray-800 rounded-xl text-sm text-gray-300 text-left flex items-center justify-between group transition-colors"
+    >
+        {text}
+        <span className="material-icons text-gray-600 text-sm group-hover:text-primary transition-colors">arrow_forward</span>
+    </button>
+)

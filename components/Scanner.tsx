@@ -1,0 +1,170 @@
+import React, { useState, useRef } from 'react';
+import { geminiService, AnalyzedFood } from '../services/geminiService';
+import { useAppStore } from '../store';
+import { FoodItem } from '../types';
+import { v4 as uuidv4 } from 'uuid';
+
+interface ScannerProps {
+  onClose: () => void;
+}
+
+export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
+  const { user, addFood } = useAppStore();
+  const [image, setImage] = useState<string | null>(null);
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [result, setResult] = useState<AnalyzedFood | null>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+
+  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+    const file = event.target.files?.[0];
+    if (file) {
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        const base64 = reader.result as string;
+        setImage(base64);
+        analyze(base64);
+      };
+      reader.readAsDataURL(file);
+    }
+  };
+
+  const analyze = async (base64Full: string) => {
+    setIsAnalyzing(true);
+    try {
+      const base64Data = base64Full.split(',')[1];
+      const context = `${user?.somatotype} with goal to ${user?.goal}`;
+      
+      const data = await geminiService.analyzeFoodImage(base64Data, context);
+      setResult(data);
+      
+      if (data.reasoning) {
+         geminiService.speakMessage(`I found ${data.foodName}. ${data.reasoning}`);
+      }
+
+    } catch (error) {
+      alert("Não foi possível analisar a imagem. Tente novamente.");
+      console.error(error);
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
+  const handleConfirm = () => {
+    if (!result) return;
+
+    const newFood: FoodItem = {
+      id: uuidv4(),
+      name: result.foodName,
+      calories: result.calories,
+      protein: result.protein,
+      carbs: result.carbs,
+      fats: result.fats,
+      weight: result.weightEstimate,
+      timestamp: Date.now(),
+      imageUrl: image || undefined
+    };
+
+    addFood(newFood);
+    onClose();
+  };
+
+  const handleRetake = () => {
+    setImage(null);
+    setResult(null);
+    fileInputRef.current?.click();
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black flex flex-col h-full animate-fade-in">
+      {/* Header Overlay */}
+      <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-20 bg-gradient-to-b from-black/80 to-transparent">
+        <button onClick={onClose} className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/20 transition-colors">
+            <span className="material-icons">close</span>
+        </button>
+        <h2 className="text-white font-semibold tracking-wide uppercase text-sm opacity-80">Analizador de imagem</h2>
+        <div className="w-10"></div>
+      </div>
+
+      <div className="flex-1 relative flex flex-col">
+        {!image ? (
+          <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gray-900">
+            <div 
+              onClick={() => fileInputRef.current?.click()}
+              className="w-72 h-72 border-2 border-dashed border-gray-600 hover:border-primary rounded-3xl flex flex-col items-center justify-center cursor-pointer bg-gray-800/50 transition-all group"
+            >
+              <div className="w-20 h-20 rounded-full bg-gray-800 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg">
+                  <span className="material-icons text-primary text-4xl">camera_alt</span>
+              </div>
+              <p className="text-white font-bold text-lg">Tirar foto</p>
+              <p className="text-gray-500 text-sm">ou selecione na galeria</p>
+            </div>
+            <input 
+              type="file" 
+              accept="image/*" 
+              capture="environment"
+              ref={fileInputRef} 
+              className="hidden" 
+              onChange={handleFileChange}
+            />
+          </div>
+        ) : (
+          <div className="relative flex-1 bg-black">
+             <img src={image} alt="Food" className="w-full h-full object-cover opacity-80" />
+             
+             {/* Loading State */}
+             {isAnalyzing && (
+                 <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center z-10 backdrop-blur-sm">
+                    <div className="relative w-24 h-24">
+                        <div className="absolute inset-0 border-4 border-gray-700 rounded-full"></div>
+                        <div className="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin"></div>
+                    </div>
+                    <p className="text-white font-bold text-lg mt-6 animate-pulse">Analisando os alimentos...</p>
+                    <p className="text-gray-400 text-sm">Identificando macronutrientes e calorias</p>
+                 </div>
+             )}
+
+             {/* Result Sheet */}
+             {result && (
+               <div className="absolute bottom-0 left-0 right-0 bg-card rounded-t-3xl p-6 shadow-2xl animate-slide-up z-20 border-t border-gray-800 max-h-[80vh] overflow-y-auto">
+                 <div className="w-12 h-1 bg-gray-700 rounded-full mx-auto mb-6"></div>
+                 
+                 <h3 className="text-2xl font-bold text-white mb-2 leading-tight">{result.foodName}</h3>
+                 <p className="text-gray-400 text-sm mb-6 leading-relaxed border-l-2 border-primary pl-3">{result.reasoning}</p>
+                 
+                 <div className="grid grid-cols-4 gap-3 mb-8">
+                    <NutrientBox label="Calories" value={result.calories} unit="kcal" />
+                    <NutrientBox label="Protein" value={result.protein} unit="g" color="text-emerald-400" />
+                    <NutrientBox label="Carbs" value={result.carbs} unit="g" color="text-blue-400" />
+                    <NutrientBox label="Fat" value={result.fats} unit="g" color="text-amber-400" />
+                 </div>
+
+                 <div className="flex gap-3">
+                   <button 
+                    onClick={handleRetake}
+                    className="flex-1 py-4 rounded-2xl font-bold text-gray-300 bg-gray-800 hover:bg-gray-700 transition-colors"
+                   >
+                     Retomar
+                   </button>
+                   <button 
+                    onClick={handleConfirm}
+                    className="flex-1 py-4 rounded-2xl font-bold text-black bg-primary hover:bg-emerald-400 transition-colors shadow-lg shadow-emerald-900/30"
+                   >
+                     Adicionar ao registro
+                   </button>
+                 </div>
+               </div>
+             )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};
+
+const NutrientBox = ({ label, value, unit, color = 'text-white' }: { label: string, value: number, unit: string, color?: string }) => (
+    <div className="bg-gray-800/50 p-3 rounded-2xl text-center border border-gray-700/50">
+        <div className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">{label}</div>
+        <div className={`font-bold text-lg ${color}`}>{value}</div>
+        <div className="text-[10px] text-gray-500 font-medium">{unit}</div>
+    </div>
+)

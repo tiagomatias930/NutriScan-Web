@@ -1,0 +1,8 @@
+{
+  "name": "NutriScan",
+  "description": "A comprehensive nutrition and fitness tracking web application powered by Gemini. Features AI food analysis, personalized coaching, and smart macro tracking.",
+  "requestFramePermissions": [
+    "camera",
+    "microphone"
+  ]
+}

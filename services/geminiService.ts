@@ -40,18 +40,20 @@ export const geminiService = {
       Estimate Calories, Protein (g), Carbs (g), and Fats (g).
       
       ${userContext ? `Context: The user is a ${userContext}.` : ''}
-      
-      Return ONLY a valid JSON object with this structure:
+
+      IMPORTANT: Respond IN PORTUGUESE. The values for "foodName" and "reasoning" must be written in Portuguese. Numeric fields should remain numbers.
+
+      Return ONLY a valid JSON object with this structure (keys must be exactly as shown):
       {
-        "foodName": "Detailed name of the dish",
+        "foodName": "Nome detalhado do prato (em Português)",
         "weightEstimate": number (grams),
         "calories": number,
         "protein": number,
         "carbs": number,
         "fats": number,
-        "reasoning": "Short explanation of how you estimated (1 sentence)"
+        "reasoning": "Breve explicação de como estimou (1 frase, em Português)"
       }
-      Do not include markdown formatting like \`\`\`json. Return raw JSON.
+      Do not include markdown formatting like \`\`\`json. Return raw JSON only.
     `;
 
     try {

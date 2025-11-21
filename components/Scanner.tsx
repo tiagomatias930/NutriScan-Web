@@ -12,11 +12,12 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   const { user, addFood } = useAppStore();
   const [image, setImage] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
+  const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [result, setResult] = useState<AnalyzedFood | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
 
   // Resize/compress image in browser to avoid high memory usage and very large uploads
-  const resizeImageFile = async (file: File, maxSize = 1024, outputType = 'image/jpeg', quality = 0.8) => {
+  const resizeImageFile = async (file: File, maxSize = 800, outputType = 'image/jpeg', quality = 0.75) => {
     // use createImageBitmap for efficient decoding where available
     const bitmap = await createImageBitmap(file as Blob);
     try {
@@ -49,19 +50,19 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
-
     (async () => {
       try {
-        setIsAnalyzing(true);
-        // Resize/compress to reduce memory and upload size
-        const resized = await resizeImageFile(file, 1024, 'image/jpeg', 0.8);
+        setIsProcessingImage(true);
+        // Resize/compress to reduce memory and upload size (now defaults to 800px / 0.75)
+        const resized = await resizeImageFile(file, 800, 'image/jpeg', 0.75);
         setImage(resized);
+        setIsProcessingImage(false);
         await analyze(resized);
       } catch (err) {
         console.error('Image processing failed', err);
         alert('Não foi possível processar a imagem (memória ou formato). Tente uma foto menor.');
       } finally {
-        setIsAnalyzing(false);
+        setIsProcessingImage(false);
       }
     })();
   };
@@ -154,6 +155,17 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
              <img src={image} alt="Food" className="w-full h-full object-cover opacity-80" />
              
              {/* Loading State */}
+             {isProcessingImage && (
+               <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center z-30 backdrop-blur-sm">
+                <div className="relative w-20 h-20">
+                  <div className="absolute inset-0 border-4 border-gray-700 rounded-full"></div>
+                  <div className="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin"></div>
+                </div>
+                <p className="text-white font-semibold text-lg mt-6">Processando imagem...</p>
+                <p className="text-gray-400 text-sm">Compactando e preparando para análise</p>
+               </div>
+             )}
+
              {isAnalyzing && (
                  <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center z-10 backdrop-blur-sm">
                     <div className="relative w-24 h-24">

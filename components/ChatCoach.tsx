@@ -12,6 +12,80 @@ export const ChatCoach: React.FC = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
   };
 
+// Simple markdown-like parser to render bold (**text**), italic (*text*),
+// inline code (`code`), code blocks (```code```), and links [text](url).
+// This is intentionally small to avoid adding dependencies. It returns
+// React nodes and keeps plain text safe (no HTML injection).
+function parseInline(txt: string): React.ReactNode[] {
+    const nodes: React.ReactNode[] = [];
+    const inlineRegex = /(`([^`]+)`)|\*\*([^*]+)\*\*|\*([^*]+)\*|\[([^\]]+)\]\(([^)]+)\)/g;
+    let lastIndex = 0;
+    let m: RegExpExecArray | null;
+    let key = 0;
+
+    while ((m = inlineRegex.exec(txt)) !== null) {
+        if (m.index > lastIndex) nodes.push(txt.slice(lastIndex, m.index));
+
+        if (m[2]) {
+            nodes.push(
+                <code key={`ic-${key}`} className="bg-gray-900 px-1 rounded font-mono text-sm">{m[2]}</code>
+            );
+        } else if (m[3]) {
+            nodes.push(<strong key={`ib-${key}`}>{m[3]}</strong>);
+        } else if (m[4]) {
+            nodes.push(<em key={`ii-${key}`}>{m[4]}</em>);
+        } else if (m[5] && m[6]) {
+            const textPart = m[5];
+            const href = m[6];
+            const safeHref = /^\s*(https?:|mailto:|tel:|\/|#)/i.test(href) ? href : `https://${href}`;
+            nodes.push(
+                <a key={`il-${key}`} href={safeHref} target="_blank" rel="noreferrer" className="underline text-primary">
+                    {textPart}
+                </a>
+            );
+        }
+
+        lastIndex = m.index + m[0].length;
+        key++;
+    }
+
+    if (lastIndex < txt.length) nodes.push(txt.slice(lastIndex));
+    return nodes;
+}
+
+function renderFormattedText(text?: string): React.ReactNode {
+    if (!text) return null;
+
+    const nodes: React.ReactNode[] = [];
+    const codeBlockRegex = /```([\s\S]*?)```/g;
+    let lastIndex = 0;
+    let m: RegExpExecArray | null;
+    let key = 0;
+
+    while ((m = codeBlockRegex.exec(text)) !== null) {
+        if (m.index > lastIndex) {
+            const before = text.slice(lastIndex, m.index);
+            nodes.push(...parseInline(before));
+        }
+
+        nodes.push(
+            <pre key={`cb-${key}`} className="bg-gray-800 p-3 rounded text-sm overflow-x-auto font-mono text-gray-100">
+                <code>{m[1]}</code>
+            </pre>
+        );
+
+        lastIndex = m.index + m[0].length;
+        key++;
+    }
+
+    if (lastIndex < text.length) {
+        const rest = text.slice(lastIndex);
+        nodes.push(...parseInline(rest));
+    }
+
+    return nodes;
+}
+
   useEffect(() => {
     scrollToBottom();
   }, [chatHistory, loading]);
@@ -89,7 +163,7 @@ export const ChatCoach: React.FC = () => {
                         ? 'bg-primary text-black rounded-tr-sm' 
                         : 'bg-card text-gray-100 border border-gray-800 rounded-tl-sm'
                     }`}>
-                        <div className="whitespace-pre-wrap text-[15px] leading-relaxed">{msg.text}</div>
+                        <div className="whitespace-pre-wrap text-[15px] leading-relaxed">{renderFormattedText(msg.text)}</div>
                         {msg.sources && msg.sources.length > 0 && (
                             <div className="mt-3 pt-3 border-t border-black/10 flex flex-col gap-1">
                                 <p className="text-[10px] font-bold uppercase opacity-60 mb-1">Sources</p>

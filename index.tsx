@@ -13,3 +13,18 @@ root.render(
     <App />
   </React.StrictMode>
 );
+
+// Register service worker for PWA support
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', () => {
+    navigator.serviceWorker.register('/sw.js')
+      .then((registration) => {
+        // eslint-disable-next-line no-console
+        console.log('ServiceWorker registration successful with scope: ', registration.scope);
+      })
+      .catch((err) => {
+        // eslint-disable-next-line no-console
+        console.warn('ServiceWorker registration failed: ', err);
+      });
+  });
+}

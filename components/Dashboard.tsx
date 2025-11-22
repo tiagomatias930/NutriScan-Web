@@ -158,8 +158,9 @@ export const Dashboard: React.FC = () => {
                                                             {(food.imageUrl || food.imageData) ? (
                                                                     <img
                                                                         src={
-                                                                            // Prefer transient object URL for performance; fall back to persisted base64 data if needed
-                                                                            food.imageUrl ?? (food.imageData ? `data:image/jpeg;base64,${food.imageData}` : undefined)
+                                                                            // Always use base64 imageData for persistence across reloads
+                                                                            // Only use transient imageUrl if available in same session
+                                                                            (food.imageData ? `data:image/jpeg;base64,${food.imageData}` : food.imageUrl) || undefined
                                                                         }
                                                                         alt={food.name}
                                                                         className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"

@@ -6,7 +6,7 @@ import { FoodItem } from '../types';
 export const Dashboard: React.FC = () => {
   const { user, targets, foodLog, waterIntake, addWater } = useAppStore();
 
-  if (!user || !targets) return <div className="flex items-center justify-center h-screen text-gray-500">Loading profile...</div>;
+  if (!user || !targets) return <div className="flex items-center justify-center h-screen text-gray-500">Processando o seu perfil...</div>;
 
   // Calculate totals
   const totals = foodLog.reduce((acc, item) => {
@@ -87,7 +87,7 @@ export const Dashboard: React.FC = () => {
         <div className="grid grid-cols-3 gap-4 mt-6">
             <MacroBar label="Proteina" current={totals.protein} target={targets.protein} color="bg-emerald-500" />
             <MacroBar label="Carboidratos" current={totals.carbs} target={targets.carbs} color="bg-blue-500" />
-            <MacroBar label="Lipidos" current={totals.fats} target={targets.fats} color="bg-amber-500" />
+            <MacroBar label="Gorduras" current={totals.fats} target={targets.fats} color="bg-amber-500" />
         </div>
       </div>
 
@@ -136,7 +136,7 @@ export const Dashboard: React.FC = () => {
       <div>
           <div className="flex items-center justify-between mb-4 px-1">
             <h2 className="text-lg font-bold text-white">Refeições recentes</h2>
-            <span className="text-xs text-primary font-medium cursor-pointer hover:text-emerald-400">View All</span>
+            <span className="text-xs text-primary font-medium cursor-pointer hover:text-emerald-400">Dados das ultimas 24h</span>
           </div>
           
           {foodLog.length === 0 ? (

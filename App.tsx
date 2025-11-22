@@ -35,8 +35,8 @@ const App: React.FC = () => {
                 onClick={() => setCurrentTab('home')}
                 className={`flex flex-col items-center justify-center w-16 gap-1 transition-colors ${currentTab === 'home' ? 'text-primary' : 'text-gray-500 hover:text-gray-300'}`}
             >
-                <span className="material-icons text-2xl">home</span>
-                <span className="text-[10px] font-medium">Home</span>
+                <span className="material-icons text-3xl">home</span>
+                <span className="text-[10px] font-medium"></span>
             </button>
 
             {/* Floating Scan Button */}
@@ -45,7 +45,7 @@ const App: React.FC = () => {
                     onClick={() => setShowScanner(true)}
                     className="w-16 h-16 rounded-full bg-primary shadow-[0_0_20px_rgba(16,185,129,0.4)] flex items-center justify-center transform active:scale-95 transition-all border-4 border-dark hover:bg-emerald-400 text-black"
                 >
-                    <span className="material-icons text-3xl">qr_code_scanner</span>
+                    <span className="material-icons text-3xl">camera</span>
                 </button>
             </div>
 
@@ -53,8 +53,8 @@ const App: React.FC = () => {
                 onClick={() => setCurrentTab('chat')}
                 className={`flex flex-col items-center justify-center w-16 gap-1 transition-colors ${currentTab === 'chat' ? 'text-primary' : 'text-gray-500 hover:text-gray-300'}`}
             >
-                <span className="material-icons text-2xl">chat_bubble</span>
-                <span className="text-[10px] font-medium">Coach</span>
+                <span className="material-icons text-3xl">chat_bubble</span>
+                <span className="text-[10px] font-medium"></span>
             </button>
           </div>
       </div>

@@ -166,7 +166,7 @@ function renderFormattedText(text?: string): React.ReactNode {
                         <div className="whitespace-pre-wrap text-[15px] leading-relaxed">{renderFormattedText(msg.text)}</div>
                         {msg.sources && msg.sources.length > 0 && (
                             <div className="mt-3 pt-3 border-t border-black/10 flex flex-col gap-1">
-                                <p className="text-[10px] font-bold uppercase opacity-60 mb-1">Sources</p>
+                                <p className="text-[10px] font-bold uppercase opacity-60 mb-1">Caminhos</p>
                                 {msg.sources.map((src, i) => (
                                     <a key={i} href={src.uri} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs opacity-80 hover:opacity-100 truncate">
                                         <span className="material-icons text-[10px]">link</span>

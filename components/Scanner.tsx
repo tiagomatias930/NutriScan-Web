@@ -139,7 +139,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
                   <span className="material-icons text-primary text-4xl">camera_alt</span>
               </div>
               <p className="text-white font-bold text-lg">Tirar foto</p>
-              <p className="text-gray-500 text-sm">ou selecione na galeria</p>
+              <p className="text-gray-500 text-sm">ou carregar da galeria</p>
             </div>
             <input 
               type="file" 
@@ -197,13 +197,13 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
                     onClick={handleRetake}
                     className="flex-1 py-4 rounded-2xl font-bold text-gray-300 bg-gray-800 hover:bg-gray-700 transition-colors"
                    >
-                     Retomar
+                     Voltar
                    </button>
                    <button 
                     onClick={handleConfirm}
                     className="flex-1 py-4 rounded-2xl font-bold text-black bg-primary hover:bg-emerald-400 transition-colors shadow-lg shadow-emerald-900/30"
                    >
-                     Adicionar ao registro
+                     Guardar os dados
                    </button>
                  </div>
                </div>

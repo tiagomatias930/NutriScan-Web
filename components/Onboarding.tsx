@@ -118,9 +118,9 @@ export const Onboarding: React.FC = () => {
                     
                     <div className="space-y-4">
                         {[
-                            { type: Somatotype.ECTOMORPH, desc: "Esquelético magro, metabolismo acelerado, dificuldade para ganhar peso.", icon: "person" },
-                            { type: Somatotype.MESOMORPH, desc: "Físico atlético, ganha massa muscular com facilidade..", icon: "fitness_center" },
-                            { type: Somatotype.ENDOMORPH, desc: "Constituição física robusta, metabolismo lento, ganha gordura com facilidade..", icon: "monitor_weight" }
+                            { type: Somatotype.ECTOMORPH, desc: "Corpo magro, metabolismo acelerado, dificuldade para ganhar peso.", icon: "person" },
+                            { type: Somatotype.MESOMORPH, desc: "Físico atlético, ganha massa muscular com facilidade.", icon: "fitness_center" },
+                            { type: Somatotype.ENDOMORPH, desc: "Constituição física robusta, metabolismo lento, ganha gordura com facilidade.", icon: "man" }
                         ].map(item => (
                             <button
                                 key={item.type}
@@ -171,7 +171,7 @@ export const Onboarding: React.FC = () => {
                     </div>
 
                     <div>
-                        <label className="text-sm font-medium text-gray-400 mb-3 block ml-1">Activity Level</label>
+                        <label className="text-sm font-medium text-gray-400 mb-3 block ml-1">Nível das atividades</label>
                         <div className="relative">
                             <select 
                                 value={data.activityLevel}

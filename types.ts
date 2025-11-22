@@ -12,9 +12,9 @@ export enum ActivityLevel {
 }
 
 export enum Somatotype {
-  ECTOMORPH = 'Ectomorph', // Lean, hard to gain weight
-  MESOMORPH = 'Mesomorph', // Athletic, easy to gain muscle
-  ENDOMORPH = 'Endomorph', // Stocky, slow metabolism
+  ECTOMORPH = 'Ectomorfo', // Lean, hard to gain weight
+  MESOMORPH = 'Mesomorfo', // Athletic, easy to gain muscle
+  ENDOMORPH = 'Endomorfo', // Stocky, slow metabolism
 }
 
 export enum Goal {

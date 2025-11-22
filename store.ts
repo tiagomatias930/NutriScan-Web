@@ -138,7 +138,9 @@ export const useAppStore = create<AppState>()(
           const now = Date.now();
           if (!persistedLast) {
             // initialize lastReset
-            set({ lastReset: now });
+            if (state) {
+              state.lastReset = now;
+            }
             return;
           }
           if (now - persistedLast >= DAY_MS) {
@@ -149,12 +151,18 @@ export const useAppStore = create<AppState>()(
               const prevHistory = state?.history || [];
               if ((prevFood && prevFood.length) || prevWater) {
                 const archiveEntry = { date: persistedLast, foodLog: prevFood, waterIntake: prevWater };
-                set({ history: [archiveEntry, ...prevHistory] });
+                if (state) {
+                  state.history = [archiveEntry, ...prevHistory];
+                }
               }
             } catch (e) {
               // ignore archive failures
             }
-            set({ foodLog: [], waterIntake: 0, lastReset: now });
+            if (state) {
+              state.foodLog = [];
+              state.waterIntake = 0;
+              state.lastReset = now;
+            }
           }
         } catch (e) {
           // ignore

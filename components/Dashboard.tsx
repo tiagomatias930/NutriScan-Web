@@ -155,9 +155,16 @@ export const Dashboard: React.FC = () => {
                   {foodLog.slice(0, 5).map((food) => (
                       <div key={food.id} className="bg-card p-3 rounded-2xl flex items-center gap-4 border border-white/5 hover:bg-cardHover transition-colors cursor-pointer group">
                           <div className="w-16 h-16 rounded-xl bg-gray-800 overflow-hidden flex-shrink-0 relative shadow-md">
-                              {food.imageUrl ? (
-                                  <img src={food.imageUrl} alt={food.name} className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500" />
-                              ) : (
+                                                            {(food.imageUrl || food.imageData) ? (
+                                                                    <img
+                                                                        src={
+                                                                            // Prefer transient object URL for performance; fall back to persisted base64 data if needed
+                                                                            food.imageUrl ?? (food.imageData ? `data:image/jpeg;base64,${food.imageData}` : undefined)
+                                                                        }
+                                                                        alt={food.name}
+                                                                        className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
+                                                                    />
+                                                            ) : (
                                   <div className="w-full h-full flex items-center justify-center text-gray-600 bg-gray-900">
                                     <span className="material-icons text-xl">restaurante</span>
                                   </div>

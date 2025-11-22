@@ -52,7 +52,10 @@ export interface FoodItem {
   fats: number;
   weight?: number; // grams
   timestamp: number;
+  // `imageUrl` may be an object URL used for immediate preview (session-only).
+  // `imageData` stores a base64 payload (without the data: prefix) to persist images across reloads.
   imageUrl?: string;
+  imageData?: string;
   mealType?: 'Almoço' | 'Pequeno Almoço' | 'Jantar' | 'lance';
 }
 

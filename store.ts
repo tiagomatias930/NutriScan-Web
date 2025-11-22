@@ -52,11 +52,16 @@ export const useAppStore = create<AppState>()(
       },
 
       addFood: (food) => {
-        // Ensure daily reset hasn't occurred while app was open
-        const DAY_MS = 24 * 60 * 60 * 1000;
+        // Reset at local midnight boundary (preserve items until the day's reset)
         const now = Date.now();
         const last = get().lastReset || now;
-        if (now - last >= DAY_MS) {
+        const startOfDay = (t: number) => {
+          const d = new Date(t);
+          d.setHours(0, 0, 0, 0);
+          return d.getTime();
+        };
+
+        if (startOfDay(now) !== startOfDay(last)) {
           // archive existing day then reset
           const prevFood = get().foodLog || [];
           const prevWater = get().waterIntake || 0;
@@ -68,7 +73,7 @@ export const useAppStore = create<AppState>()(
           set({ foodLog: [], waterIntake: 0, lastReset: now });
         }
 
-        // ensure food has timestamp
+        // ensure food has timestamp (preserve any image fields or blobs)
         const entry = { ...food, timestamp: food.timestamp || Date.now() } as FoodItem;
         set((state) => ({
           foodLog: [entry, ...state.foodLog],
@@ -82,10 +87,15 @@ export const useAppStore = create<AppState>()(
       },
 
       addWater: (amount) => {
-        const DAY_MS = 24 * 60 * 60 * 1000;
         const now = Date.now();
         const last = get().lastReset || now;
-        if (now - last >= DAY_MS) {
+        const startOfDay = (t: number) => {
+          const d = new Date(t);
+          d.setHours(0, 0, 0, 0);
+          return d.getTime();
+        };
+
+        if (startOfDay(now) !== startOfDay(last)) {
           // archive previous day
           const prevFood = get().foodLog || [];
           const prevWater = get().waterIntake || 0;
@@ -102,7 +112,7 @@ export const useAppStore = create<AppState>()(
       },
 
       resetDailyLog: () => {
-        // Archive current day then reset
+        // Archive current day then reset (manual reset)
         const prevFood = get().foodLog || [];
         const prevWater = get().waterIntake || 0;
         const prevHistory = get().history || [];
@@ -133,9 +143,14 @@ export const useAppStore = create<AppState>()(
       // After rehydration, ensure daily reset occurs if more than 24h passed
       onRehydrateStorage: () => (state) => {
         try {
-          const DAY_MS = 24 * 60 * 60 * 1000;
           const persistedLast = state?.lastReset || 0;
           const now = Date.now();
+          const startOfDay = (t: number) => {
+            const d = new Date(t);
+            d.setHours(0, 0, 0, 0);
+            return d.getTime();
+          };
+
           if (!persistedLast) {
             // initialize lastReset
             if (state) {
@@ -143,8 +158,9 @@ export const useAppStore = create<AppState>()(
             }
             return;
           }
-          if (now - persistedLast >= DAY_MS) {
-            // archive persisted day's data if any, then reset
+
+          // If persisted last reset is from a previous local day, archive and reset.
+          if (startOfDay(now) !== startOfDay(persistedLast)) {
             try {
               const prevFood = state?.foodLog || [];
               const prevWater = state?.waterIntake || 0;

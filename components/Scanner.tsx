@@ -148,20 +148,50 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   const handleConfirm = () => {
     if (!result) return;
 
-    const newFood: FoodItem = {
-      id: uuidv4(),
-      name: result.foodName,
-      calories: result.calories,
-      protein: result.protein,
-      carbs: result.carbs,
-      fats: result.fats,
-      weight: result.weightEstimate,
-      timestamp: Date.now(),
-      imageUrl: image || undefined
-    };
+    (async () => {
+      try {
+        // If we have the processed blob, convert it to base64 for persistence
+        let persistentImageBase64: string | undefined = undefined;
+        const blob = currentImageBlobRef.current;
+        if (blob) {
+          persistentImageBase64 = await blobToBase64Data(blob);
+        }
 
-    addFood(newFood);
-    onClose();
+        const newFood: FoodItem = {
+          id: uuidv4(),
+          name: result.foodName,
+          calories: result.calories,
+          protein: result.protein,
+          carbs: result.carbs,
+          fats: result.fats,
+          weight: result.weightEstimate,
+          timestamp: Date.now(),
+          // keep transient preview (object URL) for immediate display in this session
+          imageUrl: image || undefined,
+          // store base64 payload (no data: prefix) so it persists in localStorage across reloads
+          imageData: persistentImageBase64,
+        };
+
+        addFood(newFood);
+        onClose();
+      } catch (err) {
+        console.error('Failed to persist image for food item', err);
+        // Fallback: still save the entry without an imageData
+        const newFood: FoodItem = {
+          id: uuidv4(),
+          name: result.foodName,
+          calories: result.calories,
+          protein: result.protein,
+          carbs: result.carbs,
+          fats: result.fats,
+          weight: result.weightEstimate,
+          timestamp: Date.now(),
+          imageUrl: image || undefined,
+        };
+        addFood(newFood);
+        onClose();
+      }
+    })();
   };
 
   const handleRetake = () => {

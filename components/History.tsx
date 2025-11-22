@@ -1,0 +1,84 @@
+import React, { useState } from 'react';
+import { useAppStore } from '../store';
+import { FoodItem } from '../types';
+
+export const History: React.FC<{ onClose: () => void }> = ({ onClose }) => {
+  const { history, deleteHistoryEntry, clearHistory } = useAppStore();
+  const [expanded, setExpanded] = useState<number | null>(null);
+
+  const formatDate = (ts: number) => {
+    const d = new Date(ts);
+    return d.toLocaleDateString('pt-PT', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+  };
+
+  const calcTotals = (items: FoodItem[]) => {
+    return items.reduce((acc, it) => {
+      acc.calories += it.calories;
+      acc.protein += it.protein;
+      acc.carbs += it.carbs;
+      acc.fats += it.fats;
+      return acc;
+    }, { calories: 0, protein: 0, carbs: 0, fats: 0 });
+  };
+
+  return (
+    <div className="fixed inset-0 z-50 bg-black/60 flex items-end md:items-center justify-center p-4">
+      <div className="w-full max-w-3xl bg-card rounded-3xl p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-bold text-white">Histórico diário</h3>
+          <div className="flex items-center gap-3">
+            <button onClick={() => { if (confirm('Limpar todo o histórico? Esta ação é irreversível.')) clearHistory(); }} className="text-sm text-red-400">Limpar histórico</button>
+            <button onClick={onClose} className="py-1 px-3 rounded-md bg-gray-800 text-sm text-gray-200">Fechar</button>
+          </div>
+        </div>
+
+        {history.length === 0 ? (
+          <div className="py-12 text-center text-gray-400">Nenhum histórico arquivado ainda.</div>
+        ) : (
+          <div className="space-y-4">
+            {history.map((entry) => {
+              const totals = calcTotals(entry.foodLog);
+              const isOpen = expanded === entry.date;
+              return (
+                <div key={entry.date} className="bg-gray-900/40 p-4 rounded-2xl border border-gray-800">
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <div className="text-sm text-gray-300 font-semibold">{formatDate(entry.date)}</div>
+                      <div className="text-xs text-gray-500">{entry.foodLog.length} refeições • {entry.waterIntake} ml</div>
+                    </div>
+                    <div className="text-right">
+                      <div className="font-bold text-white">{Math.round(totals.calories)} kcal</div>
+                      <div className="text-xs text-gray-500">{Math.round(totals.protein)}g P • {Math.round(totals.carbs)}g C • {Math.round(totals.fats)}g F</div>
+                    </div>
+                  </div>
+
+                  <div className="mt-3 flex items-center gap-3">
+                    <button onClick={() => setExpanded(isOpen ? null : entry.date)} className="text-sm text-primary">{isOpen ? 'Fechar' : 'Ver detalhes'}</button>
+                    <button onClick={() => { if (confirm('Remover este dia do histórico?')) deleteHistoryEntry(entry.date); }} className="text-sm text-red-400">Remover</button>
+                  </div>
+
+                  {isOpen && (
+                    <div className="mt-3 border-t border-gray-800 pt-3 space-y-3">
+                      {entry.foodLog.map((f) => (
+                        <div key={f.id} className="flex items-center justify-between">
+                          <div className="min-w-0">
+                            <div className="font-medium text-sm text-white truncate">{f.name}</div>
+                            <div className="text-xs text-gray-500">{f.weight ? `${f.weight}g • ` : ''}{new Date(f.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                          </div>
+                          <div className="text-right">
+                            <div className="font-semibold text-white">{Math.round(f.calories)} kcal</div>
+                            <div className="text-xs text-gray-400">{Math.round(f.protein)}g P</div>
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+};

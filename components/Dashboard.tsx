@@ -1,9 +1,11 @@
 import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { useAppStore } from '../store';
+import { History } from './History';
 import { FoodItem } from '../types';
 
 export const Dashboard: React.FC = () => {
+    const [showHistory, setShowHistory] = React.useState(false);
   const { user, targets, foodLog, waterIntake, addWater } = useAppStore();
 
   if (!user || !targets) return <div className="flex items-center justify-center h-screen text-gray-500">Processando o seu perfil...</div>;
@@ -134,10 +136,13 @@ export const Dashboard: React.FC = () => {
 
       {/* Recent Activity */}
       <div>
-          <div className="flex items-center justify-between mb-4 px-1">
-            <h2 className="text-lg font-bold text-white">Refeições recentes</h2>
-            <span className="text-xs text-primary font-medium cursor-pointer hover:text-emerald-400">Dados das ultimas 24h</span>
-          </div>
+                    <div className="flex items-center justify-between mb-4 px-1">
+                        <h2 className="text-lg font-bold text-white">Refeições recentes</h2>
+                        <div className="flex items-center gap-3">
+                                        <span className="text-xs text-primary font-medium">Dados das ultimas 24h</span>
+                                        <button onClick={() => setShowHistory(true)} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-md hover:bg-primary/20">Ver histórico</button>
+                                    </div>
+                    </div>
           
           {foodLog.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 bg-card rounded-3xl border border-dashed border-gray-800">
@@ -175,6 +180,7 @@ export const Dashboard: React.FC = () => {
               </div>
           )}
       </div>
+    {showHistory && <History onClose={() => setShowHistory(false)} />}
     </div>
   );
 };

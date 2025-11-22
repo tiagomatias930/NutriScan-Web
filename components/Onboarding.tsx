@@ -64,14 +64,14 @@ export const Onboarding: React.FC = () => {
                                     <button
                                         key={g}
                                         onClick={() => updateData('gender', g)}
+                                        aria-label={g === Gender.MALE ? 'Homem' : 'Mulher'}
                                         className={`p-5 rounded-2xl border transition-all duration-200 font-medium text-lg flex items-center justify-center gap-2 ${
                                             data.gender === g 
                                             ? 'border-primary bg-primary/10 text-primary shadow-[0_0_15px_rgba(16,185,129,0.15)]' 
                                             : 'border-gray-800 bg-card text-gray-400 hover:bg-cardHover'
                                         }`}
                                     >
-                                        <span className="material-icons text-xl">{g === Gender.MALE ? 'Homem' : 'Mulher'}</span>
-                                        {g}
+                                        {g === Gender.MALE ? 'H' : 'M'}
                                     </button>
                                 ))}
                             </div>

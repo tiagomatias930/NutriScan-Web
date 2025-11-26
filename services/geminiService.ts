@@ -35,8 +35,8 @@ export const geminiService = {
    */
   analyzeFoodImage: async (base64Image: string, userContext?: string): Promise<AnalyzedFood> => {
     const prompt = `
-      Analyze this image of food. Identify the main dish and ingredients.
-      Estimate the portion size (in grams) realistically.
+      Carefully and efficiently analyze this image only if it depicts food. Identify the main dish and ingredients.
+      Estimate the serving size (in grams) realistically..
       Estimate Calories, Protein (g), Carbs (g), and Fats (g).
       
       ${userContext ? `Context: The user is a ${userContext}.` : ''}

@@ -3,6 +3,7 @@ import { geminiService, AnalyzedFood } from '../services/geminiService';
 import { useAppStore } from '../store';
 import { FoodItem } from '../types';
 import { v4 as uuidv4 } from 'uuid';
+import ImageSourcePicker from './ImageSourcePicker';
 
 interface ScannerProps {
   onClose: () => void;
@@ -17,6 +18,8 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
+  const cameraInputRef = useRef<HTMLInputElement>(null);
+  const [showSourcePicker, setShowSourcePicker] = useState(false);
 
   // Resize/compress image in browser to avoid high memory usage and very large uploads
   const resizeImageFile = async (file: File, maxSize = 800, outputType = 'image/jpeg', quality = 0.75) => {
@@ -155,7 +158,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
         {!image ? (
           <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gray-900">
             <div 
-              onClick={() => fileInputRef.current?.click()}
+              onClick={() => setShowSourcePicker(true)}
               className="w-72 h-72 border-2 border-dashed border-gray-600 hover:border-primary rounded-3xl flex flex-col items-center justify-center cursor-pointer bg-gray-800/50 transition-all group"
             >
               <div className="w-20 h-20 rounded-full bg-gray-800 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg">
@@ -167,10 +170,29 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
             <input 
               type="file" 
               accept="image/*" 
-              capture="environment"
+              /* no capture here: gallery picker */
               ref={fileInputRef} 
               className="hidden" 
               onChange={handleFileChange}
+            />
+            {/* Camera input (some browsers open camera when capture attribute is present) */}
+            <input
+              type="file"
+              accept="image/*"
+              capture="environment"
+              ref={cameraInputRef}
+              className="hidden"
+              onChange={handleFileChange}
+            />
+
+            <ImageSourcePicker
+              show={showSourcePicker}
+              onClose={() => setShowSourcePicker(false)}
+              onChoose={(source) => {
+                setShowSourcePicker(false);
+                if (source === 'camera') cameraInputRef.current?.click();
+                else if (source === 'gallery') fileInputRef.current?.click();
+              }}
             />
           </div>
         ) : (

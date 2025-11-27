@@ -59,7 +59,7 @@ export const geminiService = {
     try {
       // Using gemini-3-pro-preview for high reasoning capabilities on images
       const response = await ai.models.generateContent({
-        model: 'gemini-3-pro-preview',
+        model: 'gemini-3-pro',
         contents: {
           parts: [
             { inlineData: { mimeType: 'image/jpeg', data: base64Image } },
@@ -109,7 +109,7 @@ export const geminiService = {
       // Ideally use ai.chats.create, but to mix search grounding dynamically, we'll use generateContent with tools.
       
       const response = await ai.models.generateContent({
-        model: 'gemini-3-pro-preview', // Using Flash for fast chat + Search
+        model: 'gemini-3-pro', // Using Flash for fast chat + Search
         contents: [
             { role: 'user', parts: [{ text: `System: ${systemInstruction}` }] },
             ...history.map(h => ({ role: h.role, parts: [{ text: h.text }] })),

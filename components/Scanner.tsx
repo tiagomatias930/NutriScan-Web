@@ -14,7 +14,9 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [result, setResult] = useState<AnalyzedFood | null>(null);
+  const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
+  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
 
   // Resize/compress image in browser to avoid high memory usage and very large uploads
   const resizeImageFile = async (file: File, maxSize = 800, outputType = 'image/jpeg', quality = 0.75) => {
@@ -51,6 +53,17 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // Basic client-side validation
+    if (!file.type?.startsWith('image/')) {
+      setErrorMessage('Formato inválido. Selecione uma imagem.');
+      return;
+    }
+
+    if (file.size > MAX_FILE_SIZE) {
+      setErrorMessage('Imagem muito grande. Tente uma foto menor (máx 5MB).');
+      return;
+    }
+
     (async () => {
       try {
         setIsProcessingImage(true);
@@ -61,7 +74,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
         await analyze(resized);
       } catch (err) {
         console.error('Image processing failed', err);
-        alert('Não foi possível processar a imagem (memória ou formato). Tente uma foto menor.');
+        setErrorMessage('Não foi possível processar a imagem (memória ou formato). Tente uma foto menor.');
       } finally {
         setIsProcessingImage(false);
       }
@@ -83,7 +96,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
       }
     } catch (error) {
       console.error(error);
-      alert('Não foi possível analisar a imagem. Tente novamente com uma foto menor ou mais nítida.');
+      setErrorMessage('Não foi possível analisar a imagem. Tente novamente com uma foto menor ou mais nítida.');
     } finally {
       setIsAnalyzing(false);
     }
@@ -111,6 +124,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   const handleRetake = () => {
     setImage(null);
     setResult(null);
+    setErrorMessage(null);
     if (fileInputRef.current) {
       // clear the value so same file can be reselected
       fileInputRef.current.value = '';
@@ -128,6 +142,14 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
         <h2 className="text-white font-semibold tracking-wide uppercase text-sm opacity-80">Analizador de imagem</h2>
         <div className="w-10"></div>
       </div>
+
+      {/* Error banner */}
+      {errorMessage && (
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-30 px-4 py-2 bg-rose-700 text-white rounded-lg shadow-lg flex items-center gap-3">
+          <div className="text-sm">{errorMessage}</div>
+          <button onClick={() => setErrorMessage(null)} className="ml-2 text-white/80 hover:text-white">Fechar</button>
+        </div>
+      )}
 
       <div className="flex-1 relative flex flex-col">
         {!image ? (

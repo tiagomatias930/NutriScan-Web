@@ -3,7 +3,7 @@ import { FoodItem, Somatotype, Goal } from "../types";
 
 // NOTE: In a production app, never expose keys in client code. 
 // Since this is a demo running in a controlled environment, we access process.env.API_KEY.
-const ai = new GoogleGenAI({ apiKey: "AIzaSyBF9Iemp5CyNlhXpHVnbpMOyfZxmSdWfEo" });
+const ai = new GoogleGenAI({ apiKey: "AIzaSyC0IVuu5GNzTxsdgYHGkhcFR_Wd3tp8-tM" });
 
 export interface AnalyzedFood {
   foodName: string;
@@ -59,7 +59,7 @@ export const geminiService = {
     try {
       // Using gemini-3-pro-preview for high reasoning capabilities on images
       const response = await ai.models.generateContent({
-        model: 'gemini-3-pro',
+        model: 'gemini-2.5-flash',
         contents: {
           parts: [
             { inlineData: { mimeType: 'image/jpeg', data: base64Image } },
@@ -109,7 +109,7 @@ export const geminiService = {
       // Ideally use ai.chats.create, but to mix search grounding dynamically, we'll use generateContent with tools.
       
       const response = await ai.models.generateContent({
-        model: 'gemini-3-pro', // Using Flash for fast chat + Search
+        model: 'gemini-2.5-flash', // Using Flash for fast chat + Search
         contents: [
             { role: 'user', parts: [{ text: `System: ${systemInstruction}` }] },
             ...history.map(h => ({ role: h.role, parts: [{ text: h.text }] })),
@@ -137,7 +137,7 @@ export const geminiService = {
   speakMessage: async (text: string): Promise<void> => {
       try {
         const response = await ai.models.generateContent({
-            model: "gemini-3-pro-preview-tts",
+            model: "gemini-2.5-flash-preview-tts",
             contents: [{ parts: [{ text: text }] }],
             config: {
               responseModalities: [Modality.AUDIO],

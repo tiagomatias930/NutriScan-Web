@@ -27,7 +27,7 @@ export const Dashboard: React.FC = () => {
     { name: 'Consumido', value: totals.calories },
     { name: 'Restante', value: Math.max(0, remainingCals) },
   ];
-  const COLORS = ['#10b981', '#27272a']; // Primary Green, Zinc 800
+  const COLORS = ['#00d9ff', '#6366f1']; // Cyan e Indigo
 
   const WATER_GOAL = 2500; // Daily goal in ml
   const waterPercentage = Math.min(100, (waterIntake / WATER_GOAL) * 100);
@@ -35,24 +35,24 @@ export const Dashboard: React.FC = () => {
   return (
     <div className="p-6 pb-28 space-y-6 max-w-xl mx-auto animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between pt-2">
+      <div className="flex items-center justify-between pt-4 relative z-20">
         <div>
-          <p className="text-gray-400 text-sm font-medium">Bem-vindo de volta,</p>
-          <h1 className="text-2xl font-bold text-white tracking-tight">{user.name}</h1>
+          <p className="text-textMuted text-sm font-medium">Bem-vindo de volta,</p>
+          <h1 className="text-3xl font-bold text-textLight tracking-tight text-glow">{user.name}</h1>
         </div>
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-emerald-700 flex items-center justify-center text-white font-bold shadow-lg shadow-emerald-900/50">
+        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-dark font-bold glow-cyan">
           {user.name.charAt(0).toUpperCase()}
         </div>
       </div>
 
-      {/* Calories Card */}
-      <div className="bg-card rounded-3xl p-6 shadow-xl border border-white/5 relative overflow-hidden">
-        <div className="absolute top-0 right-0 w-32 h-32 bg-primary/10 rounded-full filter blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+      {/* Calories Card - Glass */}
+      <div className="glass glass-lg rounded-3xl p-6 relative overflow-hidden group">
+        <div className="absolute top-0 right-0 w-40 h-40 bg-primary/20 rounded-full filter blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none group-hover:scale-110 transition-transform"></div>
         
-        <div className="flex items-center justify-between">
-             <div className="z-10">
-                 <h2 className="text-gray-400 text-sm font-medium mb-1">Calorias disponíveis</h2>
-                 <div className="text-4xl font-bold text-white tracking-tight">
+        <div className="flex items-center justify-between relative z-10">
+             <div>
+                 <h2 className="text-textMuted text-sm font-medium mb-1">Calorias disponíveis</h2>
+                 <div className="text-4xl font-bold text-primary tracking-tight text-glow">
                      {Math.max(0, remainingCals)}
                  </div>
                  <p className="text-sm text-gray-500 mt-1 font-medium">
@@ -86,34 +86,35 @@ export const Dashboard: React.FC = () => {
         </div>
 
         {/* Macros */}
-        <div className="grid grid-cols-3 gap-4 mt-6">
-            <MacroBar label="Proteina" current={totals.protein} target={targets.protein} color="bg-emerald-500" />
-            <MacroBar label="Carboidratos" current={totals.carbs} target={targets.carbs} color="bg-blue-500" />
-            <MacroBar label="Gorduras" current={totals.fats} target={targets.fats} color="bg-amber-500" />
+        <div className="grid grid-cols-2 gap-3 mt-6">
+            <MacroBar label="Prot" current={totals.protein} target={targets.protein} color="bg-emerald-500" />
+            <MacroBar label="Carb" current={totals.carbs} target={targets.carbs} color="bg-blue-500" />
+            <MacroBar label="Gord" current={totals.fats} target={targets.fats} color="bg-amber-500" />
         </div>
       </div>
 
       {/* Hydration Card */}
-      <div className="bg-gradient-to-br from-blue-900/40 to-blue-900/10 rounded-3xl p-6 border border-blue-500/20 shadow-lg">
-        <div className="flex items-center justify-between mb-4">
+      <div className="glass glass-lg rounded-3xl p-6 relative overflow-hidden">
+        <div className="absolute top-0 right-0 w-40 h-40 bg-cyan-500/15 rounded-full filter blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
+        <div className="flex items-center justify-between mb-4 relative z-10">
              <div className="flex items-center gap-3">
-                <div className="w-10 h-10 rounded-xl bg-blue-500/20 flex items-center justify-center text-blue-400">
+                <div className="w-10 h-10 rounded-xl bg-primary/30 flex items-center justify-center text-primary">
                     <span className="material-icons">water_drop</span>
                 </div>
                 <div>
-                    <h3 className="font-bold text-white">Hidratação</h3>
-                    <div className="text-xs text-blue-200/60 font-medium">Meta: {WATER_GOAL}ml</div>
+                    <h3 className="font-bold text-textLight">Hidratação</h3>
+                    <div className="text-xs text-textMuted font-medium">Meta: {WATER_GOAL}ml</div>
                 </div>
              </div>
              <div className="text-right">
-                 <span className="text-2xl font-bold text-blue-100">{waterIntake}</span>
-                 <span className="text-sm text-blue-300 ml-1">ml</span>
+                 <span className="text-2xl font-bold text-primary">{waterIntake}</span>
+                 <span className="text-sm text-textMuted ml-1">ml</span>
              </div>
         </div>
         
-        <div className="h-3 w-full bg-blue-950/50 rounded-full overflow-hidden mb-5">
+        <div className="h-3 w-full bg-glassDark rounded-full overflow-hidden mb-5">
             <div 
-                className="h-full bg-blue-500 rounded-full transition-all duration-700 ease-out shadow-[0_0_10px_rgba(59,130,246,0.5)]"
+                className="h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-all duration-700 ease-out glow-cyan"
                 style={{ width: `${waterPercentage}%` }}
             ></div>
         </div>
@@ -121,13 +122,13 @@ export const Dashboard: React.FC = () => {
         <div className="flex gap-3">
             <button 
                 onClick={() => addWater(250)}
-                className="flex-1 py-3 bg-blue-600 hover:bg-blue-500 rounded-xl text-white font-semibold text-sm transition-colors flex items-center justify-center gap-2 shadow-lg shadow-blue-900/20 active:scale-95 transform duration-100"
+                className="flex-1 py-3 bg-gradient-to-r from-primary to-secondary hover:shadow-lg hover:glow-cyan rounded-xl text-dark font-semibold text-sm transition-all flex items-center justify-center gap-2 active:scale-95 transform duration-100"
             >
                 <span>+ 250ml</span>
             </button>
             <button 
                 onClick={() => addWater(500)}
-                className="flex-1 py-3 bg-blue-500/20 hover:bg-blue-500/30 border border-blue-500/50 rounded-xl text-blue-200 font-semibold text-sm transition-colors flex items-center justify-center gap-2 active:scale-95 transform duration-100"
+                className="flex-1 py-3 glass-sm hover:glass rounded-xl text-primary font-semibold text-sm transition-all flex items-center justify-center gap-2 active:scale-95 transform duration-100"
             >
                 <span>+ 500ml</span>
             </button>
@@ -137,24 +138,24 @@ export const Dashboard: React.FC = () => {
       {/* Recent Activity */}
       <div>
                     <div className="flex items-center justify-between mb-4 px-1">
-                        <h2 className="text-lg font-bold text-white">Refeições recentes</h2>
+                        <h2 className="text-lg font-bold text-textLight">Refeições recentes</h2>
                         <div className="flex items-center gap-3">
-                                        <span className="text-xs text-primary font-medium">Dados das ultimas 24h</span>
-                                        <button onClick={() => setShowHistory(true)} className="text-xs bg-primary/10 text-primary px-2 py-1 rounded-md hover:bg-primary/20">Ver histórico</button>
+                                        <span className="text-xs text-textMuted font-medium">Últimas 24h</span>
+                                        <button onClick={() => setShowHistory(true)} className="text-xs glass-sm text-primary px-2 py-1 rounded-md hover:glass transition-all">Ver histórico</button>
                                     </div>
                     </div>
           
           {foodLog.length === 0 ? (
-              <div className="flex flex-col items-center justify-center py-12 bg-card rounded-3xl border border-dashed border-gray-800">
-                  <span className="material-icons text-gray-600 text-4xl mb-2">no_meals</span>
-                  <p className="text-gray-500 font-medium">Nenhuma refeição registrada hoje.</p>
-                  <p className="text-gray-600 text-sm">Toque no scanner para iniciar o rastreamento.!</p>
+              <div className="flex flex-col items-center justify-center py-12 glass-lg rounded-3xl">
+                  <span className="material-icons text-textMuted text-4xl mb-2 opacity-50">no_meals</span>
+                  <p className="text-textLight font-medium">Nenhuma refeição registrada hoje.</p>
+                  <p className="text-textMuted text-sm">Toque no scanner para iniciar o rastreamento!</p>
               </div>
           ) : (
               <div className="space-y-3">
                   {foodLog.slice(0, 5).map((food) => (
-                      <div key={food.id} className="bg-card p-3 rounded-2xl flex items-center gap-4 border border-white/5 hover:bg-cardHover transition-colors cursor-pointer group">
-                          <div className="w-16 h-16 rounded-xl bg-gray-800 overflow-hidden flex-shrink-0 relative shadow-md">
+                      <div key={food.id} className="glass-sm p-3 rounded-2xl flex items-center gap-4 hover:glass-lg transition-all cursor-pointer group">
+                          <div className="w-16 h-16 rounded-xl bg-glassMedium overflow-hidden flex-shrink-0 relative shadow-md group-hover:glow-cyan">
                                                             {(food.imageUrl || food.imageData) ? (
                                                                     <img
                                                                         src={
@@ -166,22 +167,22 @@ export const Dashboard: React.FC = () => {
                                                                         className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
                                                                     />
                                                             ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-gray-600 bg-gray-900">
+                                  <div className="w-full h-full flex items-center justify-center text-textMuted bg-glassDark">
                                     <span className="material-icons text-xl">restaurante</span>
                                   </div>
                               )}
                           </div>
                           <div className="flex-1 min-w-0">
-                              <h4 className="font-bold text-white text-base truncate">{food.name}</h4>
+                              <h4 className="font-bold text-textLight text-base truncate">{food.name}</h4>
                               <div className="flex gap-3 mt-1.5">
-                                  <MacroBadge label="P" value={food.protein} color="text-emerald-400" bg="bg-emerald-400/10" />
-                                  <MacroBadge label="C" value={food.carbs} color="text-blue-400" bg="bg-blue-400/10" />
-                                  <MacroBadge label="F" value={food.fats} color="text-amber-400" bg="bg-amber-400/10" />
+                                  <MacroBadge label="P" value={food.protein} color="text-primary" bg="bg-primary/10" />
+                                  <MacroBadge label="C" value={food.carbs} color="text-secondary" bg="bg-secondary/10" />
+                                  <MacroBadge label="F" value={food.fats} color="text-yellow-400" bg="bg-yellow-400/10" />
                               </div>
                           </div>
                           <div className="text-right px-2">
-                              <div className="font-bold text-white text-lg">{food.calories}</div>
-                              <div className="text-[10px] text-gray-500 font-medium uppercase tracking-wider">kcal</div>
+                              <div className="font-bold text-primary text-lg">{food.calories}</div>
+                              <div className="text-[10px] text-textMuted font-medium uppercase tracking-wider">kcal</div>
                           </div>
                       </div>
                   ))}
@@ -198,19 +199,19 @@ const MacroBar = ({ label, current, target, color }: { label: string, current: n
     return (
         <div className="flex flex-col gap-1">
             <div className="flex justify-between text-xs font-medium">
-                <span className="text-gray-400">{label}</span>
-                <span className="text-white">{Math.round(current)}g</span>
+                <span className="text-textMuted">{label}</span>
+                <span className="text-textLight">{Math.round(current)}g</span>
             </div>
-            <div className="h-1.5 w-full bg-gray-800 rounded-full overflow-hidden">
-                <div className={`h-full ${color} rounded-full`} style={{ width: `${percent}%` }}></div>
+            <div className="h-1.5 w-full bg-glassMedium rounded-full overflow-hidden">
+                <div className={`h-full ${color} rounded-full glow-cyan`} style={{ width: `${percent}%` }}></div>
             </div>
         </div>
     )
 }
 
 const MacroBadge = ({ label, value, color, bg }: { label: string, value: number, color: string, bg: string }) => (
-    <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md ${bg}`}>
+    <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md glass-sm`}>
         <span className={`text-[10px] font-bold ${color}`}>{label}</span>
-        <span className={`text-xs font-medium text-gray-300`}>{Math.round(value)}</span>
+        <span className={`text-xs font-medium text-textMuted`}>{Math.round(value)}</span>
     </div>
 )

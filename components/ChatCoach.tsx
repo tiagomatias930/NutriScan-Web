@@ -28,7 +28,7 @@ function parseInline(txt: string): React.ReactNode[] {
 
         if (m[2]) {
             nodes.push(
-                <code key={`ic-${key}`} className="bg-gray-900 px-1 rounded font-mono text-sm">{m[2]}</code>
+                <code key={`ic-${key}`} className="bg-gray-200 px-1 rounded font-mono text-sm text-gray-900">{m[2]}</code>
             );
         } else if (m[3]) {
             nodes.push(<strong key={`ib-${key}`}>{m[3]}</strong>);
@@ -69,7 +69,7 @@ function renderFormattedText(text?: string): React.ReactNode {
         }
 
         nodes.push(
-            <pre key={`cb-${key}`} className="bg-gray-800 p-3 rounded text-sm overflow-x-auto font-mono text-gray-100">
+            <pre key={`cb-${key}`} className="bg-gray-200 p-3 rounded text-sm overflow-x-auto font-mono text-gray-900">
                 <code>{m[1]}</code>
             </pre>
         );
@@ -126,12 +126,12 @@ function renderFormattedText(text?: string): React.ReactNode {
   return (
     <div className="flex flex-col h-full bg-dark pb-24 relative font-sans">
         {/* Header */}
-        <div className="px-6 py-4 bg-dark/90 backdrop-blur-md border-b border-gray-800 shadow-sm sticky top-0 z-20 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-emerald-600 flex items-center justify-center shadow-lg shadow-emerald-900/50">
+        <div className="px-6 py-4 glass glass-lg border-b border-glassDark shadow-sm sticky top-0 z-20 flex items-center gap-3">
+            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center glow-cyan">
                 <span className="material-icons text-white"><img className="w-12 h-12" src="/running.png" alt="" /></span>
             </div>
             <div>
-                <h2 className="text-lg font-bold text-white leading-tight">NutriCoach AI</h2>
+                <h2 className="text-lg font-bold text-textLight leading-tight">NutriCoach AI</h2>
                 <p className="text-xs text-primary font-medium flex items-center gap-1">
                     <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span> Ativo
                 </p>
@@ -142,11 +142,11 @@ function renderFormattedText(text?: string): React.ReactNode {
         <div className="flex-1 overflow-y-auto p-4 space-y-6">
             {chatHistory.length === 0 && (
                 <div className="flex flex-col items-center justify-center min-h-[60vh] animate-fade-in px-4">
-                    <div className="w-20 h-20 rounded-3xl bg-gray-800/50 flex items-center justify-center mb-6">
-                        <span className="material-icons text-gray-600 text-4xl">forum</span>
+                    <div className="w-20 h-20 rounded-3xl glass-lg flex items-center justify-center mb-6">
+                        <span className="material-icons text-primary text-4xl">forum</span>
                     </div>
-                    <h3 className="text-xl font-bold text-white mb-2">Ola, {user?.name}!</h3>
-                    <p className="text-gray-400 text-center text-sm mb-8 max-w-xs">Estou aqui para te ajudar com sua dieta, rotina de exercícios ou informações nutricionais.</p>
+                    <h3 className="text-xl font-bold text-textLight mb-2">Ola, {user?.name}!</h3>
+                    <p className="text-textMuted text-center text-sm mb-8 max-w-xs">Estou aqui para te ajudar com sua dieta, rotina de exercícios ou informações nutricionais.</p>
                     
                     <div className="w-full max-w-sm space-y-3">
                         <SuggestionButton text="What should I eat for breakfast?" onClick={setInput} />
@@ -160,8 +160,8 @@ function renderFormattedText(text?: string): React.ReactNode {
                 <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-slide-up`}>
                     <div className={`max-w-[85%] rounded-2xl p-4 shadow-sm ${
                         msg.role === 'user' 
-                        ? 'bg-primary text-black rounded-tr-sm' 
-                        : 'bg-card text-gray-100 border border-gray-800 rounded-tl-sm'
+                        ? 'bg-gradient-to-r from-primary to-secondary text-dark rounded-tr-sm glow-cyan' 
+                        : 'glass-lg text-textLight rounded-tl-sm'
                     }`}>
                         <div className="whitespace-pre-wrap text-[15px] leading-relaxed">{renderFormattedText(msg.text)}</div>
                         {msg.sources && msg.sources.length > 0 && (
@@ -181,7 +181,7 @@ function renderFormattedText(text?: string): React.ReactNode {
             
             {loading && (
                 <div className="flex justify-start">
-                    <div className="bg-card border border-gray-800 rounded-2xl rounded-tl-sm p-4 flex items-center gap-2">
+                    <div className="bg-card border border-gray-300 rounded-2xl rounded-tl-sm p-4 flex items-center gap-2">
                         <div className="w-2 h-2 bg-primary rounded-full animate-bounce"></div>
                         <div className="w-2 h-2 bg-primary rounded-full animate-bounce delay-75"></div>
                         <div className="w-2 h-2 bg-primary rounded-full animate-bounce delay-150"></div>
@@ -192,20 +192,20 @@ function renderFormattedText(text?: string): React.ReactNode {
         </div>
 
         {/* Input Area */}
-        <div className="p-4 bg-dark border-t border-gray-800 sticky bottom-[70px] z-20">
-            <div className="bg-card rounded-full p-1.5 pl-5 flex items-center gap-2 border border-gray-800 focus-within:border-primary/50 focus-within:ring-1 focus-within:ring-primary/20 transition-all shadow-lg">
+        <div className="p-4 bg-dark/50 border-t border-glassDark sticky bottom-[70px] z-20">
+            <div className="glass glass-lg rounded-full p-1.5 pl-5 flex items-center gap-2 focus-within:glow-cyan transition-all">
                 <input 
                     type="text" 
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => e.key === 'Enter' && handleSend()}
                     placeholder="Ask me anything..."
-                    className="flex-1 bg-transparent text-white placeholder-gray-500 focus:outline-none text-base py-2"
+                    className="flex-1 bg-transparent text-textLight placeholder-textMuted focus:outline-none text-base py-2"
                 />
                 <button 
                     onClick={handleSend}
                     disabled={loading || !input.trim()}
-                    className="w-10 h-10 rounded-full bg-primary text-black flex items-center justify-center disabled:opacity-50 disabled:bg-gray-700 disabled:text-gray-500 transition-colors shadow-md"
+                    className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-secondary text-dark flex items-center justify-center disabled:opacity-50 transition-all glow-cyan disabled:glow-none"
                 >
                     <span className="material-icons text-xl">arrow_upward</span>
                 </button>

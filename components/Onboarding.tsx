@@ -28,13 +28,17 @@ export const Onboarding: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-dark text-white flex flex-col p-6 font-sans">
-      <div className="flex-1 flex flex-col max-w-md mx-auto w-full py-8">
+    <div className="min-h-screen bg-dark text-textLight flex flex-col p-6 font-sans relative overflow-hidden">
+      {/* Animated background */}
+      <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-primary/10 to-secondary/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
+      <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-secondary/10 to-primary/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none"></div>
+      
+      <div className="flex-1 flex flex-col max-w-md mx-auto w-full py-8 relative z-10">
         
         {/* Progress Bar */}
         <div className="flex gap-2 mb-10 px-1">
             {[1, 2, 3, 4].map(i => (
-                <div key={i} className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${i <= step ? 'bg-primary' : 'bg-gray-800'}`}></div>
+                <div key={i} className={`h-1.5 flex-1 rounded-full transition-colors duration-300 ${i <= step ? 'bg-gradient-to-r from-primary to-secondary' : 'bg-glassMedium'}`}></div>
             ))}
         </div>
 
@@ -42,23 +46,23 @@ export const Onboarding: React.FC = () => {
         <div className="flex-1 flex flex-col">
             {step === 1 && (
                 <div className="animate-fade-in flex-1">
-                    <h1 className="text-4xl font-bold text-white mb-3 tracking-tight">Vamos começar.</h1>
-                    <p className="text-gray-400 text-lg mb-10 leading-relaxed">Precisamos de alguns detalhes para criar seu plano nutricional personalizado..</p>
+                    <h1 className="text-4xl font-bold text-primary mb-3 tracking-tight text-glow">Vamos começar.</h1>
+                    <p className="text-textMuted text-lg mb-10 leading-relaxed">Precisamos de alguns detalhes para criar seu plano nutricional personalizado.</p>
                     
                     <div className="space-y-6">
                         <div>
-                            <label className="text-sm font-medium text-gray-400 mb-2 block ml-1">Qual é o seu nome?</label>
-                            <input 
-                                type="text" 
+                            <label className="text-sm font-medium text-textMuted mb-2 block ml-1">Qual é o seu nome?</label>
+                            <input
+                                type="text"
                                 placeholder="e.g. Alex"
-                                className="w-full bg-card text-white border border-gray-700 rounded-2xl p-5 text-lg focus:outline-none focus:border-primary focus:ring-1 focus:ring-primary transition-all placeholder-gray-600"
+                                className="w-full glass-lg text-textLight border-primary/20 focus:border-primary rounded-2xl p-5 text-lg focus:outline-none focus:ring-2 focus:ring-primary transition-all placeholder-textMuted"
                                 value={data.name}
                                 onChange={e => updateData('name', e.target.value)}
                             />
                         </div>
 
                         <div>
-                            <label className="text-sm font-medium text-gray-400 mb-3 block ml-1">Gênero</label>
+                            <label className="text-sm font-medium text-textMuted mb-3 block ml-1">Gênero</label>
                             <div className="grid grid-cols-2 gap-4">
                                 {Object.values(Gender).map(g => (
                                     <button
@@ -66,8 +70,8 @@ export const Onboarding: React.FC = () => {
                                         onClick={() => updateData('gender', g)}
                                         className={`p-5 rounded-2xl border transition-all duration-200 font-medium text-lg flex items-center justify-center gap-2 ${
                                             data.gender === g 
-                                            ? 'border-primary bg-primary/10 text-primary shadow-[0_0_15px_rgba(16,185,129,0.15)]' 
-                                            : 'border-gray-800 bg-card text-gray-400 hover:bg-cardHover'
+                                            ? 'border-primary bg-primary/20 text-primary glow-cyan' 
+                                            : 'glass-sm text-textMuted hover:glass-lg'
                                         }`}
                                     >
                                         <span className="material-icons text-xl">{g === Gender.MALE ? 'Homem' : 'Mulher'}</span>
@@ -82,8 +86,8 @@ export const Onboarding: React.FC = () => {
 
             {step === 2 && (
                 <div className="animate-fade-in flex-1">
-                    <h2 className="text-3xl font-bold mb-2">Suas estatísticas</h2>
-                    <p className="text-gray-400 mb-8">Números precisos nos ajudam a calcular suas necessidades calóricas..</p>
+                    <h2 className="text-3xl font-bold mb-2 text-primary">Suas estatísticas</h2>
+                    <p className="text-textMuted mb-8">Números precisos nos ajudam a calcular suas necessidades calóricas.</p>
                     
                     <div className="space-y-5">
                         <StatSlider 
@@ -113,8 +117,8 @@ export const Onboarding: React.FC = () => {
 
             {step === 3 && (
                 <div className="animate-fade-in flex-1">
-                    <h2 className="text-3xl font-bold mb-2">Tipo de corpo</h2>
-                    <p className="text-gray-400 mb-8">Selecione a opção que melhor descreve sua constituição física natural..</p>
+                    <h2 className="text-3xl font-bold mb-2 text-primary">Tipo de corpo</h2>
+                    <p className="text-textMuted mb-8">Selecione a opção que melhor descreve sua constituição física natural.</p>
                     
                     <div className="space-y-4">
                         {[
@@ -128,16 +132,16 @@ export const Onboarding: React.FC = () => {
                                 className={`w-full p-5 rounded-3xl border text-left flex items-start gap-5 transition-all duration-200 group ${
                                     data.somatotype === item.type 
                                     ? 'border-primary bg-primary/10 shadow-[0_0_15px_rgba(16,185,129,0.1)]' 
-                                    : 'border-gray-800 bg-card hover:bg-cardHover'
+                                    : 'border-gray-300 bg-card hover:bg-cardHover'
                                 }`}
                             >
                                 <div className={`w-12 h-12 rounded-2xl flex items-center justify-center flex-shrink-0 transition-colors ${
-                                    data.somatotype === item.type ? 'bg-primary text-black' : 'bg-gray-800 text-gray-400 group-hover:bg-gray-700'
+                                    data.somatotype === item.type ? 'bg-primary text-white' : 'bg-gray-200 text-gray-600 group-hover:bg-gray-300'
                                 }`}>
                                     <span className="material-icons">{item.icon}</span>
                                 </div>
                                 <div>
-                                    <div className={`font-bold text-lg mb-1 ${data.somatotype === item.type ? 'text-white' : 'text-gray-300'}`}>
+                                    <div className={`font-bold text-lg mb-1 ${data.somatotype === item.type ? 'text-primary' : 'text-gray-700'}`}>
                                         {item.type}
                                     </div>
                                     <div className="text-sm text-gray-500 leading-relaxed">{item.desc}</div>
@@ -150,8 +154,8 @@ export const Onboarding: React.FC = () => {
 
             {step === 4 && (
                 <div className="animate-fade-in flex-1">
-                    <h2 className="text-3xl font-bold mb-2">Sua meta</h2>
-                    <p className="text-gray-400 mb-8">O que você deseja alcançar?</p>
+                    <h2 className="text-3xl font-bold mb-2 text-primary">Sua meta</h2>
+                    <p className="text-textMuted mb-8">O que você deseja alcançar?</p>
 
                     <div className="grid grid-cols-1 gap-3 mb-8">
                         {Object.values(Goal).map(g => (
@@ -159,9 +163,9 @@ export const Onboarding: React.FC = () => {
                                 key={g}
                                 onClick={() => updateData('goal', g)}
                                 className={`p-4 rounded-2xl border transition-all duration-200 font-bold text-lg text-left px-6 flex justify-between items-center ${
-                                    data.goal === g 
-                                    ? 'border-primary bg-gradient-to-r from-primary to-primaryDark text-white shadow-lg' 
-                                    : 'border-gray-800 bg-card text-gray-400 hover:bg-cardHover'
+                                    data.goal === c
+                                    ? 'border-primary bg-gradient-to-r from-primary to-secondary text-dark glow-cyan' 
+                                    : 'glass-sm text-textMuted hover:glass'
                                 }`}
                             >
                                 {g}
@@ -171,12 +175,12 @@ export const Onboarding: React.FC = () => {
                     </div>
 
                     <div>
-                        <label className="text-sm font-medium text-gray-400 mb-3 block ml-1">Nível das atividades</label>
+                        <label className="text-sm font-medium text-gray-700 mb-3 block ml-1">Nível das atividades</label>
                         <div className="relative">
                             <select 
                                 value={data.activityLevel}
                                 onChange={e => updateData('activityLevel', e.target.value)}
-                                className="w-full bg-card text-white p-5 rounded-2xl border border-gray-800 focus:border-primary outline-none appearance-none text-lg"
+                                className="w-full bg-card text-gray-900 p-5 rounded-2xl border border-gray-300 focus:border-primary outline-none appearance-none text-lg"
                             >
                                 {Object.values(ActivityLevel).map(l => (
                                     <option key={l} value={l}>{l}</option>
@@ -216,11 +220,11 @@ export const Onboarding: React.FC = () => {
 };
 
 const StatSlider = ({ label, value, min, max, unit, onChange }: { label: string, value: number, min: number, max: number, unit: string, onChange: (v: number) => void }) => (
-    <div className="bg-card p-5 rounded-3xl border border-gray-800">
+    <div className="bg-card p-5 rounded-3xl border border-gray-300">
         <div className="flex justify-between mb-4 items-end">
-            <span className="text-gray-400 font-medium">{label}</span>
+            <span className="text-gray-700 font-medium">{label}</span>
             <div className="flex items-baseline gap-1">
-                <span className="font-bold text-3xl text-white">{value}</span>
+                <span className="font-bold text-3xl text-gray-900">{value}</span>
                 <span className="text-sm text-gray-500 font-medium">{unit}</span>
             </div>
         </div>

@@ -136,19 +136,19 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-black flex flex-col h-full animate-fade-in">
+    <div className="fixed inset-0 z-50 bg-dark flex flex-col h-full animate-fade-in">
       {/* Header Overlay */}
-      <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-20 bg-gradient-to-b from-black/80 to-transparent">
-        <button onClick={onClose} className="w-10 h-10 rounded-full bg-white/10 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/20 transition-colors">
+      <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-20 bg-gradient-to-b from-dark/80 to-transparent">
+        <button onClick={onClose} className="w-10 h-10 rounded-full glass-lg flex items-center justify-center text-textLight hover:glass transition-all">
             <span className="material-icons">close</span>
         </button>
-        <h2 className="text-white font-semibold tracking-wide uppercase text-sm opacity-80">Analizador de imagem</h2>
+        <h2 className="text-textLight font-semibold tracking-wide uppercase text-sm opacity-80">Analisador de imagem</h2>
         <div className="w-10"></div>
       </div>
 
       {/* Error banner */}
       {errorMessage && (
-        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-30 px-4 py-2 bg-rose-700 text-white rounded-lg shadow-lg flex items-center gap-3">
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-30 px-4 py-2 bg-red-600/80 text-white rounded-lg shadow-lg glow-indigo flex items-center gap-3">
           <div className="text-sm">{errorMessage}</div>
           <button onClick={() => setErrorMessage(null)} className="ml-2 text-white/80 hover:text-white">Fechar</button>
         </div>
@@ -156,16 +156,16 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
 
       <div className="flex-1 relative flex flex-col">
         {!image ? (
-          <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gray-900">
+          <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-dark/50 to-dark">
             <div 
               onClick={() => setShowSourcePicker(true)}
-              className="w-72 h-72 border-2 border-dashed border-gray-600 hover:border-primary rounded-3xl flex flex-col items-center justify-center cursor-pointer bg-gray-800/50 transition-all group"
+              className="w-72 h-72 border-2 border-dashed border-primary/50 hover:border-primary rounded-3xl flex flex-col items-center justify-center cursor-pointer glass-lg transition-all group"
             >
-              <div className="w-20 h-20 rounded-full bg-gray-800 flex items-center justify-center mb-4 group-hover:scale-110 transition-transform shadow-lg">
+              <div className="w-20 h-20 rounded-full glass-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform glow-cyan">
                   <span className="material-icons text-primary text-4xl">camera_alt</span>
               </div>
-              <p className="text-white font-bold text-lg">Tirar foto</p>
-              <p className="text-gray-500 text-sm">ou selecione na galeria</p>
+              <p className="text-textLight font-bold text-lg">Tirar foto</p>
+              <p className="text-textMuted text-sm">ou selecione na galeria</p>
             </div>
             <input 
               type="file" 
@@ -201,34 +201,34 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
 
              {/* Loading State */}
              {isProcessingImage && (
-               <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center z-30 backdrop-blur-sm">
+               <div className="absolute inset-0 bg-dark/80 flex flex-col items-center justify-center z-30 backdrop-blur-sm">
                 <div className="relative w-20 h-20">
-                  <div className="absolute inset-0 border-4 border-gray-700 rounded-full"></div>
-                  <div className="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin"></div>
+                  <div className="absolute inset-0 border-4 border-glassMedium rounded-full"></div>
+                  <div className="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin glow-cyan"></div>
                 </div>
-                <p className="text-white font-semibold text-lg mt-6">Processando imagem...</p>
-                <p className="text-gray-400 text-sm">Compactando e preparando para análise</p>
+                <p className="text-textLight font-semibold text-lg mt-6">Processando imagem...</p>
+                <p className="text-textMuted text-sm">Compactando e preparando para análise</p>
                </div>
              )}
 
              {isAnalyzing && (
-                 <div className="absolute inset-0 bg-black/60 flex flex-col items-center justify-center z-10 backdrop-blur-sm">
+                 <div className="absolute inset-0 bg-dark/80 flex flex-col items-center justify-center z-10 backdrop-blur-sm">
                     <div className="relative w-24 h-24">
-                        <div className="absolute inset-0 border-4 border-gray-700 rounded-full"></div>
-                        <div className="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin"></div>
+                        <div className="absolute inset-0 border-4 border-glassMedium rounded-full"></div>
+                        <div className="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin glow-cyan"></div>
                     </div>
-                    <p className="text-white font-bold text-lg mt-6 animate-pulse">Analisando os alimentos...</p>
-                    <p className="text-gray-400 text-sm">Identificando macronutrientes e calorias</p>
+                    <p className="text-textLight font-bold text-lg mt-6 animate-pulse">Analisando os alimentos...</p>
+                    <p className="text-textMuted text-sm">Identificando macronutrientes e calorias</p>
                  </div>
              )}
 
              {/* Result Sheet */}
              {result && (
-               <div className="absolute bottom-0 left-0 right-0 bg-card rounded-t-3xl p-6 shadow-2xl animate-slide-up z-20 border-t border-gray-800 max-h-[80vh] overflow-y-auto">
-                 <div className="w-12 h-1 bg-gray-700 rounded-full mx-auto mb-6"></div>
+               <div className="absolute bottom-0 left-0 right-0 glass-lg rounded-t-3xl p-6 shadow-2xl animate-slide-up z-20 max-h-[80vh] overflow-y-auto">
+                 <div className="w-12 h-1 bg-glassMedium rounded-full mx-auto mb-6"></div>
 
-                 <h3 className="text-2xl font-bold text-white mb-2 leading-tight">{result.foodName}</h3>
-                 <p className="text-gray-400 text-sm mb-6 leading-relaxed border-l-2 border-primary pl-3">{result.reasoning}</p>
+                 <h3 className="text-2xl font-bold text-primary mb-2 leading-tight text-glow">{result.foodName}</h3>
+                 <p className="text-textMuted text-sm mb-6 leading-relaxed border-l-2 border-primary pl-3">{result.reasoning}</p>
 
                  <div className="grid grid-cols-4 gap-3 mb-8">
                     <NutrientBox label="Calories" value={result.calories} unit="kcal" />

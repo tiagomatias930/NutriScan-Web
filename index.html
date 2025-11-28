@@ -17,13 +17,18 @@
               sans: ['Inter', 'sans-serif'],
             },
             colors: {
-              primary: '#10b981', // Emerald 500 - softer, professional green
-              primaryDark: '#059669',
-              secondary: '#34d399',
-              dark: '#09090b', // Zinc 950
-              card: '#18181b', // Zinc 900
-              cardHover: '#27272a', // Zinc 800
-              subtle: '#52525b', // Zinc 600
+              primary: '#00d9ff', // Electric cyan
+              primaryDark: '#0099cc',
+              secondary: '#6366f1', // Indigo
+              dark: '#0f1729', // Deep navy background
+              darkCard: '#1a2844', // Dark navy card
+              darkCardHover: '#243558', // Slightly lighter on hover
+              glassLight: 'rgba(255, 255, 255, 0.05)',
+              glassMedium: 'rgba(255, 255, 255, 0.08)',
+              glassDark: 'rgba(255, 255, 255, 0.1)',
+              subtle: '#64748b', // Slate 500
+              textLight: '#e2e8f0', // Light text
+              textMuted: '#94a3b8', // Muted text
             },
             animation: {
               'fade-in': 'fadeIn 0.5s ease-out',
@@ -45,10 +50,14 @@
     </script>
     <style>
       body {
-        background-color: #09090b;
-        color: #ffffff;
+        background: linear-gradient(135deg, #0f1729 0%, #1a2950 50%, #1a2850 100%);
+        color: #e2e8f0;
         font-family: 'Inter', sans-serif;
         -webkit-font-smoothing: antialiased;
+        overflow: hidden;
+      }
+      html {
+        background: linear-gradient(135deg, #0f1729 0%, #1a2950 50%, #1a2850 100%);
       }
       /* Hide scrollbar for clean mobile look */
       ::-webkit-scrollbar {
@@ -60,15 +69,65 @@
         height: 20px;
         width: 20px;
         border-radius: 50%;
-        background: #10b981;
+        background: linear-gradient(135deg, #00d9ff 0%, #0099cc 100%);
         cursor: pointer;
         margin-top: -8px;
+        box-shadow: 0 0 15px rgba(0, 217, 255, 0.5);
+      }
+      /* Glassmorphism styles */
+      .glass {
+        background: rgba(255, 255, 255, 0.08);
+        backdrop-filter: blur(20px);
+        -webkit-backdrop-filter: blur(20px);
+        border: 1px solid rgba(255, 255, 255, 0.1);
+        border-radius: 24px;
+      }
+      .glass-sm {
+        background: rgba(255, 255, 255, 0.05);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        border: 1px solid rgba(255, 255, 255, 0.08);
+      }
+      .glass-lg {
+        background: rgba(255, 255, 255, 0.1);
+        backdrop-filter: blur(30px);
+        -webkit-backdrop-filter: blur(30px);
+        border: 1px solid rgba(255, 255, 255, 0.15);
+      }
+      /* Glow effects */
+      .glow-cyan {
+        box-shadow: 0 0 30px rgba(0, 217, 255, 0.3), 0 0 60px rgba(0, 217, 255, 0.15);
+      }
+      .glow-indigo {
+        box-shadow: 0 0 30px rgba(99, 102, 241, 0.3), 0 0 60px rgba(99, 102, 241, 0.15);
+      }
+      .text-glow {
+        text-shadow: 0 0 20px rgba(0, 217, 255, 0.4);
+      }
+      /* Smooth transitions */
+      * {
+        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+      }
+      /* Animation for elements */
+      @keyframes float {
+        0%, 100% { transform: translateY(0px); }
+        50% { transform: translateY(-10px); }
+      }
+      @keyframes pulse-glow {
+        0%, 100% { box-shadow: 0 0 20px rgba(0, 217, 255, 0.3); }
+        50% { box-shadow: 0 0 40px rgba(0, 217, 255, 0.6); }
+      }
+      .float-animation {
+        animation: float 3s ease-in-out infinite;
+      }
+      .pulse-glow {
+        animation: pulse-glow 2s ease-in-out infinite;
       }
       input[type="range"]::-webkit-slider-runnable-track {
         width: 100%;
         height: 4px;
         cursor: pointer;
-        background: #27272a;
+        background: rgba(255, 255, 255, 0.1);
         border-radius: 2px;
       }
     </style>
@@ -87,7 +146,7 @@
 }
 </script>
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#10b981">
+<meta name="theme-color" content="#00d9ff">
 <link rel="apple-touch-icon" href="/iconApp.png">
 <link rel="icon" href="/iconApp.png" sizes="any">
 <link rel="stylesheet" href="/index.css">

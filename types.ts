@@ -1,6 +1,6 @@
 export enum Gender {
   MALE = 'H',
-  FEMALE = '',
+  FEMALE = 'M',
 }
 
 export enum ActivityLevel {

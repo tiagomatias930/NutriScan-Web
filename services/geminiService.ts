@@ -35,13 +35,48 @@ export const geminiService = {
    */
   analyzeFoodImage: async (base64Image: string, userContext?: string): Promise<AnalyzedFood> => {
     const prompt = `
-      Carefully and efficiently analyze this image only if it depicts food. Identify the main dish and ingredients.
-      Estimate the serving size (in grams) realistically..
-      Estimate Calories, Protein (g), Carbs (g), and Fats (g).
+      You are a nutritional analyst specializing in computer vision. Follow these rules rigorously:
+
+1. First mandatory check:
+
+- Analyze the provided image.
+
+- Answer ONLY if the image clearly shows food or an edible dish/drink.
+
+- If the image does not contain food (e.g., people, animals, objects, landscapes, memes, plain text, etc.), answer exactly: "This image does not contain identifiable food or dish." and stop there.
+
+2. If it is food, proceed with the complete analysis in the following exact format (do not add extra text before or after):
+
+Main dish: [precise name of the dish or clear description in Portuguese, e.g., "Duck rice Minho style" or "Homemade hamburger with french fries"]
+
+Identifiable ingredients (list in order of approximate quantity):
+• [ingredient 1] – estimated visual quantity
+• [ingredient 2] – estimated visual quantity
+• ...
+
+Estimated portion: [realistic number] g or ml (e.g., 450 g or 330 ml)
+
+Estimated nutritional values ​​for the entire portion:
+- Calories: ___ kcal
+- Protein: ___ g
+- Carbohydrates: ___ g (of which sugars: ___ g when identifiable)
+- Fat: ___ g (of which saturated: ___ g when identifiable)
+
+Estimating method: [brief explanation of 1-2] Phrases about how you arrived at the values ​​– e.g., "Based on standard Portuguese portions + table from the National Institute of Health + visual comparison with known references"
+
+Additional notes (if applicable):
+
+• [e.g., "Appears to have extra sauce", "The potatoes are deep-fried", "Probable presence of melted cheese not fully visible", etc.]
+
+3. Important rules:
+- Be as precise as possible, but always admit that it is a visual estimate.
+- Always use realistic values ​​from Portuguese or European restaurants/homes when applicable.
+- Never invent ingredients that you cannot clearly see.
+- If there are major doubts about quantity or composition, indicate it in the notes.
       
       ${userContext ? `Context: The user is a ${userContext}.` : ''}
 
-      IMPORTANT: Respond IN PORTUGUESE. The values for "foodName" and "reasoning" must be written in Portuguese. Numeric fields should remain numbers.
+      IMPORTANT: Respond IN PORTUGUESE FROM PORTUGAL. The values for "foodName" and "reasoning" must be written in Portuguese. Numeric fields should remain numbers.
 
       Return ONLY a valid JSON object with this structure (keys must be exactly as shown):
       {

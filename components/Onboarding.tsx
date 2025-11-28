@@ -74,7 +74,7 @@ export const Onboarding: React.FC = () => {
                                             : 'glass-sm text-textMuted hover:glass-lg'
                                         }`}
                                     >
-                                        <span className="material-icons text-xl">{g === Gender.MALE ? 'Homem' : 'Mulher'}</span>
+                                        <span className="material-icons text-xl">{g === Gender.MALE ? 'man' : 'woman'}</span>
                                         {g}
                                     </button>
                                 ))}

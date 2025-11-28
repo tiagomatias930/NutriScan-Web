@@ -32,21 +32,21 @@ export const Dashboard: React.FC = () => {
   const WATER_GOAL = 2500; // Daily goal in ml
   const waterPercentage = Math.min(100, (waterIntake / WATER_GOAL) * 100);
 
-  return (
-    <div className="p-6 pb-28 space-y-6 max-w-xl mx-auto animate-fade-in">
+    return (
+        <div className="p-6 pb-28 space-y-6 max-w-xl mx-auto animate-fade-in">
       {/* Header */}
-      <div className="flex items-center justify-between pt-4 relative z-20">
+            <div className="flex items-center justify-between pt-4 relative z-20">
         <div>
           <p className="text-textMuted text-sm font-medium">Bem-vindo de volta,</p>
           <h1 className="text-3xl font-bold text-textLight tracking-tight text-glow">{user.name}</h1>
         </div>
-        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-dark font-bold glow-cyan">
-          {user.name.charAt(0).toUpperCase()}
-        </div>
+                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold glow-cyan shadow-sm">
+                    {user.name.charAt(0).toUpperCase()}
+                </div>
       </div>
 
       {/* Calories Card - Glass */}
-      <div className="glass glass-lg rounded-3xl p-6 relative overflow-hidden group">
+            <div className="glass glass-lg rounded-3xl p-6 relative overflow-hidden group shadow-sm">
         <div className="absolute top-0 right-0 w-40 h-40 bg-primary/20 rounded-full filter blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none group-hover:scale-110 transition-transform"></div>
         
         <div className="flex items-center justify-between relative z-10">
@@ -80,7 +80,7 @@ export const Dashboard: React.FC = () => {
                     </PieChart>
                 </ResponsiveContainer>
                 <div className="absolute inset-0 flex items-center justify-center">
-                    <span className="material-icons text-gray-600 text-xl">local_fire_department</span>
+                    <span className="material-icons text-primary text-xl">local_fire_department</span>
                 </div>
              </div>
         </div>
@@ -94,7 +94,7 @@ export const Dashboard: React.FC = () => {
       </div>
 
       {/* Hydration Card */}
-      <div className="glass glass-lg rounded-3xl p-6 relative overflow-hidden">
+            <div className="glass glass-lg rounded-3xl p-6 relative overflow-hidden shadow-sm">
         <div className="absolute top-0 right-0 w-40 h-40 bg-cyan-500/15 rounded-full filter blur-3xl -translate-y-1/2 translate-x-1/2 pointer-events-none"></div>
         <div className="flex items-center justify-between mb-4 relative z-10">
              <div className="flex items-center gap-3">
@@ -114,7 +114,7 @@ export const Dashboard: React.FC = () => {
         
         <div className="h-3 w-full bg-glassDark rounded-full overflow-hidden mb-5">
             <div 
-                className="h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-all duration-700 ease-out glow-cyan"
+                className="h-full bg-gradient-to-r from-primary to-secondary rounded-full transition-all duration-700 ease-out glow-cyan shadow-sm"
                 style={{ width: `${waterPercentage}%` }}
             ></div>
         </div>
@@ -122,7 +122,7 @@ export const Dashboard: React.FC = () => {
         <div className="flex gap-3">
             <button 
                 onClick={() => addWater(250)}
-                className="flex-1 py-3 bg-gradient-to-r from-primary to-secondary hover:shadow-lg hover:glow-cyan rounded-xl text-dark font-semibold text-sm transition-all flex items-center justify-center gap-2 active:scale-95 transform duration-100"
+                className="flex-1 py-3 bg-gradient-to-r from-primary to-secondary hover:shadow-lg rounded-xl text-white font-semibold text-sm transition-all flex items-center justify-center gap-2 active:scale-95 transform duration-100"
             >
                 <span>+ 250ml</span>
             </button>
@@ -166,11 +166,11 @@ export const Dashboard: React.FC = () => {
                                                                         alt={food.name}
                                                                         className="w-full h-full object-cover transition-transform group-hover:scale-110 duration-500"
                                                                     />
-                                                            ) : (
-                                  <div className="w-full h-full flex items-center justify-center text-textMuted bg-glassDark">
-                                    <span className="material-icons text-xl">restaurante</span>
-                                  </div>
-                              )}
+                                                                                                                        ) : (
+                                                                    <div className="w-full h-full flex items-center justify-center text-textMuted bg-glassDark">
+                                                                        <span className="material-icons text-xl">restaurante</span>
+                                                                    </div>
+                                                            )}
                           </div>
                           <div className="flex-1 min-w-0">
                               <h4 className="font-bold text-textLight text-base truncate">{food.name}</h4>
@@ -189,7 +189,7 @@ export const Dashboard: React.FC = () => {
               </div>
           )}
       </div>
-    {showHistory && <History onClose={() => setShowHistory(false)} />}
+        {showHistory && <History onClose={() => setShowHistory(false)} />}
     </div>
   );
 };
@@ -210,8 +210,8 @@ const MacroBar = ({ label, current, target, color }: { label: string, current: n
 }
 
 const MacroBadge = ({ label, value, color, bg }: { label: string, value: number, color: string, bg: string }) => (
-    <div className={`flex items-center gap-1 px-1.5 py-0.5 rounded-md glass-sm`}>
-        <span className={`text-[10px] font-bold ${color}`}>{label}</span>
+    <div className={`flex items-center gap-2 px-2 py-1 rounded-md ${bg} bg-opacity-12`}>
+        <span className={`text-[11px] font-bold ${color}`}>{label}</span>
         <span className={`text-xs font-medium text-textMuted`}>{Math.round(value)}</span>
     </div>
 )

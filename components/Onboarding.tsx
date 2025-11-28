@@ -164,7 +164,7 @@ export const Onboarding: React.FC = () => {
                                 key={g}
                                 onClick={() => updateData('goal', g)}
                                 className={`p-4 rounded-2xl border transition-all duration-200 font-bold text-lg text-left px-6 flex justify-between items-center ${
-                                    data.goal === c
+                                    data.goal === g
                                     ? 'border-primary bg-gradient-to-r from-primary to-secondary text-dark glow-cyan' 
                                     : 'glass-sm text-textMuted hover:glass'
                                 }`}
@@ -177,14 +177,14 @@ export const Onboarding: React.FC = () => {
 
                     <div>
                         <label className="text-sm font-medium text-gray-700 mb-3 block ml-1">Nível das atividades</label>
-                        <div className="relative">
+                        <div className="relative" >
                             <select 
                                 value={data.activityLevel}
                                 onChange={e => updateData('activityLevel', e.target.value)}
-                                className="w-full bg-card text-gray-900 p-5 rounded-2xl border border-gray-300 focus:border-primary outline-none appearance-none text-lg"
+                                className="w-full bg-card bg-transparent text-white p-5 rounded-2xl border border-gray-300 focus:border-primary outline-none appearance-none text-lg"
                             >
                                 {Object.values(ActivityLevel).map(l => (
-                                    <option key={l} value={l}>{l}</option>
+                                    <option key={l} value={l} className="bg-transparent text-dark">{l}</option>
                                 ))}
                             </select>
                             <div className="absolute right-5 top-1/2 transform -translate-y-1/2 pointer-events-none text-gray-500">

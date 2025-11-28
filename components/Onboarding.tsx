@@ -70,7 +70,7 @@ export const Onboarding: React.FC = () => {
                                         onClick={() => updateData('gender', g)}
                                         className={`p-5 rounded-2xl border transition-all duration-200 font-medium text-lg flex items-center justify-center gap-2 ${
                                             data.gender === g 
-                                            ? 'border-primary bg-primary/20 text-primary glow-cyan' 
+                                            ? 'border-primary bg-primary/20 text-primary glow-cyan'
                                             : 'glass-sm text-textMuted hover:glass-lg'
                                         }`}
                                     >
@@ -95,10 +95,11 @@ export const Onboarding: React.FC = () => {
                             value={data.age || 25} 
                             min={15} max={70} 
                             unit="years"
-                            onChange={(v) => updateData('age', v)} 
+                            
+                            onChange={(v) => updateData('age', v)}
                         />
                         <StatSlider 
-                            label="Altura" 
+                            label="Altura"
                             value={data.height || 170} 
                             min={140} max={220} 
                             unit="cm"
@@ -222,9 +223,9 @@ export const Onboarding: React.FC = () => {
 const StatSlider = ({ label, value, min, max, unit, onChange }: { label: string, value: number, min: number, max: number, unit: string, onChange: (v: number) => void }) => (
     <div className="bg-card p-5 rounded-3xl border border-gray-300">
         <div className="flex justify-between mb-4 items-end">
-            <span className="text-gray-700 font-medium">{label}</span>
+            <span className="text-white-700 font-medium">{label}</span>
             <div className="flex items-baseline gap-1">
-                <span className="font-bold text-3xl text-gray-900">{value}</span>
+                <span className="font-bold text-2xl text-white-900">{value}</span>
                 <span className="text-sm text-gray-500 font-medium">{unit}</span>
             </div>
         </div>

@@ -123,8 +123,8 @@ function renderFormattedText(text?: string): React.ReactNode {
     setLoading(false);
   };
 
-  return (
-    <div className="flex flex-col h-full bg-dark pb-24 relative font-sans">
+    return (
+        <div className="flex flex-col min-h-screen h-full bg-dark pb-24 relative font-sans">
         {/* Header */}
         <div className="px-6 py-4 glass glass-lg border-b border-glassDark shadow-sm sticky top-0 z-20 flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center glow-cyan">
@@ -139,7 +139,7 @@ function renderFormattedText(text?: string): React.ReactNode {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 space-y-6">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 break-words">
             {chatHistory.length === 0 && (
                 <div className="flex flex-col items-center justify-center min-h-[60vh] animate-fade-in px-4">
                     <div className="w-20 h-20 rounded-3xl glass-lg flex items-center justify-center mb-6">
@@ -157,13 +157,13 @@ function renderFormattedText(text?: string): React.ReactNode {
             )}
             
             {chatHistory.map((msg) => (
-                <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-slide-up`}>
-                    <div className={`max-w-[85%] rounded-2xl p-4 shadow-sm ${
+                <div key={msg.id} className={`flex ${msg.role === 'user' ? 'justify-end' : 'justify-start'} animate-slide-up px-2`}>
+                    <div className={`max-w-full sm:max-w-[85%] break-words rounded-2xl p-4 shadow-sm ${
                         msg.role === 'user' 
                         ? 'bg-gradient-to-r from-primary to-secondary text-dark rounded-tr-sm glow-cyan' 
                         : 'glass-lg text-textLight rounded-tl-sm'
                     }`}>
-                        <div className="whitespace-pre-wrap text-[15px] leading-relaxed">{renderFormattedText(msg.text)}</div>
+                        <div className="whitespace-pre-wrap text-sm sm:text-[15px] leading-relaxed">{renderFormattedText(msg.text)}</div>
                         {msg.sources && msg.sources.length > 0 && (
                             <div className="mt-3 pt-3 border-t border-black/10 flex flex-col gap-1">
                                 <p className="text-[10px] font-bold uppercase opacity-60 mb-1">Caminhos</p>
@@ -192,7 +192,7 @@ function renderFormattedText(text?: string): React.ReactNode {
         </div>
 
         {/* Input Area */}
-        <div className="p-4 bg-dark/50 border-t border-glassDark sticky bottom-[70px] z-20">
+        <div className="p-4 bg-dark/50 border-t border-glassDark sticky bottom-0 sm:bottom-[70px] z-20" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
             <div className="glass glass-lg rounded-full p-1.5 pl-5 flex items-center gap-2 focus-within:glow-cyan transition-all">
                 <input 
                     type="text" 

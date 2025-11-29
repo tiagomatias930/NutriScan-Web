@@ -8,9 +8,9 @@ export const ChatCoach: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  const scrollToBottom = () => {
-    messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
-  };
+ // const scrollToBottom = () => {
+   // messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  //};
 
 // Simple markdown-like parser to render bold (**text**), italic (*text*),
 // inline code (`code`), code blocks (```code```), and links [text](url).
@@ -86,9 +86,9 @@ function renderFormattedText(text?: string): React.ReactNode {
     return nodes;
 }
 
-  useEffect(() => {
-    scrollToBottom();
-  }, [chatHistory, loading]);
+  //useEffect(() => {
+   // scrollToBottom();
+  //}, [chatHistory, loading]);
 
   const handleSend = async () => {
     if (!input.trim() || !user) return;
@@ -124,9 +124,9 @@ function renderFormattedText(text?: string): React.ReactNode {
   };
 
     return (
-        <div className="flex flex-col min-h-screen h-full bg-dark pb-24 relative font-sans">
+        <div className="flex flex-col min-h-screen h-full bg-dark relative font-sans">
         {/* Header */}
-        <div className="px-6 py-4 glass glass-lg border-b border-glassDark shadow-sm sticky top-0 z-20 flex items-center gap-3">
+        <div className="px-3 py-4 glass glass-lg border-b border-glassDark shadow-sm sticky top-0 z-20 flex items-center gap-3">
             <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center glow-cyan">
                 <span className="material-icons text-white"><img className="w-12 h-12" src="/running.png" alt="" /></span>
             </div>
@@ -139,7 +139,7 @@ function renderFormattedText(text?: string): React.ReactNode {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 break-words">
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 break-words pt-12 sm:pt-6 pb-24 sm:pb-6" style={{ paddingBottom: 'calc(6rem + env(safe-area-inset-bottom))' }}>
             {chatHistory.length === 0 && (
                 <div className="flex flex-col items-center justify-center min-h-[60vh] animate-fade-in px-4">
                     <div className="w-20 h-20 rounded-3xl glass-lg flex items-center justify-center mb-6">

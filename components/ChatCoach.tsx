@@ -205,7 +205,7 @@ function renderFormattedText(text?: string): React.ReactNode {
                 <button 
                     onClick={handleSend}
                     disabled={loading || !input.trim()}
-                    className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-secondary text-dark flex items-center justify-center disabled:opacity-50 transition-all glow-cyan disabled:glow-none"
+                    className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-secondary text-dark flex items-center justify-center disabled:opacity-50 transition-all glow-cyan disabled:glow-none border border-glassDark focus:outline-none focus:ring-2 focus:ring-primary"
                 >
                     <span className="material-icons text-xl">arrow_upward</span>
                 </button>

@@ -192,7 +192,7 @@ function renderFormattedText(text?: string): React.ReactNode {
         </div>
 
         {/* Input Area */}
-        <div className="p-4 bg-dark/50 border-t border-glassDark sticky bottom-0 sm:bottom-[70px] z-20" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <div className="p-4 bg-dark/50 border-t border-glassDark sticky bottom-0 sm:bottom-[110px] z-20" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
             <div className="glass glass-lg rounded-full p-1.5 pl-5 flex items-center gap-2 focus-within:glow-cyan transition-all">
                 <input 
                     type="text" 
@@ -215,7 +215,8 @@ function renderFormattedText(text?: string): React.ReactNode {
   );
 };
 
-const SuggestionButton = ({ text, onClick }: { text: string, onClick: (t: string) => void }) => (
+const SuggestionButton = ({ 
+    text, onClick }: { text: string, onClick: (t: string) => void }) => (
     <button 
         onClick={() => onClick(text)} 
         className="w-full p-3 bg-card hover:bg-gray-800 border border-gray-800 rounded-xl text-sm text-gray-300 text-left flex items-center justify-between group transition-colors"

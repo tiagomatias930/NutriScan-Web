@@ -193,22 +193,34 @@ function renderFormattedText(text?: string): React.ReactNode {
 
         {/* Input Area */}
         <div className="p-4 bg-dark/50 border-t border-glassDark sticky bottom-0 sm:bottom-[150px] z-20" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
-            <div className="glass glass-lg rounded-full p-1.5 pl-5 flex items-center gap-2 focus-within:glow-cyan transition-all">
-                <input 
-                    type="text" 
+            <div className="glass glass-lg p-2 sm:p-1.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 transition-all w-full">
+                <textarea
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
-                    onKeyDown={(e) => e.key === 'Enter' && handleSend()}
+                    onKeyDown={(e) => {
+                        // Enter sends, Shift+Enter inserts newline
+                        if (e.key === 'Enter' && !e.shiftKey) {
+                            e.preventDefault();
+                            handleSend();
+                        }
+                    }}
                     placeholder="Ask me anything..."
-                    className="flex-1 bg-transparent text-textLight placeholder-textMuted focus:outline-none text-base py-2"
+                    rows={1}
+                    className="flex-1 bg-transparent text-textLight placeholder-textMuted focus:outline-none text-base py-2 px-4 rounded-xl resize-none max-h-32 overflow-auto"
+                    aria-label="Chat input"
                 />
-                <button 
-                    onClick={handleSend}
-                    disabled={loading || !input.trim()}
-                    className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-secondary text-dark flex items-center justify-center disabled:opacity-50 transition-all glow-cyan disabled:glow-none border border-glassDark focus:outline-none focus:ring-2 focus:ring-primary"
-                >
-                    <span className="material-icons text-xl">arrow_upward</span>
-                </button>
+
+                {/* Desktop/large: circular icon button; Mobile: full-width send button below/input-stacked */}
+                <div className="flex-shrink-0 w-full sm:w-auto flex sm:block">
+                    <button
+                        onClick={handleSend}
+                        disabled={loading || !input.trim()}
+                        aria-label="Send message"
+                        className="w-full sm:w-10 h-10 rounded-xl sm:rounded-full bg-gradient-to-r from-primary to-secondary text-dark flex items-center justify-center disabled:opacity-50 transition-all glow-cyan disabled:glow-none border border-glassDark focus:outline-none focus:ring-2 focus:ring-primary"
+                    >
+                        <span className="material-icons text-xl">arrow_upward</span>
+                    </button>
+                </div>
             </div>
         </div>
     </div>

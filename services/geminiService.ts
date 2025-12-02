@@ -13,6 +13,7 @@ export interface AnalyzedFood {
   fats: number;
   weightEstimate: number; // in grams
   reasoning: string;
+  confidence?: number; // 0-100 percent confidence in the visual estimate
 }
 
 // Helper to decode base64 audio
@@ -86,6 +87,7 @@ Additional notes (if applicable):
         "protein": number,
         "carbs": number,
         "fats": number,
+        "confidence": number (0-100) ,
         "reasoning": "Breve explicação de como estimou (1 frase, em Português)"
       }
       Do not include markdown formatting like \`\`\`json. Return raw JSON only.

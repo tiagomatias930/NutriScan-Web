@@ -87,9 +87,9 @@ export const Dashboard: React.FC = () => {
 
         {/* Macros */}
         <div className="grid grid-cols-2 gap-3 mt-6">
-            <MacroBar label="Prot" current={totals.protein} target={targets.protein} color="bg-emerald-500" />
-            <MacroBar label="Carb" current={totals.carbs} target={targets.carbs} color="bg-blue-500" />
-            <MacroBar label="Gord" current={totals.fats} target={targets.fats} color="bg-amber-500" />
+            <MacroBar label="Proteína" current={totals.protein} target={targets.protein} color="bg-emerald-500" />
+            <MacroBar label="Carboidrato" current={totals.carbs} target={targets.carbs} color="bg-blue-500" />
+            <MacroBar label="Gordura" current={totals.fats} target={targets.fats} color="bg-amber-500" />
         </div>
       </div>
 

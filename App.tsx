@@ -4,6 +4,7 @@ import { Onboarding } from './components/Onboarding';
 import { Dashboard } from './components/Dashboard';
 import { ChatCoach } from './components/ChatCoach';
 import { Scanner } from './components/Scanner';
+import HydrationReminder from './components/HydrationReminder';
 
 const App: React.FC = () => {
   const user = useAppStore((state) => state.user);
@@ -21,6 +22,8 @@ const App: React.FC = () => {
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-cyan-500/10 to-blue-500/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none"></div>
       
       {/* Content Area */}
+      {/* Background reminder (handles scheduling notifications) */}
+      <HydrationReminder />
       <div className="flex-1 overflow-hidden relative bg-dark/50 z-10">
          <div className="h-full overflow-y-auto scroll-smooth">
             {currentTab === 'home' && <Dashboard />}

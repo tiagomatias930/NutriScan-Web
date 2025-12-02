@@ -2,6 +2,7 @@ import React from 'react';
 import { PieChart, Pie, Cell, ResponsiveContainer } from 'recharts';
 import { useAppStore } from '../store';
 import { History } from './History';
+import HydrationToggle from './HydrationToggle';
 import { FoodItem } from '../types';
 
 export const Dashboard: React.FC = () => {
@@ -106,9 +107,13 @@ export const Dashboard: React.FC = () => {
                     <div className="text-xs text-textMuted font-medium">Meta: {WATER_GOAL}ml</div>
                 </div>
              </div>
-             <div className="text-right">
-                 <span className="text-2xl font-bold text-primary">{waterIntake}</span>
-                 <span className="text-sm text-textMuted ml-1">ml</span>
+             <div className="flex items-center gap-3">
+                 <div className="text-right">
+                     <span className="text-2xl font-bold text-primary">{waterIntake}</span>
+                     <span className="text-sm text-textMuted ml-1">ml</span>
+                 </div>
+                 {/* Hydration reminder toggle */}
+                 <HydrationToggle />
              </div>
         </div>
         

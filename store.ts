@@ -11,12 +11,15 @@ interface AppState {
   waterIntake: number;
   lastReset: number;
   history: { date: number; foodLog: FoodItem[]; waterIntake: number }[];
+  lastDrinkAt?: number | null;
+  hydrationReminderEnabled: boolean;
   
   // Actions
   setUser: (user: UserProfile) => void;
   addFood: (food: FoodItem) => void;
   addMessage: (message: ChatMessage) => void;
   addWater: (amount: number) => void;
+  setHydrationReminderEnabled: (enabled: boolean) => void;
   resetDailyLog: () => void;
   clearStorage: () => void;
   deleteHistoryEntry: (timestamp: number) => void;
@@ -45,6 +48,8 @@ export const useAppStore = create<AppState>()(
       waterIntake: 0,
       lastReset: Date.now(),
       history: [],
+      lastDrinkAt: null,
+      hydrationReminderEnabled: true,
 
       setUser: (user) => {
         const targets = calculateTargets(user);
@@ -108,7 +113,12 @@ export const useAppStore = create<AppState>()(
         }
         set((state) => ({
           waterIntake: state.waterIntake + amount,
+          lastDrinkAt: Date.now(),
         }));
+      },
+
+      setHydrationReminderEnabled: (enabled: boolean) => {
+        set({ hydrationReminderEnabled: enabled });
       },
 
       resetDailyLog: () => {

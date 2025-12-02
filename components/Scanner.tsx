@@ -12,6 +12,7 @@ interface ScannerProps {
 export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   const { user, addFood } = useAppStore();
   const [image, setImage] = useState<string | null>(null);
+  const [uploadId, setUploadId] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [isProcessingImage, setIsProcessingImage] = useState(false);
   const [result, setResult] = useState<AnalyzedFood | null>(null);
@@ -89,7 +90,27 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
     try {
       setIsAnalyzing(true);
       const base64Data = base64Full.split(',')[1];
-      const context = `${user?.somatotype} with goal to ${user?.goal}`;
+
+      // First, upload image to temporary server so we have an id and persistent URL
+      let uploadedId: string | null = null;
+      try {
+        const resp = await fetch(('http://localhost:5050') + '/api/upload', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ imageBase64: base64Full, filename: 'scan.jpg', metadata: { source: 'scanner' } })
+        });
+        if (resp.ok) {
+          const json = await resp.json();
+          uploadedId = json.id;
+          setUploadId(uploadedId);
+        } else {
+          console.warn('Upload server responded with', resp.status);
+        }
+      } catch (e) {
+        console.warn('Upload failed, continuing without server storage', e);
+      }
+
+      const context = `${user?.somatotype} with goal to ${user?.goal}${uploadedId ? `; uploadId:${uploadedId}` : ''}`;
 
       const data = await geminiService.analyzeFoodImage(base64Data, context);
       setResult(data);

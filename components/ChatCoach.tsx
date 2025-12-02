@@ -192,8 +192,7 @@ function renderFormattedText(text?: string): React.ReactNode {
         </div>
 
         {/* Input Area */}
-        <div className="p-4 bg-dark/50 border-t border-glassDark sticky bottom-8 sm:bottom-[100
-        px] z-30" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.5rem)' }}>
+        <div className="p-4 bg-dark/50 border-t border-glassDark sticky bottom-9 sm:bottom-[80px] z-30" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.5rem)' }}>
             <div className="glass glass-lg p-2 sm:p-1.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 transition-all w-full">
                 <textarea
                     value={input}

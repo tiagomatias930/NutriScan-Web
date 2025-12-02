@@ -139,7 +139,7 @@ function renderFormattedText(text?: string): React.ReactNode {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 break-words pt-12 sm:pt-6 pb-24 sm:pb-6" style={{ paddingBottom: 'calc(6rem + env(safe-area-inset-bottom))' }}>
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 break-words pt-12 sm:pt-6 pb-24 sm:pb-6" style={{ paddingBottom: 'calc(6rem + env(safe-area-inset-bottom) + 0.5rem)' }}>
             {chatHistory.length === 0 && (
                 <div className="flex flex-col items-center justify-center min-h-[60vh] animate-fade-in px-4">
                     <div className="w-20 h-20 rounded-3xl glass-lg flex items-center justify-center mb-6">
@@ -192,13 +192,14 @@ function renderFormattedText(text?: string): React.ReactNode {
         </div>
 
         {/* Input Area */}
-        <div className="p-4 bg-dark/50 border-t border-glassDark sticky bottom-0 sm:bottom-[200px] z-20" style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}>
+        <div className="p-4 bg-dark/50 border-t border-glassDark sticky bottom-4 sm:bottom-[70px] z-30" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.5rem)' }}>
             <div className="glass glass-lg p-2 sm:p-1.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 transition-all w-full">
                 <textarea
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
                     onKeyDown={(e) => {
                         // Enter sends, Shift+Enter inserts newline
+                        
                         if (e.key === 'Enter' && !e.shiftKey) {
                             e.preventDefault();
                             handleSend();

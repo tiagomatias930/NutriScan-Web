@@ -1,12 +1,15 @@
-import React, { useEffect, useRef } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { useAppStore } from '../store';
+import HydrationNotification from './HydrationNotification';
 
 const TWO_HOURS = 2 * 60 * 60 * 1000;
 
 export const HydrationReminder: React.FC = () => {
   const hydrationEnabled = useAppStore(state => state.hydrationReminderEnabled);
   const lastDrinkAt = useAppStore(state => state.lastDrinkAt);
+  const setLastDrinkAt = useAppStore(state => state.setLastDrinkAt);
   const timeoutRef = useRef<number | null>(null);
+  const [showNotification, setShowNotification] = useState(false);
 
   useEffect(() => {
     // Request notification permission once when the component mounts if enabled
@@ -52,20 +55,34 @@ export const HydrationReminder: React.FC = () => {
     // Desktop/browser notification when permitted
     if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
       try {
-        new Notification(title, { body, tag: 'hydration-reminder' });
+        new Notification(title, { body, tag: 'hydration-reminder', icon: '💧' });
       } catch (e) {
-        // Fallback to alert
-        // eslint-disable-next-line no-alert
-        alert(body);
+        console.warn('Notification failed, showing modal instead', e);
+        setShowNotification(true);
       }
     } else {
-      // If permission not granted, fallback to in-page alert
-      // eslint-disable-next-line no-alert
-      alert(body);
+      // Show in-app modal notification
+      setShowNotification(true);
     }
   };
 
-  return null;
+  const handleNotificationConfirm = () => {
+    setShowNotification(false);
+    // Update the last drink time to reset the 2-hour timer
+    setLastDrinkAt(Date.now());
+  };
+
+  const handleNotificationDismiss = () => {
+    setShowNotification(false);
+  };
+
+  return (
+    <HydrationNotification
+      isVisible={showNotification}
+      onDismiss={handleNotificationDismiss}
+      onConfirm={handleNotificationConfirm}
+    />
+  );
 };
 
 export default HydrationReminder;

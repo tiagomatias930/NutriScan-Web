@@ -19,6 +19,7 @@ interface AppState {
   addFood: (food: FoodItem) => void;
   addMessage: (message: ChatMessage) => void;
   addWater: (amount: number) => void;
+  setLastDrinkAt: (timestamp: number) => void;
   setHydrationReminderEnabled: (enabled: boolean) => void;
   resetDailyLog: () => void;
   clearStorage: () => void;
@@ -119,6 +120,10 @@ export const useAppStore = create<AppState>()(
 
       setHydrationReminderEnabled: (enabled: boolean) => {
         set({ hydrationReminderEnabled: enabled });
+      },
+
+      setLastDrinkAt: (timestamp: number) => {
+        set({ lastDrinkAt: timestamp });
       },
 
       resetDailyLog: () => {

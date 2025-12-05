@@ -24,33 +24,53 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
 
   // Resize/compress image in browser to avoid high memory usage and very large uploads
   const resizeImageFile = async (file: File, maxSize = 800, outputType = 'image/jpeg', quality = 0.75) => {
-    // use createImageBitmap for efficient decoding where available
-    const bitmap = await createImageBitmap(file as Blob);
-    try {
-      const { width, height } = bitmap;
-      const maxDim = Math.max(width, height);
-      const scale = maxDim > maxSize ? maxSize / maxDim : 1;
-      const newW = Math.round(width * scale);
-      const newH = Math.round(height * scale);
+    return new Promise<string>((resolve, reject) => {
+      const reader = new FileReader();
+      
+      reader.onload = (e) => {
+        const img = new Image();
+        img.onload = () => {
+          try {
+            const { width, height } = img;
+            const maxDim = Math.max(width, height);
+            const scale = maxDim > maxSize ? maxSize / maxDim : 1;
+            const newW = Math.round(width * scale);
+            const newH = Math.round(height * scale);
 
-      const canvas = document.createElement('canvas');
-      canvas.width = newW;
-      canvas.height = newH;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error('Canvas not supported');
-      ctx.drawImage(bitmap, 0, 0, newW, newH);
+            const canvas = document.createElement('canvas');
+            canvas.width = newW;
+            canvas.height = newH;
+            const ctx = canvas.getContext('2d');
+            if (!ctx) throw new Error('Canvas context not available');
+            ctx.drawImage(img, 0, 0, newW, newH);
 
-      // Attempt to free the bitmap (some browsers implement close())
-      try { (bitmap as any).close?.(); } catch (e) { /* ignore */ }
-
-      // Export to Data URL (compressed). For transparency keep png if original has alpha.
-      const hasAlpha = file.type === 'image/png' || file.type === 'image/webp';
-      const outType = hasAlpha ? 'image/png' : outputType;
-      const dataUrl = canvas.toDataURL(outType, quality);
-      return dataUrl;
-    } finally {
-      try { (bitmap as any).close?.(); } catch (e) { /* ignore */ }
-    }
+            // Export to Data URL (compressed). For transparency keep png if original has alpha.
+            const hasAlpha = file.type === 'image/png' || file.type === 'image/webp';
+            const outType = hasAlpha ? 'image/png' : outputType;
+            const dataUrl = canvas.toDataURL(outType, quality);
+            resolve(dataUrl);
+          } catch (err) {
+            reject(new Error(`Canvas processing failed: ${err instanceof Error ? err.message : String(err)}`));
+          }
+        };
+        
+        img.onerror = () => {
+          reject(new Error('Failed to load image - possibly unsupported format or corrupted file'));
+        };
+        
+        img.src = e.target?.result as string;
+      };
+      
+      reader.onerror = () => {
+        reject(new Error('Failed to read file'));
+      };
+      
+      try {
+        reader.readAsDataURL(file);
+      } catch (err) {
+        reject(new Error(`File reading failed: ${err instanceof Error ? err.message : String(err)}`));
+      }
+    });
   };
 
   const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
@@ -71,14 +91,15 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
     (async () => {
       try {
         setIsProcessingImage(true);
+        setErrorMessage(null);
         // Resize/compress to reduce memory and upload size (now defaults to 800px / 0.75)
         const resized = await resizeImageFile(file, 800, 'image/jpeg', 0.75);
         setImage(resized);
-        setIsProcessingImage(false);
         await analyze(resized);
       } catch (err) {
         console.error('Image processing failed', err);
-        setErrorMessage('Não foi possível processar a imagem (memória ou formato). Tente uma foto menor.');
+        const errorMsg = err instanceof Error ? err.message : 'Erro desconhecido';
+        setErrorMessage(`Não foi possível processar: ${errorMsg}. Tente outra foto ou em menor resolução.`);
       } finally {
         setIsProcessingImage(false);
       }
@@ -163,29 +184,41 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
     if (!image) return;
     setIsAnalyzing(true);
     try {
-      // fetch dataURL as blob
-      const resp = await fetch(image);
-      const blob = await resp.blob();
-      const bitmap = await createImageBitmap(blob as Blob);
-      const { width, height } = bitmap;
-      const maxDim = Math.max(width, height);
-      const scale = maxDim > 1400 ? 1400 / maxDim : 1;
-      const newW = Math.round(width * scale);
-      const newH = Math.round(height * scale);
+      // Create a high-quality version by converting dataURL to canvas directly
+      const img = new Image();
+      img.onload = async () => {
+        try {
+          const { width, height } = img;
+          const maxDim = Math.max(width, height);
+          const scale = maxDim > 1400 ? 1400 / maxDim : 1;
+          const newW = Math.round(width * scale);
+          const newH = Math.round(height * scale);
 
-      const canvas = document.createElement('canvas');
-      canvas.width = newW;
-      canvas.height = newH;
-      const ctx = canvas.getContext('2d');
-      if (!ctx) throw new Error('Canvas not supported');
-      ctx.drawImage(bitmap, 0, 0, newW, newH);
+          const canvas = document.createElement('canvas');
+          canvas.width = newW;
+          canvas.height = newH;
+          const ctx = canvas.getContext('2d');
+          if (!ctx) throw new Error('Canvas context not available');
+          ctx.drawImage(img, 0, 0, newW, newH);
 
-      const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
-      await analyze(dataUrl);
+          const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
+          await analyze(dataUrl);
+        } catch (err) {
+          console.error('Reanalysis processing failed', err);
+          setErrorMessage('Reanálise falhou. Tente outra foto ou usar uma de maior qualidade.');
+          setIsAnalyzing(false);
+        }
+      };
+      
+      img.onerror = () => {
+        setErrorMessage('Erro ao carregar imagem para reanálise.');
+        setIsAnalyzing(false);
+      };
+      
+      img.src = image;
     } catch (err) {
       console.error('Reanalysis failed', err);
       setErrorMessage('Reanálise falhou. Tente outra foto ou usar os ajustes manuais.');
-    } finally {
       setIsAnalyzing(false);
     }
   };

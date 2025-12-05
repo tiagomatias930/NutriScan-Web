@@ -3,7 +3,7 @@ import { FoodItem, Somatotype, Goal } from "../types";
 
 // NOTE: In a production app, never expose keys in client code. 
 // Since this is a demo running in a controlled environment, we access process.env.API_KEY.
-const ai = new GoogleGenAI({ apiKey: "AIzaSyC0IVuu5GNzTxsdgYHGkhcFR_Wd3tp8-tM" });
+const ai = new GoogleGenAI({ apiKey: "AIzaSyCAbxH6qH2e_z2QxCxB7_9BPXKTAyvCcqA" });
 
 export interface AnalyzedFood {
   foodName: string;

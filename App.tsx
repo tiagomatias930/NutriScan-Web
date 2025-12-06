@@ -5,6 +5,7 @@ import { Dashboard } from './components/Dashboard';
 import { ChatCoach } from './components/ChatCoach';
 import { Scanner } from './components/Scanner';
 import HydrationReminder from './components/HydrationReminder';
+import PushNotificationInitializer from './components/PushNotificationInitializer';
 
 const App: React.FC = () => {
   const user = useAppStore((state) => state.user);
@@ -17,6 +18,9 @@ const App: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-dark text-textLight font-sans relative flex flex-col max-w-md mx-auto overflow-hidden">
+      {/* Initialize Push Notifications */}
+      <PushNotificationInitializer />
+      
       {/* Animated background elements */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>
       <div className="absolute bottom-0 right-0 w-96 h-96 bg-gradient-to-tl from-cyan-500/10 to-blue-500/10 rounded-full blur-3xl translate-x-1/2 translate-y-1/2 pointer-events-none"></div>

@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { useAppStore } from '../store';
 import HydrationNotification from './HydrationNotification';
+import { pushNotificationService } from '../services/pushNotificationService';
 
 const TWO_HOURS = 2 * 60 * 60 * 1000;
 
@@ -16,7 +17,16 @@ export const HydrationReminder: React.FC = () => {
     if (hydrationEnabled && typeof Notification !== 'undefined' && Notification.permission === 'default') {
       try { Notification.requestPermission(); } catch (e) { /* ignore */ }
     }
-  }, []);
+
+    // Initialize push notification service
+    (async () => {
+      try {
+        await pushNotificationService.init();
+      } catch (e) {
+        console.error('Failed to initialize push notifications:', e);
+      }
+    })();
+  }, [hydrationEnabled]);
 
   useEffect(() => {
     // Clear any existing timeout
@@ -48,16 +58,37 @@ export const HydrationReminder: React.FC = () => {
     };
   }, [hydrationEnabled, lastDrinkAt]);
 
-  const sendReminder = () => {
+  const sendReminder = async () => {
     const title = 'Hora de Hidratar — NutriScan';
     const body = 'Faça uma pausa: beba um copo de água agora 💧';
 
-    // Desktop/browser notification when permitted
+    // Tenta enviar como Web Push primeiro (funciona mesmo com app fechado)
+    if (pushNotificationService.isNotificationEnabled()) {
+      try {
+        await pushNotificationService.showLocalNotification({
+          title,
+          body,
+          tag: 'hydration-reminder',
+          icon: '/iconApp.png',
+          badge: '/iconApp.png',
+          vibrate: [200, 100, 200],
+          requireInteraction: true,
+          customData: {
+            type: 'hydration-reminder'
+          }
+        });
+        return;
+      } catch (e) {
+        console.warn('Push notification failed, trying standard notification:', e);
+      }
+    }
+
+    // Fallback: Desktop/browser notification quando permitido
     if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
       try {
         new Notification(title, { body, tag: 'hydration-reminder', icon: '💧' });
       } catch (e) {
-        console.warn('Notification failed, showing modal instead', e);
+        console.warn('Standard notification failed, showing modal instead', e);
         setShowNotification(true);
       }
     } else {

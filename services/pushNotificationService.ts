@@ -154,15 +154,15 @@ class PushNotificationService {
       return;
     }
 
-    const notificationOptions: NotificationOptions = {
+    const notificationOptions: NotificationOptions & { actions?: NotificationAction[] } = {
       body: options.body,
       icon: options.icon || '/iconApp.png',
       badge: options.badge || '/iconApp.png',
       tag: options.tag || `nutriscan-${Date.now()}`,
       requireInteraction: options.requireInteraction || false,
-      vibrate: options.vibrate || [200, 100, 200],
       data: {
         url: options.url || '/',
+        vibrate: options.vibrate || [200, 100, 200],
         ...options.customData
       },
       actions: options.actions || []
@@ -218,7 +218,7 @@ class PushNotificationService {
   /**
    * Converte VAPID public key de base64 para Uint8Array
    */
-  private urlBase64ToUint8Array(base64String: string): Uint8Array {
+  private urlBase64ToUint8Array(base64String: string): BufferSource {
     const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
     const base64 = (base64String + padding).replace(/\-/g, '+').replace(/_/g, '/');
 

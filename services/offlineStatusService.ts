@@ -191,8 +191,9 @@ class OfflineStatusService {
 
     try {
       const registration = await navigator.serviceWorker.ready;
-      if (registration.sync) {
-        await registration.sync.register(tag);
+      const syncRegistration = registration as any;
+      if (syncRegistration.sync) {
+        await syncRegistration.sync.register(tag);
         console.log(`Sync requested: ${tag}`);
 
         this.notifyListeners({

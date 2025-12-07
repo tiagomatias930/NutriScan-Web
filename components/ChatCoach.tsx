@@ -214,10 +214,14 @@ function renderFormattedText(text?: string): React.ReactNode {
                 {/* Desktop/large: circular icon button; Mobile: full-width send button below/input-stacked */}
                 <div className="flex-shrink-0 w-full sm:w-auto flex sm:block">
                     <button
+                        type="button"
                         onClick={handleSend}
                         disabled={loading || !input.trim()}
                         aria-label="Send message"
-                        className="w-full sm:w-10 h-10 rounded-xl sm:rounded-full bg-gradient-to-r from-primary to-secondary text-dark flex items-center justify-center disabled:opacity-50 transition-all glow-cyan disabled:glow-none border border-glassDark focus:outline-none focus:ring-2 focus:ring-primary"
+                        title="Enviar mensagem"
+                        className={
+                          "w-full sm:w-10 h-10 rounded-xl sm:rounded-full bg-gradient-to-r from-primary to-secondary text-white flex items-center justify-center disabled:opacity-50 transition-all hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-primary/50"
+                        }
                     >
                         <span className="material-icons text-xl">arrow_upward</span>
                     </button>

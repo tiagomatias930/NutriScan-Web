@@ -139,7 +139,7 @@ function renderFormattedText(text?: string): React.ReactNode {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 break-words pt-12 sm:pt-6 pb-24 sm:pb-6" style={{ paddingBottom: 'calc(6rem + env(safe-area-inset-bottom) + 0.5rem)' }}>
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 break-words pt-12 sm:pt-6 pb-24 sm:pb-6" style={{ paddingBottom: 'calc(8rem + env(safe-area-inset-bottom) + 0.5rem)' }}>
             {chatHistory.length === 0 && (
                 <div className="flex flex-col items-center justify-center min-h-[60vh] animate-fade-in px-4">
                     <div className="w-20 h-20 rounded-3xl glass-lg flex items-center justify-center mb-6">
@@ -192,7 +192,7 @@ function renderFormattedText(text?: string): React.ReactNode {
         </div>
 
         {/* Input Area */}
-        <div className="p-4 bg-dark/50 border-t border-glassDark sticky bottom-9 sm:bottom-[80px] z-30" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.5rem)' }}>
+        <div className="p-4 bg-dark/50 border-t border-glassDark sticky bottom-20 sm:bottom-[120px] z-30" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.5rem)' }}>
             {/* Changed to always use row layout so the send button is to the right of the textarea */}
             <div className="glass glass-lg p-2 sm:p-1.5 flex flex-row items-center gap-2 transition-all w-full">
                 <textarea

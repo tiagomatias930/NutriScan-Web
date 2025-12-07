@@ -193,7 +193,8 @@ function renderFormattedText(text?: string): React.ReactNode {
 
         {/* Input Area */}
         <div className="p-4 bg-dark/50 border-t border-glassDark sticky bottom-9 sm:bottom-[80px] z-30" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.5rem)' }}>
-            <div className="glass glass-lg p-2 sm:p-1.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 transition-all w-full">
+            {/* Changed to always use row layout so the send button is to the right of the textarea */}
+            <div className="glass glass-lg p-2 sm:p-1.5 flex flex-row items-center gap-2 transition-all w-full">
                 <textarea
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
@@ -211,8 +212,8 @@ function renderFormattedText(text?: string): React.ReactNode {
                     aria-label="Chat input"
                 />
 
-                {/* Desktop/large: circular icon button; Mobile: full-width send button below/input-stacked */}
-                <div className="flex-shrink-0 w-full sm:w-auto flex sm:block">
+                {/* Send button stays to the right of the input on all screen sizes */}
+                <div className="flex-shrink-0 w-auto">
                     <button
                         type="button"
                         onClick={handleSend}
@@ -220,7 +221,7 @@ function renderFormattedText(text?: string): React.ReactNode {
                         aria-label="Send message"
                         title="Enviar mensagem"
                         className={
-                          "w-full sm:w-10 h-10 rounded-xl sm:rounded-full bg-gradient-to-r from-primary to-secondary text-white flex items-center justify-center disabled:opacity-50 transition-all hover:scale-[1.03] focus:outline-none focus:ring-2 focus:ring-primary/50"
+                          "w-auto sm:w-10 h-10 rounded-xl sm:rounded-full bg-gradient-to-r from-primary to-secondary text-white flex items-center justify-center disabled:opacity-50 transition-all hover:scale-105"
                         }
                     >
                         <span className="material-icons text-xl">arrow_upward</span>

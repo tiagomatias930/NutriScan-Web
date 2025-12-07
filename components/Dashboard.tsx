@@ -4,12 +4,15 @@ import { useAppStore } from '../store';
 import { History } from './History';
 import HydrationToggle from './HydrationToggle';
 import { FoodItem } from '../types';
+import LanguageSwitcher from './LanguageSwitcher';
+import { useTranslation } from '../utils/i18n';
 
 export const Dashboard: React.FC = () => {
-    const [showHistory, setShowHistory] = React.useState(false);
+        const [showHistory, setShowHistory] = React.useState(false);
   const { user, targets, foodLog, waterIntake, addWater } = useAppStore();
+    const { t } = useTranslation();
 
-  if (!user || !targets) return <div className="flex items-center justify-center h-screen text-gray-500">Processando o seu perfil...</div>;
+    if (!user || !targets) return <div className="flex items-center justify-center h-screen text-gray-500">{t('dashboard.loadingProfile')}</div>;
 
   // Calculate totals
   const totals = foodLog.reduce((acc, item) => {
@@ -24,9 +27,9 @@ export const Dashboard: React.FC = () => {
   }, { calories: 0, protein: 0, carbs: 0, fats: 0 });
 
   const remainingCals = targets.calories - totals.calories;
-  const data = [
-    { name: 'Consumido', value: totals.calories },
-    { name: 'Restante', value: Math.max(0, remainingCals) },
+    const data = [
+        { name: t('dashboard.consumed'), value: totals.calories },
+        { name: t('dashboard.remaining'), value: Math.max(0, remainingCals) },
   ];
   const COLORS = ['#00d9ff', '#6366f1']; // Cyan e Indigo
 
@@ -36,14 +39,17 @@ export const Dashboard: React.FC = () => {
     return (
         <div className="p-6 pb-28 space-y-6 max-w-xl mx-auto animate-fade-in">
       {/* Header */}
-            <div className="flex items-center justify-between pt-4 relative z-20">
+                        <div className="flex items-center justify-between pt-4 relative z-20">
         <div>
-          <p className="text-textMuted text-sm font-medium">Bem-vindo de volta,</p>
+                    <p className="text-textMuted text-sm font-medium">{t('dashboard.welcomeBack')}</p>
           <h1 className="text-3xl font-bold text-textLight tracking-tight text-glow">{user.name}</h1>
         </div>
-                <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold glow-cyan shadow-sm">
-                    {user.name.charAt(0).toUpperCase()}
-                </div>
+                                <div className="flex items-center gap-3">
+                                        <LanguageSwitcher />
+                                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold glow-cyan shadow-sm">
+                                                {user.name.charAt(0).toUpperCase()}
+                                        </div>
+                                </div>
       </div>
 
       {/* Calories Card - Glass */}
@@ -52,13 +58,13 @@ export const Dashboard: React.FC = () => {
         
         <div className="flex items-center justify-between relative z-10">
              <div>
-                 <h2 className="text-textMuted text-sm font-medium mb-1">Calorias disponíveis</h2>
+                                 <h2 className="text-textMuted text-sm font-medium mb-1">{t('dashboard.caloriesAvailable')}</h2>
                  <div className="text-4xl font-bold text-primary tracking-tight text-glow">
                      {Math.max(0, remainingCals)}
                  </div>
-                 <p className="text-sm text-gray-500 mt-1 font-medium">
-                    de {targets.calories} kcal meta
-                 </p>
+                                 <p className="text-sm text-gray-500 mt-1 font-medium">
+                                        {t('dashboard.caloriesGoal', { goal: targets.calories })}
+                                 </p>
              </div>
              <div className="w-28 h-28 relative">
                 <ResponsiveContainer width="100%" height="100%">
@@ -88,9 +94,9 @@ export const Dashboard: React.FC = () => {
 
         {/* Macros */}
         <div className="grid grid-cols-2 gap-3 mt-6">
-            <MacroBar label="Proteína" current={totals.protein} target={targets.protein} color="bg-emerald-500" />
-            <MacroBar label="Carboidrato" current={totals.carbs} target={targets.carbs} color="bg-blue-500" />
-            <MacroBar label="Gordura" current={totals.fats} target={targets.fats} color="bg-amber-500" />
+            <MacroBar label={t('dashboard.macros.protein')} current={totals.protein} target={targets.protein} color="bg-emerald-500" />
+            <MacroBar label={t('dashboard.macros.carbs')} current={totals.carbs} target={targets.carbs} color="bg-blue-500" />
+            <MacroBar label={t('dashboard.macros.fats')} current={totals.fats} target={targets.fats} color="bg-amber-500" />
         </div>
       </div>
 
@@ -103,14 +109,14 @@ export const Dashboard: React.FC = () => {
                     <span className="material-icons">water_drop</span>
                 </div>
                 <div>
-                    <h3 className="font-bold text-textLight">Hidratação</h3>
-                    <div className="text-xs text-textMuted font-medium">Meta: {WATER_GOAL}ml</div>
+                    <h3 className="font-bold text-textLight">{t('dashboard.hydration.title')}</h3>
+                    <div className="text-xs text-textMuted font-medium">{t('dashboard.hydration.goal', { goal: WATER_GOAL })}</div>
                 </div>
              </div>
              <div className="flex items-center gap-3">
                  <div className="text-right">
                      <span className="text-2xl font-bold text-primary">{waterIntake}</span>
-                     <span className="text-sm text-textMuted ml-1">ml</span>
+                     <span className="text-sm text-textMuted ml-1">{t('common.ml')}</span>
                  </div>
                  {/* Hydration reminder toggle */}
                  <HydrationToggle />
@@ -129,13 +135,13 @@ export const Dashboard: React.FC = () => {
                 onClick={() => addWater(250)}
                 className="flex-1 py-3 bg-gradient-to-r from-primary to-secondary hover:shadow-lg rounded-xl text-white font-semibold text-sm transition-all flex items-center justify-center gap-2 active:scale-95 transform duration-100"
             >
-                <span>+ 250ml</span>
+                <span>{t('dashboard.hydration.addWater', { amount: 250 })}</span>
             </button>
             <button 
                 onClick={() => addWater(500)}
                 className="flex-1 py-3 glass-sm hover:glass rounded-xl text-primary font-semibold text-sm transition-all flex items-center justify-center gap-2 active:scale-95 transform duration-100"
             >
-                <span>+ 500ml</span>
+                <span>{t('dashboard.hydration.addWater', { amount: 500 })}</span>
             </button>
         </div>
       </div>
@@ -143,18 +149,18 @@ export const Dashboard: React.FC = () => {
       {/* Recent Activity */}
       <div>
                     <div className="flex items-center justify-between mb-4 px-1">
-                        <h2 className="text-lg font-bold text-textLight">Refeições recentes</h2>
+                        <h2 className="text-lg font-bold text-textLight">{t('dashboard.meals.recent')}</h2>
                         <div className="flex items-center gap-3">
-                                        <span className="text-xs text-textMuted font-medium">Últimas 24h</span>
-                                        <button onClick={() => setShowHistory(true)} className="text-xs glass-sm text-primary px-2 py-1 rounded-md hover:glass transition-all">Ver histórico</button>
+                                        <span className="text-xs text-textMuted font-medium">{t('dashboard.meals.last24h')}</span>
+                                        <button onClick={() => setShowHistory(true)} className="text-xs glass-sm text-primary px-2 py-1 rounded-md hover:glass transition-all">{t('dashboard.meals.viewHistory')}</button>
                                     </div>
                     </div>
           
           {foodLog.length === 0 ? (
               <div className="flex flex-col items-center justify-center py-12 glass-lg rounded-3xl">
                   <span className="material-icons text-textMuted text-4xl mb-2 opacity-50">no_meals</span>
-                  <p className="text-textLight font-medium">Nenhuma refeição registrada hoje.</p>
-                  <p className="text-textMuted text-sm">Toque no scanner para iniciar o rastreamento!</p>
+                  <p className="text-textLight font-medium">{t('dashboard.meals.emptyTitle')}</p>
+                  <p className="text-textMuted text-sm">{t('dashboard.meals.emptySubtitle')}</p>
               </div>
           ) : (
               <div className="space-y-3">
@@ -187,7 +193,7 @@ export const Dashboard: React.FC = () => {
                           </div>
                           <div className="text-right px-2">
                               <div className="font-bold text-primary text-lg">{food.calories}</div>
-                              <div className="text-[10px] text-textMuted font-medium uppercase tracking-wider">kcal</div>
+                              <div className="text-[10px] text-textMuted font-medium uppercase tracking-wider">{t('dashboard.chart.kcal')}</div>
                           </div>
                       </div>
                   ))}

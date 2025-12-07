@@ -4,6 +4,7 @@ import { useAppStore } from '../store';
 import { FoodItem } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import ImageSourcePicker from './ImageSourcePicker';
+import { useTranslation } from '../utils/i18n';
 
 interface ScannerProps {
   onClose: () => void;
@@ -21,6 +22,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const [showSourcePicker, setShowSourcePicker] = useState(false);
+  const { t } = useTranslation();
 
   // Resize/compress image in browser to avoid high memory usage and very large uploads
   const resizeImageFile = async (file: File, maxSize = 800, outputType = 'image/jpeg', quality = 0.75) => {
@@ -79,12 +81,12 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
 
     // Basic client-side validation
     if (!file.type?.startsWith('image/')) {
-      setErrorMessage('Formato inválido. Selecione uma imagem.');
+      setErrorMessage(t('scanner.errors.invalidFormat'));
       return;
     }
 
     if (file.size > MAX_FILE_SIZE) {
-      setErrorMessage('Imagem muito grande. Tente uma foto menor (máx 5MB).');
+      setErrorMessage(t('scanner.errors.tooLarge'));
       return;
     }
 
@@ -98,8 +100,9 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
         await analyze(resized);
       } catch (err) {
         console.error('Image processing failed', err);
-        const errorMsg = err instanceof Error ? err.message : 'Erro desconhecido';
-        setErrorMessage(`Não foi possível processar: ${errorMsg}. Tente outra foto ou em menor resolução.`);
+        const fallbackMsg = t('common.unknownError');
+        const errorMsg = err instanceof Error ? err.message : fallbackMsg;
+        setErrorMessage(t('scanner.errors.processingFailed', { message: errorMsg }));
       } finally {
         setIsProcessingImage(false);
       }
@@ -141,7 +144,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
       }
     } catch (error) {
       console.error(error);
-      setErrorMessage('Não foi possível analisar a imagem. Tente novamente com uma foto menor ou mais nítida.');
+      setErrorMessage(t('scanner.errors.analyzeFailed'));
     } finally {
       setIsAnalyzing(false);
     }
@@ -205,20 +208,20 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
           await analyze(dataUrl);
         } catch (err) {
           console.error('Reanalysis processing failed', err);
-          setErrorMessage('Reanálise falhou. Tente outra foto ou usar uma de maior qualidade.');
+          setErrorMessage(t('scanner.errors.reanalyzeFailed'));
           setIsAnalyzing(false);
         }
       };
       
       img.onerror = () => {
-        setErrorMessage('Erro ao carregar imagem para reanálise.');
+        setErrorMessage(t('scanner.errors.reanalyzeLoadFailed'));
         setIsAnalyzing(false);
       };
       
       img.src = image;
     } catch (err) {
       console.error('Reanalysis failed', err);
-      setErrorMessage('Reanálise falhou. Tente outra foto ou usar os ajustes manuais.');
+      setErrorMessage(t('scanner.errors.reanalyzeFailed'));
       setIsAnalyzing(false);
     }
   };
@@ -230,7 +233,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
         <button onClick={onClose} className="w-10 h-10 rounded-full glass-lg flex items-center justify-center text-textLight hover:glass transition-all">
             <span className="material-icons">close</span>
         </button>
-        <h2 className="text-textLight font-semibold tracking-wide uppercase text-sm opacity-80">Analisador de imagem</h2>
+        <h2 className="text-textLight font-semibold tracking-wide uppercase text-sm opacity-80">{t('scanner.headerTitle')}</h2>
         <div className="w-10"></div>
       </div>
 
@@ -238,7 +241,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
       {errorMessage && (
         <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-30 px-4 py-2 bg-red-600/80 text-white rounded-lg shadow-lg glow-indigo flex items-center gap-3">
           <div className="text-sm">{errorMessage}</div>
-          <button onClick={() => setErrorMessage(null)} className="ml-2 text-white/80 hover:text-white">Fechar</button>
+          <button onClick={() => setErrorMessage(null)} className="ml-2 text-white/80 hover:text-white">{t('common.close')}</button>
         </div>
       )}
 
@@ -252,8 +255,8 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
               <div className="w-20 h-20 rounded-full glass-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform glow-cyan">
                   <span className="material-icons text-primary text-4xl">camera_alt</span>
               </div>
-              <p className="text-textLight font-bold text-lg">Tirar foto</p>
-              <p className="text-textMuted text-sm">ou selecione na galeria</p>
+              <p className="text-textLight font-bold text-lg">{t('scanner.captureTitle')}</p>
+              <p className="text-textMuted text-sm">{t('scanner.captureSubtitle')}</p>
             </div>
             <input 
               type="file" 
@@ -294,8 +297,8 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
                   <div className="absolute inset-0 border-4 border-glassMedium rounded-full"></div>
                   <div className="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin glow-cyan"></div>
                 </div>
-                <p className="text-textLight font-semibold text-lg mt-6">Processando imagem...</p>
-                <p className="text-textMuted text-sm">Compactando e preparando para análise</p>
+                <p className="text-textLight font-semibold text-lg mt-6">{t('scanner.processing.title')}</p>
+                <p className="text-textMuted text-sm">{t('scanner.processing.description')}</p>
                </div>
              )}
 
@@ -305,8 +308,8 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
                         <div className="absolute inset-0 border-4 border-glassMedium rounded-full"></div>
                         <div className="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin glow-cyan"></div>
                     </div>
-                    <p className="text-textLight font-bold text-lg mt-6 animate-pulse">Analisando os alimentos...</p>
-                    <p className="text-textMuted text-sm">Identificando macronutrientes e calorias</p>
+                    <p className="text-textLight font-bold text-lg mt-6 animate-pulse">{t('scanner.analyzing.title')}</p>
+                    <p className="text-textMuted text-sm">{t('scanner.analyzing.description')}</p>
                  </div>
              )}
 
@@ -319,7 +322,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
                  <p className="text-white text-sm mb-3 leading-relaxed border-l-2 border-primary pl-3">{result.reasoning}</p>
 
                  <div className="flex items-center justify-between mb-4">
-                    <div className="text-sm text-primary">Confiança:</div>
+                    <div className="text-sm text-primary">{t('scanner.confidence')}</div>
                     <div className="flex items-center gap-3">
                       <div className="font-bold text-textLight">{typeof result.confidence === 'number' ? `${Math.round(result.confidence)}%` : '—'}</div>
                       <div className="w-40 h-2 bg-glassDark rounded-full overflow-hidden">
@@ -330,16 +333,16 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
 
                  {typeof result.confidence === 'number' && result.confidence < 75 && (
                    <div className="mb-4 p-3 rounded-lg bg-yellow-900/10 border border-yellow-700/20">
-                     <div className="font-bold text-yellow-300">Baixa confiança na estimativa</div>
-                     <div className="text-sm text-textMuted">Se os valores parecerem incorretos, ajuste manualmente ou reanalise em maior qualidade.</div>
+                    <div className="font-bold text-yellow-300">{t('scanner.lowConfidenceTitle')}</div>
+                    <div className="text-sm text-textMuted">{t('scanner.lowConfidenceMessage')}</div>
                    </div>
                  )}
 
                  <div className="grid grid-cols-4 gap-3 mb-8">
-                    <NutrientBox label="Calorias" value={result.calories} unit="kcal" />
-                    <NutrientBox label="Proteína" value={result.protein} unit="g" color="text-emerald-400" />
-                    <NutrientBox label="Carboidratos" value={result.carbs} unit="g" color="text-blue-400" />
-                    <NutrientBox label="Gordura" value={result.fats} unit="g" color="text-amber-400" />
+                    <NutrientBox label={t('scanner.nutrients.calories')} value={result.calories} unit="kcal" />
+                    <NutrientBox label={t('scanner.nutrients.protein')} value={result.protein} unit="g" color="text-emerald-400" />
+                    <NutrientBox label={t('scanner.nutrients.carbs')} value={result.carbs} unit="g" color="text-blue-400" />
+                    <NutrientBox label={t('scanner.nutrients.fats')} value={result.fats} unit="g" color="text-amber-400" />
                  </div>
 
                  <div className="flex gap-3">
@@ -347,20 +350,20 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
                     onClick={handleRetake}
                     className="flex-1 py-3 rounded-2xl font-bold text-gray-300 bg-gray-800 hover:bg-gray-700 transition-colors"
                    >
-                     Retomar
+                     {t('scanner.actions.retake')}
                    </button>
                    <button 
                     onClick={reAnalyzeHighQuality}
                     disabled={isAnalyzing}
                     className="py-3 px-4 rounded-2xl font-bold text-white bg-gradient-to-r from-gray-700 to-gray-600 hover:opacity-90 transition-colors"
                    >
-                     Reanalisar
+                     {t('scanner.actions.reanalyze')}
                    </button>
                    <button 
                     onClick={handleConfirm}
                     className="flex-1 py-3 rounded-2xl font-bold text-black bg-primary hover:bg-emerald-400 transition-colors shadow-lg shadow-emerald-900/30"
                    >
-                     Adicionar ao registro
+                     {t('scanner.actions.add')}
                    </button>
                  </div>
                </div>

@@ -1,14 +1,15 @@
 import React, { useState } from 'react';
 import { useAppStore } from '../store';
 import { FoodItem } from '../types';
+import { useTranslation, formatLocaleDate, formatLocaleTime } from '../utils/i18n';
 
 export const History: React.FC<{ onClose: () => void }> = ({ onClose }) => {
   const { history, deleteHistoryEntry, clearHistory } = useAppStore();
   const [expanded, setExpanded] = useState<number | null>(null);
+  const { t, locale } = useTranslation();
 
   const formatDate = (ts: number) => {
-    const d = new Date(ts);
-    return d.toLocaleDateString('pt-PT', { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
+    return formatLocaleDate(ts, locale, { weekday: 'short', year: 'numeric', month: 'short', day: 'numeric' });
   };
 
   const calcTotals = (items: FoodItem[]) => {
@@ -25,15 +26,15 @@ export const History: React.FC<{ onClose: () => void }> = ({ onClose }) => {
     <div className="fixed inset-0 z-50 bg-black/40 flex items-end md:items-center justify-center p-4 backdrop-blur-sm">
       <div className="w-full max-w-3xl glass-lg rounded-3xl p-6 shadow-2xl overflow-y-auto max-h-[90vh]">
         <div className="flex items-center justify-between mb-4">
-          <h3 className="text-lg font-bold text-textLight">Histórico diário</h3>
+          <h3 className="text-lg font-bold text-textLight">{t('history.title')}</h3>
           <div className="flex items-center gap-3">
-            <button onClick={() => { if (confirm('Limpar todo o histórico? Esta ação é irreversível.')) clearHistory(); }} className="text-sm text-red-400">Limpar histórico</button>
-            <button onClick={onClose} className="py-1 px-3 rounded-md glass-sm text-sm text-textMuted hover:glass">Fechar</button>
+            <button onClick={() => { if (confirm(t('history.clearConfirm'))) clearHistory(); }} className="text-sm text-red-400">{t('history.clear')}</button>
+            <button onClick={onClose} className="py-1 px-3 rounded-md glass-sm text-sm text-textMuted hover:glass">{t('common.close')}</button>
           </div>
         </div>
 
         {history.length === 0 ? (
-          <div className="py-12 text-center text-textMuted">Nenhum histórico arquivado ainda.</div>
+          <div className="py-12 text-center text-textMuted">{t('history.empty')}</div>
         ) : (
           <div className="space-y-4">
             {history.map((entry) => {
@@ -44,17 +45,17 @@ export const History: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                   <div className="flex items-center justify-between">
                     <div>
                       <div className="text-sm text-textLight font-semibold">{formatDate(entry.date)}</div>
-                      <div className="text-xs text-textMuted">{entry.foodLog.length} refeições • {entry.waterIntake} ml</div>
+                      <div className="text-xs text-textMuted">{t('history.mealsAndWater', { meals: entry.foodLog.length, water: entry.waterIntake })}</div>
                     </div>
                     <div className="text-right">
                       <div className="font-bold text-primary">{Math.round(totals.calories)} kcal</div>
-                      <div className="text-xs text-textMuted">{Math.round(totals.protein)}g P • {Math.round(totals.carbs)}g C • {Math.round(totals.fats)}g F</div>
+                      <div className="text-xs text-textMuted">{t('history.macros', { protein: Math.round(totals.protein), carbs: Math.round(totals.carbs), fats: Math.round(totals.fats) })}</div>
                     </div>
                   </div>
 
                   <div className="mt-3 flex items-center gap-3">
-                    <button onClick={() => setExpanded(isOpen ? null : entry.date)} className="text-sm text-primary">{isOpen ? 'Fechar' : 'Ver detalhes'}</button>
-                    <button onClick={() => { if (confirm('Remover este dia do histórico?')) deleteHistoryEntry(entry.date); }} className="text-sm text-red-500">Remover</button>
+                    <button onClick={() => setExpanded(isOpen ? null : entry.date)} className="text-sm text-primary">{isOpen ? t('history.hideDetails') : t('history.viewDetails')}</button>
+                    <button onClick={() => { if (confirm(t('history.removeConfirm'))) deleteHistoryEntry(entry.date); }} className="text-sm text-red-500">{t('history.remove')}</button>
                   </div>
 
                   {isOpen && (
@@ -63,7 +64,7 @@ export const History: React.FC<{ onClose: () => void }> = ({ onClose }) => {
                         <div key={f.id} className="flex items-center justify-between">
                           <div className="min-w-0">
                             <div className="font-medium text-sm text-gray-900 truncate">{f.name}</div>
-                            <div className="text-xs text-gray-600">{f.weight ? `${f.weight}g • ` : ''}{new Date(f.timestamp).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}</div>
+                            <div className="text-xs text-gray-600">{f.weight ? `${f.weight}g • ` : ''}{formatLocaleTime(f.timestamp, locale, { hour: '2-digit', minute: '2-digit' })}</div>
                           </div>
                           <div className="text-right">
                             <div className="font-semibold text-gray-900">{Math.round(f.calories)} kcal</div>

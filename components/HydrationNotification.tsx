@@ -1,4 +1,5 @@
 import React, { useState, useEffect } from 'react';
+import { useTranslation } from '../utils/i18n';
 
 interface HydrationNotificationProps {
   isVisible: boolean;
@@ -8,6 +9,7 @@ interface HydrationNotificationProps {
 
 export const HydrationNotification: React.FC<HydrationNotificationProps> = ({ isVisible, onDismiss, onConfirm }) => {
   const [show, setShow] = useState(isVisible);
+  const { t } = useTranslation();
 
   useEffect(() => {
     setShow(isVisible);
@@ -67,18 +69,18 @@ export const HydrationNotification: React.FC<HydrationNotificationProps> = ({ is
 
           {/* Title */}
           <h2 className="text-2xl font-bold text-center text-textLight mb-2 leading-tight text-glow">
-            Hora de Hidratar
+            {t('hydrationNotification.title')}
           </h2>
           
           {/* Subtitle */}
           <p className="text-center text-textMuted text-sm mb-2">
-            Sua saúde depende de uma boa hidratação
+            {t('hydrationNotification.subtitle')}
           </p>
 
           {/* Message */}
           <div className="bg-gradient-to-r from-cyan-500/10 to-blue-500/10 border border-cyan-500/20 rounded-2xl p-4 mb-6">
             <p className="text-center text-textLight leading-relaxed">
-              Faça uma pausa e beba um copo de água agora 💧
+              {t('hydrationNotification.message')}
             </p>
           </div>
 
@@ -86,15 +88,15 @@ export const HydrationNotification: React.FC<HydrationNotificationProps> = ({ is
           <div className="space-y-2 mb-6">
             <div className="flex items-start gap-2 text-xs text-textMuted">
               <span className="text-cyan-400 mt-0.5">✓</span>
-              <span>Manter-se hidratado melhora o metabolismo</span>
+              <span>{t('hydrationNotification.tip1')}</span>
             </div>
             <div className="flex items-start gap-2 text-xs text-textMuted">
               <span className="text-cyan-400 mt-0.5">✓</span>
-              <span>Beba 8-10 copos de água por dia</span>
+              <span>{t('hydrationNotification.tip2')}</span>
             </div>
             <div className="flex items-start gap-2 text-xs text-textMuted">
               <span className="text-cyan-400 mt-0.5">✓</span>
-              <span>Água é essencial para queimar calorias</span>
+              <span>{t('hydrationNotification.tip3')}</span>
             </div>
           </div>
 
@@ -104,19 +106,19 @@ export const HydrationNotification: React.FC<HydrationNotificationProps> = ({ is
               onClick={handleDismiss}
               className="flex-1 py-3 rounded-xl font-semibold text-textMuted bg-glassDark hover:bg-glass transition-all"
             >
-              Agora não
+              {t('hydrationNotification.dismiss')}
             </button>
             <button
               onClick={handleConfirm}
               className="flex-1 py-3 rounded-xl font-semibold text-dark bg-gradient-to-r from-cyan-400 to-blue-500 hover:from-cyan-300 hover:to-blue-400 transition-all shadow-lg shadow-cyan-500/30 glow-cyan"
             >
-              Bebendo agora!
+              {t('hydrationNotification.confirm')}
             </button>
           </div>
 
           {/* Auto-dismiss indicator */}
           <div className="mt-4 text-center text-xs text-textMuted">
-            Este alerta desaparece automaticamente em 8 segundos
+            {t('hydrationNotification.autoDismiss')}
           </div>
         </div>
       </div>

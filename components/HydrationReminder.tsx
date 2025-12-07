@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { useAppStore } from '../store';
 import HydrationNotification from './HydrationNotification';
 import { pushNotificationService } from '../services/pushNotificationService';
+import { useTranslation } from '../utils/i18n';
 
 const TWO_HOURS = 2 * 60 * 60 * 1000;
 
@@ -11,6 +12,7 @@ export const HydrationReminder: React.FC = () => {
   const setLastDrinkAt = useAppStore(state => state.setLastDrinkAt);
   const timeoutRef = useRef<number | null>(null);
   const [showNotification, setShowNotification] = useState(false);
+  const { t } = useTranslation();
 
   useEffect(() => {
     // Request notification permission once when the component mounts if enabled
@@ -59,8 +61,8 @@ export const HydrationReminder: React.FC = () => {
   }, [hydrationEnabled, lastDrinkAt]);
 
   const sendReminder = async () => {
-    const title = 'Hora de Hidratar — NutriScan';
-    const body = 'Faça uma pausa: beba um copo de água agora 💧';
+    const title = t('hydrationReminder.title');
+    const body = t('hydrationReminder.body');
 
     // Tenta enviar como Web Push primeiro (funciona mesmo com app fechado)
     if (pushNotificationService.isNotificationEnabled()) {

@@ -1,12 +1,15 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { geminiService } from '../services/geminiService';
 import { useAppStore } from '../store';
+import { useTranslation } from '../utils/i18n';
+import LanguageSwitcher from './LanguageSwitcher';
 
 export const ChatCoach: React.FC = () => {
   const { user, chatHistory, addMessage } = useAppStore();
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
+    const { t } = useTranslation();
 
  // const scrollToBottom = () => {
    // messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -126,16 +129,19 @@ function renderFormattedText(text?: string): React.ReactNode {
     return (
         <div className="flex flex-col min-h-screen h-full bg-dark relative font-sans">
         {/* Header */}
-        <div className="px-3 py-4 glass glass-lg border-b border-glassDark shadow-sm sticky top-0 z-20 flex items-center gap-3">
-            <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center glow-cyan">
-                <span className="material-icons text-white"><img className="w-12 h-12" src="/running.png" alt="" /></span>
+        <div className="px-3 py-4 glass glass-lg border-b border-glassDark shadow-sm sticky top-0 z-20 flex items-center justify-between gap-3">
+            <div className="flex items-center gap-3">
+                <div className="w-10 h-10 rounded-full bg-gradient-to-tr from-primary to-secondary flex items-center justify-center glow-cyan">
+                    <span className="material-icons text-white"><img className="w-12 h-12" src="/running.png" alt="" /></span>
+                </div>
+                <div>
+                    <h2 className="text-lg font-bold text-textLight leading-tight">{t('chat.headerTitle')}</h2>
+                    <p className="text-xs text-primary font-medium flex items-center gap-1">
+                        <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span> {t('chat.status')}
+                    </p>
+                </div>
             </div>
-            <div>
-                <h2 className="text-lg font-bold text-textLight leading-tight">NutriCoach AI</h2>
-                <p className="text-xs text-primary font-medium flex items-center gap-1">
-                    <span className="w-2 h-2 rounded-full bg-primary animate-pulse"></span> Ativo
-                </p>
-            </div>
+            <LanguageSwitcher />
         </div>
 
         {/* Messages */}
@@ -145,13 +151,13 @@ function renderFormattedText(text?: string): React.ReactNode {
                     <div className="w-20 h-20 rounded-3xl glass-lg flex items-center justify-center mb-6">
                         <span className="material-icons text-primary text-4xl">forum</span>
                     </div>
-                    <h3 className="text-xl font-bold text-textLight mb-2">Ola, {user?.name}!</h3>
-                    <p className="text-textMuted text-center text-sm mb-8 max-w-xs">Estou aqui para te ajudar com sua dieta, rotina de exercícios ou informações nutricionais.</p>
+                    <h3 className="text-xl font-bold text-textLight mb-2">{t('chat.greeting', { name: user?.name ?? '' })}</h3>
+                    <p className="text-textMuted text-center text-sm mb-8 max-w-xs">{t('chat.intro')}</p>
                     
                     <div className="w-full max-w-sm space-y-3">
-                        <SuggestionButton text="What should I eat for breakfast?" onClick={setInput} />
-                        <SuggestionButton text="How much protein do I need?" onClick={setInput} />
-                        <SuggestionButton text="Explain carb cycling" onClick={setInput} />
+                        <SuggestionButton text={t('chat.emptySuggestions.breakfast')} onClick={setInput} />
+                        <SuggestionButton text={t('chat.emptySuggestions.protein')} onClick={setInput} />
+                        <SuggestionButton text={t('chat.emptySuggestions.carbCycling')} onClick={setInput} />
                     </div>
                 </div>
             )}
@@ -166,7 +172,7 @@ function renderFormattedText(text?: string): React.ReactNode {
                         <div className="whitespace-pre-wrap text-sm sm:text-[15px] leading-relaxed">{renderFormattedText(msg.text)}</div>
                         {msg.sources && msg.sources.length > 0 && (
                             <div className="mt-3 pt-3 border-t border-black/10 flex flex-col gap-1">
-                                <p className="text-[10px] font-bold uppercase opacity-60 mb-1">Caminhos</p>
+                                <p className="text-[10px] font-bold uppercase opacity-60 mb-1">{t('chat.sources')}</p>
                                 {msg.sources.map((src, i) => (
                                     <a key={i} href={src.uri} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs opacity-80 hover:opacity-100 truncate">
                                         <span className="material-icons text-[10px]">link</span>
@@ -205,10 +211,10 @@ function renderFormattedText(text?: string): React.ReactNode {
                             handleSend();
                         }
                     }}
-                    placeholder="Ask me anything..."
+                    placeholder={t('chat.placeholder')}
                     rows={1}
                     className="flex-1 bg-transparent text-textLight placeholder-textMuted focus:outline-none text-base py-2 px-4 rounded-xl resize-none max-h-32 overflow-auto"
-                    aria-label="Chat input"
+                    aria-label={t('chat.placeholder')}
                 />
 
                 {/* Desktop/large: circular icon button; Mobile: full-width send button below/input-stacked */}

@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { persist, createJSONStorage } from 'zustand/middleware';
 import { UserProfile, FoodItem, MacroTargets, Gender, ActivityLevel, Somatotype, Goal, ChatMessage } from './types';
+import { Locale, DEFAULT_LOCALE } from './utils/localization';
 import { calculateTargets } from './utils/calculations';
 
 interface AppState {
@@ -13,6 +14,7 @@ interface AppState {
   history: { date: number; foodLog: FoodItem[]; waterIntake: number }[];
   lastDrinkAt?: number | null;
   hydrationReminderEnabled: boolean;
+  locale: Locale;
   
   // Actions
   setUser: (user: UserProfile) => void;
@@ -21,6 +23,7 @@ interface AppState {
   addWater: (amount: number) => void;
   setLastDrinkAt: (timestamp: number) => void;
   setHydrationReminderEnabled: (enabled: boolean) => void;
+  setLocale: (locale: Locale) => void;
   resetDailyLog: () => void;
   clearStorage: () => void;
   deleteHistoryEntry: (timestamp: number) => void;
@@ -51,6 +54,7 @@ export const useAppStore = create<AppState>()(
       history: [],
       lastDrinkAt: null,
       hydrationReminderEnabled: true,
+      locale: DEFAULT_LOCALE,
 
       setUser: (user) => {
         const targets = calculateTargets(user);
@@ -122,6 +126,10 @@ export const useAppStore = create<AppState>()(
         set({ hydrationReminderEnabled: enabled });
       },
 
+      setLocale: (locale) => {
+        set({ locale });
+      },
+
       setLastDrinkAt: (timestamp: number) => {
         set({ lastDrinkAt: timestamp });
       },
@@ -149,7 +157,7 @@ export const useAppStore = create<AppState>()(
       },
 
       clearStorage: () => {
-        set({ user: null, targets: null, foodLog: [], chatHistory: [], waterIntake: 0, lastReset: Date.now(), history: [] });
+        set({ user: null, targets: null, foodLog: [], chatHistory: [], waterIntake: 0, lastReset: Date.now(), history: [], locale: DEFAULT_LOCALE });
       }
     }),
     {

@@ -90,7 +90,7 @@ const translations: Translations = {
       loadingProfile: 'Processando o seu perfil...',
       welcomeBack: 'Bem-vindo de volta,',
       caloriesAvailable: 'Calorias disponíveis',
-      caloriesGoal: 'de {{ ngoal}} kcal meta',
+      caloriesGoal: 'de {{goal}} kcal meta',
       consumed: 'Consumido',
       remaining: 'Restante',
       macros: {

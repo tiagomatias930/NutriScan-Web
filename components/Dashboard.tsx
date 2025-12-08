@@ -33,7 +33,7 @@ export const Dashboard: React.FC = () => {
   ];
   const COLORS = ['#00d9ff', '#6366f1']; // Cyan e Indigo
 
-  const WATER_GOAL = 2500; // Daily goal in ml
+  const WATER_GOAL = 2000; // Daily goal in ml
   const waterPercentage = Math.min(100, (waterIntake / WATER_GOAL) * 100);
 
     return (

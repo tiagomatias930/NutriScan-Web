@@ -34,7 +34,10 @@ export const geminiService = {
   /**
    * Analyzes an image of food using Gemini 3 Pro Preview (multimodal).
    */
-  analyzeFoodImage: async (base64Image: string, userContext?: string): Promise<AnalyzedFood> => {
+  analyzeFoodImage: async (base64Image: string, userContext?: string, locale?: string): Promise<AnalyzedFood> => {
+    const languageInstruction = locale === 'en' 
+      ? 'Respond in ENGLISH. The values for "foodName" and "reasoning" must be written in English.'
+      : 'Respond IN PORTUGUESE FROM PORTUGAL. The values for "foodName" and "reasoning" must be written in Portuguese.';
     const prompt = `
       You are a nutritional analyst specializing in computer vision. Follow these rules rigorously:
 
@@ -77,18 +80,18 @@ Additional notes (if applicable):
       
       ${userContext ? `Context: The user is a ${userContext}.` : ''}
 
-      IMPORTANT: Respond IN PORTUGUESE FROM PORTUGAL. The values for "foodName" and "reasoning" must be written in Portuguese. Numeric fields should remain numbers.
+      IMPORTANT: ${languageInstruction} Numeric fields should remain numbers.
 
       Return ONLY a valid JSON object with this structure (keys must be exactly as shown):
       {
-        "foodName": "Nome detalhado do prato (em Português)",
+        "foodName": "${locale === 'en' ? 'Detailed name of the dish (in English)' : 'Nome detalhado do prato (em Português)'}",
         "weightEstimate": number (grams),
         "calories": number,
         "protein": number,
         "carbs": number,
         "fats": number,
         "confidence": number (0-100) ,
-        "reasoning": "Breve explicação de como estimou (1 frase, em Português)"
+        "reasoning": "${locale === 'en' ? 'Brief explanation of how you estimated (1 sentence, in English)' : 'Breve explicação de como estimou (1 frase, em Português)'}"
       }
       Do not include markdown formatting like \`\`\`json. Return raw JSON only.
     `;
@@ -128,14 +131,20 @@ Additional notes (if applicable):
   chatWithCoach: async (
     history: { role: 'user' | 'model'; text: string }[], 
     currentMessage: string, 
-    userProfileStr: string
+    userProfileStr: string,
+    locale?: string
   ) => {
     try {
+      const languageInstruction = locale === 'en'
+        ? 'Respond in English. Always answer in English, regardless of the user\'s language.'
+        : 'Responda em Português de Portugal. Sempre responda em Português, independentemente do idioma do utilizador.';
+
       const systemInstruction = `
         You are NutriScan Coach, an expert sports nutritionist.
         User Profile: ${userProfileStr}.
         Keep answers concise, motivating, and fact-based.
         If the user asks about recent nutritional news or specific food facts, use the Google Search tool.
+        ${languageInstruction}
       `;
 
       // Construct parts from history for context (simplification for single-turn API usage or manual chat history management)

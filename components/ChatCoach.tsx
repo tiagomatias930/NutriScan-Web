@@ -9,7 +9,7 @@ export const ChatCoach: React.FC = () => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const messagesEndRef = useRef<HTMLDivElement>(null);
-    const { t } = useTranslation();
+  const { t, locale } = useTranslation();
 
  // const scrollToBottom = () => {
    // messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
@@ -109,7 +109,7 @@ function renderFormattedText(text?: string): React.ReactNode {
     const userContext = `${user.age}yo ${user.gender}, ${user.somatotype} body type, goal: ${user.goal}.`;
     const apiHistory = chatHistory.slice(-10).map(m => ({ role: m.role, text: m.text }));
     
-    const response = await geminiService.chatWithCoach(apiHistory, userMsg.text, userContext);
+    const response = await geminiService.chatWithCoach(apiHistory, userMsg.text, userContext, locale);
     
     const modelMsg = {
         id: (Date.now() + 1).toString(),

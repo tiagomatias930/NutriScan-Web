@@ -22,7 +22,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
   const cameraInputRef = useRef<HTMLInputElement>(null);
   const [showSourcePicker, setShowSourcePicker] = useState(false);
-  const { t } = useTranslation();
+  const { t, locale } = useTranslation();
 
   // Resize/compress image in browser to avoid high memory usage and very large uploads
   const resizeImageFile = async (file: File, maxSize = 800, outputType = 'image/jpeg', quality = 0.75) => {
@@ -136,7 +136,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
 
       const context = `${user?.somatotype} with goal to ${user?.goal}${uploadedId ? `; uploadId:${uploadedId}` : ''}`;
 
-      const data = await geminiService.analyzeFoodImage(base64Data, context);
+      const data = await geminiService.analyzeFoodImage(base64Data, context, locale);
       setResult(data);
 
       if (data.reasoning) {

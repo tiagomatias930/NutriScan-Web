@@ -145,7 +145,7 @@ function renderFormattedText(text?: string): React.ReactNode {
         </div>
 
         {/* Messages */}
-        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 break-words pt-12 sm:pt-6 pb-24 sm:pb-6" style={{ paddingBottom: 'calc(6rem + env(safe-area-inset-bottom) + 0.5rem)' }}>
+        <div className="flex-1 overflow-y-auto p-4 sm:p-6 space-y-6 break-words pt-12 sm:pt-6 pb-24 sm:pb-6" style={{ paddingBottom: 'calc(8rem + env(safe-area-inset-bottom) + 0.5rem)' }}>
             {chatHistory.length === 0 && (
                 <div className="flex flex-col items-center justify-center min-h-[60vh] animate-fade-in px-4">
                     <div className="w-20 h-20 rounded-3xl glass-lg flex items-center justify-center mb-6">
@@ -198,8 +198,9 @@ function renderFormattedText(text?: string): React.ReactNode {
         </div>
 
         {/* Input Area */}
-        <div className="p-4 bg-dark/50 border-t border-glassDark sticky bottom-9 sm:bottom-[80px] z-30" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.5rem)' }}>
-            <div className="glass glass-lg p-2 sm:p-1.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 transition-all w-full">
+        <div className="p-4 bg-dark/50 border-t border-glassDark sticky bottom-20 sm:bottom-[120px] z-30" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.5rem)' }}>
+            {/* Changed to always use row layout so the send button is to the right of the textarea */}
+            <div className="glass glass-lg p-2 sm:p-1.5 flex flex-row items-center gap-2 transition-all w-full">
                 <textarea
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
@@ -217,13 +218,17 @@ function renderFormattedText(text?: string): React.ReactNode {
                     aria-label={t('chat.placeholder')}
                 />
 
-                {/* Desktop/large: circular icon button; Mobile: full-width send button below/input-stacked */}
-                <div className="flex-shrink-0 w-full sm:w-auto flex sm:block">
+                {/* Send button stays to the right of the input on all screen sizes */}
+                <div className="flex-shrink-0 w-auto">
                     <button
+                        type="button"
                         onClick={handleSend}
                         disabled={loading || !input.trim()}
                         aria-label="Send message"
-                        className="w-full sm:w-10 h-10 rounded-xl sm:rounded-full bg-gradient-to-r from-primary to-secondary text-dark flex items-center justify-center disabled:opacity-50 transition-all glow-cyan disabled:glow-none border border-glassDark focus:outline-none focus:ring-2 focus:ring-primary"
+                        title="Enviar mensagem"
+                        className={
+                          "w-auto sm:w-10 h-10 rounded-xl sm:rounded-full bg-gradient-to-r from-primary to-secondary text-white flex items-center justify-center disabled:opacity-50 transition-all hover:scale-105"
+                        }
                     >
                         <span className="material-icons text-xl">arrow_upward</span>
                     </button>

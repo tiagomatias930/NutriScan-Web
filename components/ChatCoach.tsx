@@ -198,8 +198,8 @@ function renderFormattedText(text?: string): React.ReactNode {
         </div>
 
         {/* Input Area */}
-        <div className="p-4 bg-dark/50 border-t border-glassDark sticky bottom-9 sm:bottom-[80px] z-30" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.5rem)' }}>
-            <div className="glass glass-lg p-2 sm:p-1.5 flex flex-col sm:flex-row items-stretch sm:items-center gap-2 transition-all w-full">
+        <div className="p-4 bg-dark/50 border-t border-glassDark sticky bottom-20 sm:bottom-[150px] z-30" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.5rem)' }}>
+            <div className="glass glass-lg p-2 sm:p-1.5 flex flex-row items-center gap-2 transition-all w-full">
                 <textarea
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
@@ -217,13 +217,13 @@ function renderFormattedText(text?: string): React.ReactNode {
                     aria-label={t('chat.placeholder')}
                 />
 
-                {/* Desktop/large: circular icon button; Mobile: full-width send button below/input-stacked */}
-                <div className="flex-shrink-0 w-full sm:w-auto flex sm:block">
+                {/* Circular icon button on all screen sizes */}
+                <div className="flex-shrink-0">
                     <button
                         onClick={handleSend}
                         disabled={loading || !input.trim()}
                         aria-label="Send message"
-                        className="w-full sm:w-10 h-10 rounded-xl sm:rounded-full bg-gradient-to-r from-primary to-secondary text-dark flex items-center justify-center disabled:opacity-50 transition-all glow-cyan disabled:glow-none border border-glassDark focus:outline-none focus:ring-2 focus:ring-primary"
+                        className="w-10 h-10 rounded-full bg-gradient-to-r from-primary to-secondary text-dark flex items-center justify-center disabled:opacity-50 transition-all glow-cyan disabled:glow-none border border-glassDark focus:outline-none focus:ring-2 focus:ring-primary"
                     >
                         <span className="material-icons text-xl">arrow_upward</span>
                     </button>

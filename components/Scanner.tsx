@@ -1,9 +1,8 @@
-import React, { useState, useRef } from 'react';
+import React, { useCallback, useEffect, useRef, useState } from 'react';
 import { geminiService, AnalyzedFood } from '../services/geminiService';
 import { useAppStore } from '../store';
 import { FoodItem } from '../types';
 import { v4 as uuidv4 } from 'uuid';
-import ImageSourcePicker from './ImageSourcePicker';
 import { useTranslation } from '../utils/i18n';
 
 interface ScannerProps {
@@ -15,104 +14,132 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   const [image, setImage] = useState<string | null>(null);
   const [uploadId, setUploadId] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [isProcessingImage, setIsProcessingImage] = useState(false);
+  const [isCameraReady, setIsCameraReady] = useState(false);
+  const [isScanningActive, setIsScanningActive] = useState(false);
   const [result, setResult] = useState<AnalyzedFood | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
-  const fileInputRef = useRef<HTMLInputElement>(null);
-  const MAX_FILE_SIZE = 5 * 1024 * 1024; // 5MB
-  const cameraInputRef = useRef<HTMLInputElement>(null);
-  const [showSourcePicker, setShowSourcePicker] = useState(false);
+  const [isPlayingAudio, setIsPlayingAudio] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
+  const offscreenCanvasRef = useRef<HTMLCanvasElement | null>(null);
+  const streamRef = useRef<MediaStream | null>(null);
+  const isAnalyzingRef = useRef(false);
+  const resultRef = useRef<AnalyzedFood | null>(null);
   const { t, locale } = useTranslation();
 
-  // Resize/compress image in browser to avoid high memory usage and very large uploads
-  const resizeImageFile = async (file: File, maxSize = 800, outputType = 'image/jpeg', quality = 0.75) => {
-    return new Promise<string>((resolve, reject) => {
-      const reader = new FileReader();
-      
-      reader.onload = (e) => {
-        const img = new Image();
-        img.onload = () => {
-          try {
-            const { width, height } = img;
-            const maxDim = Math.max(width, height);
-            const scale = maxDim > maxSize ? maxSize / maxDim : 1;
-            const newW = Math.round(width * scale);
-            const newH = Math.round(height * scale);
+  const SCAN_INTERVAL = 2000;
 
-            const canvas = document.createElement('canvas');
-            canvas.width = newW;
-            canvas.height = newH;
-            const ctx = canvas.getContext('2d');
-            if (!ctx) throw new Error('Canvas context not available');
-            ctx.drawImage(img, 0, 0, newW, newH);
+  const stopCamera = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach((track) => track.stop());
+      streamRef.current = null;
+    }
+  }, []);
 
-            // Export to Data URL (compressed). For transparency keep png if original has alpha.
-            const hasAlpha = file.type === 'image/png' || file.type === 'image/webp';
-            const outType = hasAlpha ? 'image/png' : outputType;
-            const dataUrl = canvas.toDataURL(outType, quality);
-            resolve(dataUrl);
-          } catch (err) {
-            reject(new Error(`Canvas processing failed: ${err instanceof Error ? err.message : String(err)}`));
+  useEffect(() => {
+    let cancelled = false;
+
+    const initCamera = async () => {
+      if (!navigator.mediaDevices?.getUserMedia) {
+        setErrorMessage(t('scanner.errors.cameraUnavailable'));
+        return;
+      }
+
+      setIsCameraReady(false);
+
+      try {
+        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
+        if (cancelled) {
+          stream.getTracks().forEach((track) => track.stop());
+          return;
+        }
+
+        streamRef.current = stream;
+        const video = videoRef.current;
+
+        if (video) {
+          video.srcObject = stream;
+          video.onloadedmetadata = () => {
+            if (cancelled) return;
+            setIsCameraReady(true);
+            setIsScanningActive(true);
+            setErrorMessage(null);
+            const playPromise = video.play();
+            if (playPromise) {
+              playPromise.catch(() => {});
+            }
+          };
+
+          if (video.readyState >= 2) {
+            setIsCameraReady(true);
+            setIsScanningActive(true);
+            setErrorMessage(null);
+            const playPromise = video.play();
+            if (playPromise) {
+              playPromise.catch(() => {});
+            }
           }
-        };
-        
-        img.onerror = () => {
-          reject(new Error('Failed to load image - possibly unsupported format or corrupted file'));
-        };
-        
-        img.src = e.target?.result as string;
-      };
-      
-      reader.onerror = () => {
-        reject(new Error('Failed to read file'));
-      };
-      
-      try {
-        reader.readAsDataURL(file);
+        } else {
+          setIsCameraReady(true);
+          setIsScanningActive(true);
+          setErrorMessage(null);
+        }
       } catch (err) {
-        reject(new Error(`File reading failed: ${err instanceof Error ? err.message : String(err)}`));
+        console.error('Camera initialization failed', err);
+        setErrorMessage(t('scanner.errors.cameraUnavailable'));
       }
-    });
-  };
+    };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
-    const file = event.target.files?.[0];
-    if (!file) return;
+    initCamera();
 
-    // Basic client-side validation
-    if (!file.type?.startsWith('image/')) {
-      setErrorMessage(t('scanner.errors.invalidFormat'));
+    return () => {
+      cancelled = true;
+      setIsScanningActive(false);
+      stopCamera();
+    };
+  }, [stopCamera, t]);
+
+  useEffect(() => {
+    resultRef.current = result;
+  }, [result]);
+
+  useEffect(() => {
+    if (!result) {
       return;
     }
 
-    if (file.size > MAX_FILE_SIZE) {
-      setErrorMessage(t('scanner.errors.tooLarge'));
-      return;
+    setIsScanningActive(false);
+    const video = videoRef.current;
+    if (video && !video.paused) {
+      video.pause();
     }
+  }, [result]);
 
-    (async () => {
-      try {
-        setIsProcessingImage(true);
-        setErrorMessage(null);
-        // Resize/compress to reduce memory and upload size (now defaults to 800px / 0.75)
-        const resized = await resizeImageFile(file, 800, 'image/jpeg', 0.75);
-        setImage(resized);
-        await analyze(resized);
-      } catch (err) {
-        console.error('Image processing failed', err);
-        const fallbackMsg = t('common.unknownError');
-        const errorMsg = err instanceof Error ? err.message : fallbackMsg;
-        setErrorMessage(t('scanner.errors.processingFailed', { message: errorMsg }));
-      } finally {
-        setIsProcessingImage(false);
-      }
-    })();
-  };
+  const captureFrame = useCallback(() => {
+    const video = videoRef.current;
+    if (!video) return null;
 
-  const analyze = async (base64Full: string) => {
+    const isReady = video.readyState >= 2;
+    if (!isReady) return null;
+
+    const width = video.videoWidth;
+    const height = video.videoHeight;
+    if (!width || !height) return null;
+
+    const canvas = offscreenCanvasRef.current ?? document.createElement('canvas');
+    offscreenCanvasRef.current = canvas;
+    canvas.width = width;
+    canvas.height = height;
+    const ctx = canvas.getContext('2d');
+    if (!ctx) return null;
+    ctx.drawImage(video, 0, 0, width, height);
+    return canvas.toDataURL('image/jpeg', 0.85);
+  }, []);
+
+  const analyze = useCallback(async (base64Full: string) => {
     // Expect a dataURL (e.g. data:image/jpeg;base64,....)
     try {
       setIsAnalyzing(true);
+      isAnalyzingRef.current = true;
       const base64Data = base64Full.split(',')[1];
 
       // First, upload image to temporary server so we have an id and persistent URL
@@ -139,16 +166,53 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
       const data = await geminiService.analyzeFoodImage(base64Data, context, locale);
       setResult(data);
 
-      if (data.reasoning) {
-        geminiService.speakMessage(`I found ${data.foodName}. ${data.reasoning}`);
+      // Speak the result details in the appropriate language
+      if (data.foodName) {
+        const voiceMessage = locale === 'pt' 
+          ? `Encontrei ${data.foodName}. ${data.calories} calorias, ${data.protein} gramas de proteína, ${data.carbs} gramas de carboidratos, e ${data.fats} gramas de gordura.`
+          : `I found ${data.foodName}. ${data.calories} calories, ${data.protein} grams of protein, ${data.carbs} grams of carbs, and ${data.fats} grams of fat.`;
+        
+        try {
+          setIsPlayingAudio(true);
+          await geminiService.speakMessage(voiceMessage, locale);
+        } catch (audioError) {
+          console.warn('Audio playback failed:', audioError);
+        } finally {
+          setIsPlayingAudio(false);
+        }
       }
     } catch (error) {
       console.error(error);
       setErrorMessage(t('scanner.errors.analyzeFailed'));
     } finally {
       setIsAnalyzing(false);
+      isAnalyzingRef.current = false;
     }
-  };
+  }, [locale, t, user?.goal, user?.somatotype]);
+
+  useEffect(() => {
+    if (!isScanningActive || !isCameraReady || resultRef.current) {
+      return;
+    }
+
+    const intervalId = window.setInterval(async () => {
+      if (isAnalyzingRef.current || resultRef.current) {
+        return;
+      }
+
+      const frame = captureFrame();
+      if (!frame) {
+        return;
+      }
+
+      setImage(frame);
+      await analyze(frame);
+    }, SCAN_INTERVAL);
+
+    return () => {
+      window.clearInterval(intervalId);
+    };
+  }, [analyze, captureFrame, isCameraReady, isScanningActive]);
 
   const handleConfirm = () => {
     if (!result) return;
@@ -173,10 +237,14 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
     setImage(null);
     setResult(null);
     setErrorMessage(null);
-    if (fileInputRef.current) {
-      // clear the value so same file can be reselected
-      fileInputRef.current.value = '';
-      fileInputRef.current.click();
+    setUploadId(null);
+    setIsScanningActive(true);
+    const video = videoRef.current;
+    if (video && streamRef.current) {
+      const playPromise = video.play();
+      if (playPromise) {
+        playPromise.catch(() => {});
+      }
     }
   };
 
@@ -186,6 +254,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   const reAnalyzeHighQuality = async () => {
     if (!image) return;
     setIsAnalyzing(true);
+    isAnalyzingRef.current = true;
     try {
       // Create a high-quality version by converting dataURL to canvas directly
       const img = new Image();
@@ -210,12 +279,14 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
           console.error('Reanalysis processing failed', err);
           setErrorMessage(t('scanner.errors.reanalyzeFailed'));
           setIsAnalyzing(false);
+          isAnalyzingRef.current = false;
         }
       };
       
       img.onerror = () => {
         setErrorMessage(t('scanner.errors.reanalyzeLoadFailed'));
         setIsAnalyzing(false);
+        isAnalyzingRef.current = false;
       };
       
       img.src = image;
@@ -223,6 +294,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
       console.error('Reanalysis failed', err);
       setErrorMessage(t('scanner.errors.reanalyzeFailed'));
       setIsAnalyzing(false);
+      isAnalyzingRef.current = false;
     }
   };
 
@@ -246,80 +318,85 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
       )}
 
       <div className="flex-1 relative flex flex-col">
-        {!image ? (
-          <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-dark/50 to-dark">
-            <div 
-              onClick={() => setShowSourcePicker(true)}
-              className="w-full max-w-xs md:max-w-sm aspect-square border-2 border-dashed border-primary/50 hover:border-primary rounded-3xl flex flex-col items-center justify-center cursor-pointer glass-lg transition-all group"
-            >
-              <div className="w-20 h-20 rounded-full glass-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform glow-cyan">
-                  <span className="material-icons text-primary text-4xl">camera_alt</span>
+        <div className="relative flex-1 bg-black">
+          {result ? (
+            image ? (
+              <img src={image} alt="Food" className="w-full h-full object-cover opacity-80" />
+            ) : (
+              <div className="w-full h-full flex items-center justify-center text-textLight/60 text-sm">
+                {t('scanner.live.frameUnavailable')}
               </div>
-              <p className="text-textLight font-bold text-lg">{t('scanner.captureTitle')}</p>
-              <p className="text-textMuted text-sm">{t('scanner.captureSubtitle')}</p>
+            )
+          ) : (
+            <video
+              ref={videoRef}
+              className="w-full h-full object-cover"
+              playsInline
+              muted
+              autoPlay
+            />
+          )}
+
+          {!isCameraReady && !result && (
+            <div className="absolute inset-0 bg-dark/80 flex flex-col items-center justify-center z-20 backdrop-blur-sm">
+              <div className="relative w-20 h-20">
+                <div className="absolute inset-0 border-4 border-glassMedium rounded-full"></div>
+                <div className="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin glow-cyan"></div>
+              </div>
+              <p className="text-textLight font-semibold text-lg mt-6">{t('scanner.processing.title')}</p>
+              <p className="text-textMuted text-sm">{t('scanner.live.waitCamera')}</p>
             </div>
-            <input 
-              type="file" 
-              accept="image/*" 
-              /* no capture here: gallery picker */
-              ref={fileInputRef} 
-              className="hidden" 
-              onChange={handleFileChange}
-            />
-            {/* Camera input (some browsers open camera when capture attribute is present) */}
-            <input
-              type="file"
-              accept="image/*"
-              capture="environment"
-              ref={cameraInputRef}
-              className="hidden"
-              onChange={handleFileChange}
-            />
+          )}
 
-            <ImageSourcePicker
-              show={showSourcePicker}
-              onClose={() => setShowSourcePicker(false)}
-              onChoose={(source) => {
-                setShowSourcePicker(false);
-                if (source === 'camera') cameraInputRef.current?.click();
-                else if (source === 'gallery') fileInputRef.current?.click();
-              }}
-            />
-          </div>
-        ) : (
-          <div className="relative flex-1 bg-black">
-             <img src={image} alt="Food" className="w-full h-full object-cover opacity-80" />
+          {!result && isCameraReady && (
+            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-dark/70 px-5 py-3 rounded-2xl text-center text-textLight z-10 border border-glassMedium shadow-lg">
+              <div className="font-semibold uppercase tracking-wide text-xs text-primary/80">{t('scanner.live.title')}</div>
+              <div className="text-sm text-textMuted mt-1">{t('scanner.live.subtitle')}</div>
+            </div>
+          )}
 
-             {/* Loading State */}
-             {isProcessingImage && (
-               <div className="absolute inset-0 bg-dark/80 flex flex-col items-center justify-center z-30 backdrop-blur-sm">
-                <div className="relative w-20 h-20">
-                  <div className="absolute inset-0 border-4 border-glassMedium rounded-full"></div>
-                  <div className="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin glow-cyan"></div>
-                </div>
-                <p className="text-textLight font-semibold text-lg mt-6">{t('scanner.processing.title')}</p>
-                <p className="text-textMuted text-sm">{t('scanner.processing.description')}</p>
-               </div>
-             )}
+          {isAnalyzing && (
+            <div className="absolute inset-0 bg-dark/80 flex flex-col items-center justify-center z-30 backdrop-blur-sm">
+              <div className="relative w-24 h-24">
+                <div className="absolute inset-0 border-4 border-glassMedium rounded-full"></div>
+                <div className="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin glow-cyan"></div>
+              </div>
+              <p className="text-textLight font-bold text-lg mt-6 animate-pulse">{t('scanner.analyzing.title')}</p>
+              <p className="text-textMuted text-sm">{t('scanner.analyzing.description')}</p>
+            </div>
+          )}
 
-             {isAnalyzing && (
-                 <div className="absolute inset-0 bg-dark/80 flex flex-col items-center justify-center z-10 backdrop-blur-sm">
-                    <div className="relative w-24 h-24">
-                        <div className="absolute inset-0 border-4 border-glassMedium rounded-full"></div>
-                        <div className="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin glow-cyan"></div>
-                    </div>
-                    <p className="text-textLight font-bold text-lg mt-6 animate-pulse">{t('scanner.analyzing.title')}</p>
-                    <p className="text-textMuted text-sm">{t('scanner.analyzing.description')}</p>
-                 </div>
-             )}
-
-             {/* Result Sheet */}
-             {result && (
-               <div className="absolute bottom-0 left-0 right-0 glass-lg rounded-t-3xl p-4 md:p-6 shadow-2xl animate-slide-up z-20 max-h-[85vh] md:max-h-[80vh] overflow-y-auto">
+          {/* Result Sheet */}
+          {result && (
+            <div className="absolute bottom-0 left-0 right-0 glass-lg rounded-t-3xl p-4 md:p-6 shadow-2xl animate-slide-up z-20 max-h-[85vh] md:max-h-[80vh] overflow-y-auto">
                  <div className="w-12 h-1 bg-glassMedium rounded-full mx-auto mb-4 md:mb-6"></div>
 
-                 <h3 className="text-2xl font-bold text-primary mb-2 leading-tight text-glow">{result.foodName}</h3>
-                 <p className="text-white text-sm mb-4 leading-relaxed border-l-2 border-primary pl-3">{result.reasoning}</p>
+                 <div className="flex items-start justify-between mb-4">
+                   <div className="flex-1">
+                     <h3 className="text-2xl font-bold text-primary mb-2 leading-tight text-glow">{result.foodName}</h3>
+                     <p className="text-white text-sm mb-4 leading-relaxed border-l-2 border-primary pl-3">{result.reasoning}</p>
+                   </div>
+                   <button
+                     onClick={async () => {
+                       setIsPlayingAudio(true);
+                       const voiceMessage = locale === 'pt' 
+                         ? `Encontrei ${result.foodName}. ${result.calories} calorias, ${result.protein} gramas de proteína, ${result.carbs} gramas de carboidratos, e ${result.fats} gramas de gordura.`
+                         : `I found ${result.foodName}. ${result.calories} calories, ${result.protein} grams of protein, ${result.carbs} grams of carbs, and ${result.fats} grams of fat.`;
+                       try {
+                         await geminiService.speakMessage(voiceMessage, locale);
+                       } catch (err) {
+                         console.error('Audio failed:', err);
+                       } finally {
+                         setIsPlayingAudio(false);
+                       }
+                     }}
+                     disabled={isPlayingAudio}
+                     className="flex-shrink-0 ml-3 w-10 h-10 rounded-full glass-lg flex items-center justify-center text-primary hover:text-white hover:bg-primary/20 transition-all disabled:opacity-50"
+                     title={t('scanner.actions.listen')}
+                   >
+                     <span className="material-icons">{isPlayingAudio ? 'volume_off' : 'volume_up'}</span>
+                   </button>
+                 </div>
 
                  <div className="flex items-center justify-between mb-4">
                     <div className="text-sm text-primary">{t('scanner.confidence')}</div>
@@ -367,9 +444,8 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
                    </button>
                  </div>
                </div>
-             )}
-          </div>
-        )}
+          )}
+        </div>
       </div>
     </div>
   );

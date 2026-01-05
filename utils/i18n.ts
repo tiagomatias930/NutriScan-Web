@@ -178,6 +178,12 @@ const translations: Translations = {
         title: 'Analisando os alimentos...',
         description: 'Identificando macronutrientes e calorias',
       },
+      live: {
+        title: 'Posicione o alimento',
+        subtitle: 'Mantenha a câmera firme e aguarde a análise automática.',
+        waitCamera: 'Preparando a câmera...',
+        frameUnavailable: 'Não foi possível capturar a imagem do scanner.',
+      },
       confidence: 'Confiança:',
       lowConfidenceTitle: 'Baixa confiança na estimativa',
       lowConfidenceMessage: 'Se os valores parecerem incorretos, ajuste manualmente ou reanalise em maior qualidade.',
@@ -188,9 +194,10 @@ const translations: Translations = {
         fats: 'Gordura',
       },
       actions: {
-        retake: 'Refazer',
+        retake: 'Escanear novamente',
         reanalyze: 'Reanalisar',
         add: 'Adicionar ao registro',
+        listen: 'Ouvir resultado',
       },
       errors: {
         invalidFormat: 'Formato inválido. Selecione uma imagem.',
@@ -200,6 +207,7 @@ const translations: Translations = {
         analyzeFailed: 'Não foi possível analisar a imagem. Tente novamente com uma foto menor ou mais nítida.',
         reanalyzeFailed: 'Reanálise falhou. Tente outra foto ou usar uma de maior qualidade.',
         reanalyzeLoadFailed: 'Erro ao carregar imagem para reanálise.',
+        cameraUnavailable: 'Não foi possível aceder à câmera. Verifique as permissões e tente novamente.',
       },
     },
     offlineBanner: {
@@ -381,6 +389,12 @@ const translations: Translations = {
         title: 'Analyzing your food...',
         description: 'Identifying macronutrients and calories',
       },
+      live: {
+        title: 'Frame your meal',
+        subtitle: 'Hold the camera steady and we will analyze automatically.',
+        waitCamera: 'Warming up the camera...',
+        frameUnavailable: 'Could not capture the video frame.',
+      },
       confidence: 'Confidence:',
       lowConfidenceTitle: 'Low confidence in this estimate',
       lowConfidenceMessage: 'If the values look off, adjust manually or re-run with a higher quality photo.',
@@ -391,9 +405,10 @@ const translations: Translations = {
         fats: 'Fat',
       },
       actions: {
-        retake: 'Retake',
+        retake: 'Scan again',
         reanalyze: 'Re-analyze',
         add: 'Add to log',
+        listen: 'Listen to results',
       },
       errors: {
         invalidFormat: 'Invalid format. Please pick an image.',
@@ -403,6 +418,7 @@ const translations: Translations = {
         analyzeFailed: 'We could not analyze the image. Try a smaller or sharper photo.',
         reanalyzeFailed: 'Re-analysis failed. Try another photo or a higher quality one.',
         reanalyzeLoadFailed: 'Could not load the image for re-analysis.',
+        cameraUnavailable: 'Unable to access the camera. Check permissions and try again.',
       },
     },
     offlineBanner: {

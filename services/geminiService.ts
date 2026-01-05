@@ -32,7 +32,7 @@ async function decodeAudioData(
 
 export const geminiService = {
   /**
-   * Analyzes an image of food using Gemini 3 Pro Preview (multimodal).
+   * Analyzes an image of food using Gemini 3 Flash (multimodal).
    */
   analyzeFoodImage: async (base64Image: string, userContext?: string, locale?: string): Promise<AnalyzedFood> => {
     const languageInstruction = locale === 'en' 
@@ -97,9 +97,9 @@ Additional notes (if applicable):
     `;
 
     try {
-      // Using gemini-3-pro-preview for high reasoning capabilities on images
+      // Using Gemini 3 Flash for high reasoning capabilities on images
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
+        model: 'gemini-3-flash',
         contents: {
           parts: [
             { inlineData: { mimeType: 'image/jpeg', data: base64Image } },
@@ -155,7 +155,7 @@ Additional notes (if applicable):
       // Ideally use ai.chats.create, but to mix search grounding dynamically, we'll use generateContent with tools.
       
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash', // Using Flash for fast chat + Search
+        model: 'gemini-3-flash', // Using Flash for fast chat + Search
         contents: [
             { role: 'user', parts: [{ text: `System: ${systemInstruction}` }] },
             ...history.map(h => ({ role: h.role, parts: [{ text: h.text }] })),
@@ -178,26 +178,35 @@ Additional notes (if applicable):
   },
 
   /**
-   * Generates spoken audio for a motivational message.
+   * Generates spoken audio for a message using Gemini 3 TTS.
+   * Returns a Promise that resolves when playback starts.
    */
-  speakMessage: async (text: string): Promise<void> => {
+  speakMessage: async (text: string, locale?: string): Promise<void> => {
       try {
+        // Use Gemini 3 Flash TTS with native Web Audio API
         const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash-preview-tts",
+            model: "gemini-3-flash-tts",
             contents: [{ parts: [{ text: text }] }],
             config: {
               responseModalities: [Modality.AUDIO],
               speechConfig: {
                   voiceConfig: {
-                    prebuiltVoiceConfig: { voiceName: 'Kore' },
+                    // Use Portuguese-friendly voice
+                    prebuiltVoiceConfig: { 
+                      voiceName: locale === 'pt' ? 'Jacinto' : 'Kore'
+                    },
                   },
               },
             },
           });
 
           const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-          if (!base64Audio) return;
+          if (!base64Audio) {
+            console.warn('No audio data from TTS response');
+            return;
+          }
 
+          // Use native Web Audio API for better compatibility
           const AudioContextPolyfill = window.AudioContext || (window as any).webkitAudioContext;
           const audioContext = new AudioContextPolyfill();
           
@@ -206,10 +215,19 @@ Additional notes (if applicable):
           const source = audioContext.createBufferSource();
           source.buffer = audioBuffer;
           source.connect(audioContext.destination);
-          source.start();
+          source.start(0);
 
       } catch (e) {
-          console.error("TTS Error", e);
+          console.error("TTS Error:", e);
+          // Fallback: use Web Speech API if Gemini TTS fails
+          try {
+            const utterance = new SpeechSynthesisUtterance(text);
+            utterance.lang = locale === 'pt' ? 'pt-PT' : 'en-US';
+            utterance.rate = 0.95;
+            window.speechSynthesis.speak(utterance);
+          } catch (fallbackError) {
+            console.error("Speech synthesis fallback also failed:", fallbackError);
+          }
       }
   }
 };

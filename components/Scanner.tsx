@@ -250,7 +250,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
           <div className="flex-1 flex flex-col items-center justify-center p-6 bg-gradient-to-b from-dark/50 to-dark">
             <div 
               onClick={() => setShowSourcePicker(true)}
-              className="w-72 h-72 border-2 border-dashed border-primary/50 hover:border-primary rounded-3xl flex flex-col items-center justify-center cursor-pointer glass-lg transition-all group"
+              className="w-full max-w-xs md:max-w-sm aspect-square border-2 border-dashed border-primary/50 hover:border-primary rounded-3xl flex flex-col items-center justify-center cursor-pointer glass-lg transition-all group"
             >
               <div className="w-20 h-20 rounded-full glass-lg flex items-center justify-center mb-4 group-hover:scale-110 transition-transform glow-cyan">
                   <span className="material-icons text-primary text-4xl">camera_alt</span>
@@ -315,11 +315,11 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
 
              {/* Result Sheet */}
              {result && (
-               <div className="absolute bottom-0 left-0 right-0 glass-lg rounded-t-3xl p-6 shadow-2xl animate-slide-up z-20 max-h-[80vh] overflow-y-auto">
-                 <div className="w-12 h-1 bg-glassMedium rounded-full mx-auto mb-6"></div>
+               <div className="absolute bottom-0 left-0 right-0 glass-lg rounded-t-3xl p-4 md:p-6 shadow-2xl animate-slide-up z-20 max-h-[85vh] md:max-h-[80vh] overflow-y-auto">
+                 <div className="w-12 h-1 bg-glassMedium rounded-full mx-auto mb-4 md:mb-6"></div>
 
                  <h3 className="text-2xl font-bold text-primary mb-2 leading-tight text-glow">{result.foodName}</h3>
-                 <p className="text-white text-sm mb-3 leading-relaxed border-l-2 border-primary pl-3">{result.reasoning}</p>
+                 <p className="text-white text-sm mb-4 leading-relaxed border-l-2 border-primary pl-3">{result.reasoning}</p>
 
                  <div className="flex items-center justify-between mb-4">
                     <div className="text-sm text-primary">{t('scanner.confidence')}</div>
@@ -338,30 +338,30 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
                    </div>
                  )}
 
-                 <div className="grid grid-cols-4 gap-3 mb-8">
+                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 md:mb-8">
                     <NutrientBox label={t('scanner.nutrients.calories')} value={result.calories} unit="kcal" />
                     <NutrientBox label={t('scanner.nutrients.protein')} value={result.protein} unit="g" color="text-emerald-400" />
                     <NutrientBox label={t('scanner.nutrients.carbs')} value={result.carbs} unit="g" color="text-blue-400" />
                     <NutrientBox label={t('scanner.nutrients.fats')} value={result.fats} unit="g" color="text-amber-400" />
                  </div>
 
-                 <div className="flex gap-3">
+                 <div className="flex flex-col md:flex-row gap-3">
                    <button 
                     onClick={handleRetake}
-                    className="flex-1 py-3 rounded-2xl font-bold text-gray-300 bg-gray-800 hover:bg-gray-700 transition-colors"
+                    className="w-full md:flex-1 py-3 rounded-2xl font-bold text-gray-300 bg-gray-800 hover:bg-gray-700 transition-colors"
                    >
                      {t('scanner.actions.retake')}
                    </button>
                    <button 
                     onClick={reAnalyzeHighQuality}
                     disabled={isAnalyzing}
-                    className="py-3 px-4 rounded-2xl font-bold text-white bg-gradient-to-r from-gray-700 to-gray-600 hover:opacity-90 transition-colors"
+                    className="w-full md:w-auto md:px-6 py-3 rounded-2xl font-bold text-white bg-gradient-to-r from-gray-700 to-gray-600 hover:opacity-90 transition-colors"
                    >
                      {t('scanner.actions.reanalyze')}
                    </button>
                    <button 
                     onClick={handleConfirm}
-                    className="flex-1 py-3 rounded-2xl font-bold text-black bg-primary hover:bg-emerald-400 transition-colors shadow-lg shadow-emerald-900/30"
+                    className="w-full md:flex-1 py-3 rounded-2xl font-bold text-black bg-primary hover:bg-emerald-400 transition-colors shadow-lg shadow-emerald-900/30"
                    >
                      {t('scanner.actions.add')}
                    </button>

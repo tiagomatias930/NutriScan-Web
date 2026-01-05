@@ -155,7 +155,7 @@ Additional notes (if applicable):
       // Ideally use ai.chats.create, but to mix search grounding dynamically, we'll use generateContent with tools.
       
       const response = await ai.models.generateContent({
-        model: 'gemini-3-flash', // Using Flash for fast chat + Search
+        model: 'gemini-3-pro-preview', // Using Flash for fast chat + Search
         contents: [
             { role: 'user', parts: [{ text: `System: ${systemInstruction}` }] },
             ...history.map(h => ({ role: h.role, parts: [{ text: h.text }] })),
@@ -185,7 +185,7 @@ Additional notes (if applicable):
       try {
         // Use Gemini 3 Flash TTS with native Web Audio API
         const response = await ai.models.generateContent({
-            model: "gemini-3-flash-tts",
+            model: "gemini-2.5-flash-preview-tts",
             contents: [{ parts: [{ text: text }] }],
             config: {
               responseModalities: [Modality.AUDIO],

@@ -5,9 +5,11 @@ import { FoodItem } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import { useTranslation } from '../utils/i18n';
 
-const MAX_UPLOAD_BYTES = 3.5 * 1024 * 1024;
-const DEFAULT_ANALYSIS_MAX_DIMENSION = 1024;
-const HIGH_QUALITY_MAX_DIMENSION = 1280;
+const MAX_UPLOAD_BYTES = 4.5 * 1024 * 1024;
+const DEFAULT_ANALYSIS_MAX_DIMENSION = 1280;
+const HIGH_QUALITY_MAX_DIMENSION = 1600;
+const FILE_UPLOAD_MAX_DIMENSION = 4096; // Permitir imagens maiores do file system
+const FILE_UPLOAD_MAX_BYTES = 20 * 1024 * 1024; // Até 20MB para arquivos do sistema
 
 type OptimizeOptions = {
   maxDimension?: number;
@@ -16,13 +18,51 @@ type OptimizeOptions = {
   minQuality?: number;
   qualityStep?: number;
   scaleStep?: number;
-  minScale?: number;
-  preferWebp?: boolean;
+  isFileUpload?: boolean; // Flag para indicar se é upload de arquivo
 };
 
 const getDataUrlByteLength = (dataUrl: string): number => {
   const base64 = dataUrl.split(',')[1];
   return base64 ? Math.ceil((base64.length * 3) / 4) : 0;
+};
+
+const openFilePickerWithFallback = async (): Promise<File | null> => {
+  try {
+    // Tenta usar File System Access API (Chrome, Edge)
+    if ('showOpenFilePicker' in window) {
+      const [handle] = await (window as any).showOpenFilePicker({
+        types: [{
+          description: 'Images',
+          accept: { 'image/*': ['.png', '.jpg', '.jpeg', '.webp', '.gif', '.bmp'] }
+        }],
+        multiple: false
+      });
+      return await handle.getFile();
+    }
+  } catch (err) {
+    console.log('File System Access API not available or user cancelled');
+  }
+
+  // Fallback: usar input file tradicional
+  return new Promise((resolve) => {
+    const input = document.createElement('input');
+    input.type = 'file';
+    input.accept = 'image/*';
+    input.onchange = (e: any) => {
+      const file = e.target.files?.[0];
+      resolve(file || null);
+    };
+    input.click();
+  });
+};
+
+const fileToDataUrl = (file: File): Promise<string> => {
+  return new Promise((resolve, reject) => {
+    const reader = new FileReader();
+    reader.onload = () => resolve(reader.result as string);
+    reader.onerror = reject;
+    reader.readAsDataURL(file);
+  });
 };
 
 const loadImageElement = (dataUrl: string): Promise<HTMLImageElement> => {
@@ -44,8 +84,7 @@ const drawOptimizedDataUrl = (
   canvas: HTMLCanvasElement,
   ctx: CanvasRenderingContext2D,
   scale: number,
-  quality: number,
-  mimeType: 'image/jpeg' | 'image/webp' = 'image/jpeg'
+  quality: number
 ): string => {
   const width = Math.max(1, Math.round(img.width * scale));
   const height = Math.max(1, Math.round(img.height * scale));
@@ -55,7 +94,7 @@ const drawOptimizedDataUrl = (
   ctx.imageSmoothingQuality = 'high';
   ctx.clearRect(0, 0, width, height);
   ctx.drawImage(img, 0, 0, width, height);
-  return canvas.toDataURL(mimeType, quality);
+  return canvas.toDataURL('image/jpeg', quality);
 };
 
 // Keeps uploaded frames within the Gemini upload size constraints.
@@ -67,19 +106,20 @@ const optimizeImageDataUrl = async (dataUrl: string, options?: OptimizeOptions):
   const {
     maxDimension = DEFAULT_ANALYSIS_MAX_DIMENSION,
     maxBytes = MAX_UPLOAD_BYTES,
-    initialQuality = 0.85,
-    minQuality = 0.5,
-    qualityStep = 0.05,
-    scaleStep = 0.8,
-    minScale = 0.4,
-    preferWebp = true
+    initialQuality = 0.92,
+    minQuality = 0.6,
+    qualityStep = 0.08,
+    scaleStep = 0.85,
+    isFileUpload = false
   } = options ?? {};
 
   try {
     const img = await loadImageElement(dataUrl);
-    const needsResize = Math.max(img.width, img.height) > maxDimension;
+    const effectiveMaxDimension = isFileUpload ? FILE_UPLOAD_MAX_DIMENSION : maxDimension;
+    const effectiveMaxBytes = isFileUpload ? FILE_UPLOAD_MAX_BYTES : maxBytes;
+    const needsResize = Math.max(img.width, img.height) > effectiveMaxDimension;
     const originalBytes = getDataUrlByteLength(dataUrl);
-    const needsByteReduction = originalBytes > maxBytes;
+    const needsByteReduction = originalBytes > effectiveMaxBytes;
 
     if (!needsResize && !needsByteReduction) {
       return dataUrl;
@@ -91,44 +131,27 @@ const optimizeImageDataUrl = async (dataUrl: string, options?: OptimizeOptions):
       return dataUrl;
     }
 
-    const canUseWebp = preferWebp
-      ? (() => {
-          try {
-            return canvas.toDataURL('image/webp').startsWith('data:image/webp');
-          } catch {
-            return false;
-          }
-        })()
-      : false;
-
-    let scale = Math.min(1, maxDimension / Math.max(img.width, img.height));
+    let scale = needsResize ? Math.min(1, effectiveMaxDimension / Math.max(img.width, img.height)) : 1;
     let quality = Math.min(1, Math.max(0.1, initialQuality));
-    let mimeType: 'image/jpeg' | 'image/webp' = 'image/jpeg';
-    let optimized = drawOptimizedDataUrl(img, canvas, ctx, scale, quality, mimeType);
+    let optimized = drawOptimizedDataUrl(img, canvas, ctx, scale, quality);
     let optimizedBytes = getDataUrlByteLength(optimized);
     let attempts = 0;
 
-    while (optimizedBytes > maxBytes && attempts < 28) {
+    while (optimizedBytes > effectiveMaxBytes && attempts < 8) {
       attempts += 1;
-      const canReduceQuality = quality - qualityStep >= minQuality - 0.001;
-      const canReduceScale = scale * scaleStep >= minScale - 0.001;
-
-      if (canReduceQuality) {
+      if (quality - qualityStep >= minQuality) {
         quality = Math.max(minQuality, quality - qualityStep);
-      } else if (canReduceScale) {
-        scale = Math.max(minScale, scale * scaleStep);
-      } else if (mimeType === 'image/jpeg' && canUseWebp) {
-        mimeType = 'image/webp';
-        quality = Math.max(minQuality, quality - 0.08);
+      } else if (scale * scaleStep >= 0.4) {
+        scale = scale * scaleStep;
       } else {
         break;
       }
 
-      optimized = drawOptimizedDataUrl(img, canvas, ctx, scale, quality, mimeType);
+      optimized = drawOptimizedDataUrl(img, canvas, ctx, scale, quality);
       optimizedBytes = getDataUrlByteLength(optimized);
     }
 
-    if (optimizedBytes > maxBytes) {
+    if (optimizedBytes > effectiveMaxBytes) {
       console.warn('Image optimization could not reach target size limit.');
     }
 
@@ -159,9 +182,9 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   const isAnalyzingRef = useRef(false);
   const resultRef = useRef<AnalyzedFood | null>(null);
   const originalImageRef = useRef<string | null>(null);
-  const scanModeRef = useRef<'auto' | 'photo'>('photo');
+  const scanModeRef = useRef<'auto' | 'photo' | 'file'>('photo');
   const { t, locale } = useTranslation();
-  const [scanMode, setScanMode] = useState<'auto' | 'photo'>(scanModeRef.current);
+  const [scanMode, setScanMode] = useState<'auto' | 'photo' | 'file'>(scanModeRef.current);
 
   const SCAN_INTERVAL = 2000;
 
@@ -251,7 +274,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
     }
   }, [result]);
 
-  const handleModeChange = useCallback((mode: 'auto' | 'photo') => {
+  const handleModeChange = useCallback((mode: 'auto' | 'photo' | 'file') => {
     scanModeRef.current = mode;
     setScanMode(mode);
     setErrorMessage(null);
@@ -291,7 +314,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
     ctx.drawImage(video, 0, 0, width, height);
-    return canvas.toDataURL('image/jpeg', 0.82);
+    return canvas.toDataURL('image/jpeg', 0.85);
   }, []);
 
   const analyze = useCallback(async (base64Full: string) => {
@@ -361,15 +384,46 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
     originalImageRef.current = frame;
     const optimizedFrame = await optimizeImageDataUrl(frame, {
       maxDimension: DEFAULT_ANALYSIS_MAX_DIMENSION,
-      maxBytes: MAX_UPLOAD_BYTES,
-      initialQuality: 0.85,
-      minQuality: 0.5,
-      qualityStep: 0.05
+      maxBytes: MAX_UPLOAD_BYTES
     });
 
     setImage(optimizedFrame);
     await analyze(optimizedFrame);
   }, [analyze, captureFrame, t]);
+
+  const handleImportFile = useCallback(async () => {
+    if (isAnalyzingRef.current) return;
+
+    try {
+      const file = await openFilePickerWithFallback();
+      if (!file) return;
+
+      // Verificar tamanho do arquivo
+      if (file.size > FILE_UPLOAD_MAX_BYTES) {
+        setErrorMessage(t('scanner.errors.fileTooLarge', { maxSize: '20MB' }));
+        return;
+      }
+
+      const dataUrl = await fileToDataUrl(file);
+      originalImageRef.current = dataUrl;
+
+      // Para arquivos importados, usar otimização mais permissiva
+      const optimizedFrame = await optimizeImageDataUrl(dataUrl, {
+        maxDimension: FILE_UPLOAD_MAX_DIMENSION,
+        maxBytes: FILE_UPLOAD_MAX_BYTES,
+        initialQuality: 0.95,
+        minQuality: 0.7,
+        qualityStep: 0.05,
+        isFileUpload: true
+      });
+
+      setImage(optimizedFrame);
+      await analyze(optimizedFrame);
+    } catch (error) {
+      console.error('File import failed:', error);
+      setErrorMessage(t('scanner.errors.fileImportFailed'));
+    }
+  }, [analyze, t]);
 
   useEffect(() => {
     if (!isScanningActive || !isCameraReady || resultRef.current || scanMode !== 'auto') {
@@ -390,10 +444,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
         originalImageRef.current = frame;
         const optimizedFrame = await optimizeImageDataUrl(frame, {
           maxDimension: DEFAULT_ANALYSIS_MAX_DIMENSION,
-          maxBytes: MAX_UPLOAD_BYTES,
-          initialQuality: 0.85,
-          minQuality: 0.5,
-          qualityStep: 0.05
+          maxBytes: MAX_UPLOAD_BYTES
         });
 
         setImage(optimizedFrame);
@@ -499,7 +550,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
                 {t('scanner.live.frameUnavailable')}
               </div>
             )
-          ) : (
+          ) : scanMode !== 'file' ? (
             <video
               ref={videoRef}
               className="w-full h-full object-cover"
@@ -507,6 +558,14 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
               muted
               autoPlay
             />
+          ) : (
+            <div className="w-full h-full flex items-center justify-center bg-dark/50">
+              <div className="text-center text-textLight/60">
+                <span className="material-icons text-6xl mb-4">folder_open</span>
+                <p className="text-lg font-semibold">{t('scanner.fileMode.title')}</p>
+                <p className="text-sm">{t('scanner.fileMode.subtitle')}</p>
+              </div>
+            </div>
           )}
 
           {!isCameraReady && !result && (
@@ -520,20 +579,20 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
             </div>
           )}
 
-          {!result && isCameraReady && (
+          {!result && isCameraReady && scanMode !== 'file' && (
             <div className="absolute bottom-6 left-0 right-0 px-6 flex flex-col items-center gap-4 z-30 pointer-events-none">
               <div className="bg-dark/80 px-6 py-4 rounded-2xl text-center text-textLight border border-glassMedium shadow-lg pointer-events-auto w-full max-w-md">
                 <div className="font-semibold uppercase tracking-wide text-xs text-primary/80">
-                  {scanMode === 'auto' ? t('scanner.live.title') : t('scanner.captureTitle')}
+                  {scanMode === 'auto' ? t('scanner.live.title') : scanMode === 'photo' ? t('scanner.captureTitle') : t('scanner.importTitle')}
                 </div>
                 <div className="text-sm text-textMuted mt-1">
-                  {scanMode === 'auto' ? t('scanner.live.subtitle') : t('scanner.captureSubtitle')}
+                  {scanMode === 'auto' ? t('scanner.live.subtitle') : scanMode === 'photo' ? t('scanner.captureSubtitle') : t('scanner.importSubtitle')}
                 </div>
               </div>
 
               <div className="glass-lg rounded-2xl p-4 border border-white/10 shadow-xl pointer-events-auto w-full max-w-md">
-                <div className="grid grid-cols-2 gap-2">
-                  {(['auto', 'photo'] as const).map((modeOption) => {
+                <div className="grid grid-cols-3 gap-2">
+                  {(['auto', 'photo', 'file'] as const).map((modeOption) => {
                     const isActive = scanMode === modeOption;
                     return (
                       <button
@@ -548,17 +607,17 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
                         }`}
                       >
                         <span className="material-icons text-base">
-                          {modeOption === 'auto' ? 'autorenew' : 'photo_camera'}
+                          {modeOption === 'auto' ? 'autorenew' : modeOption === 'photo' ? 'photo_camera' : 'folder_open'}
                         </span>
                         <span>
-                          {modeOption === 'auto' ? t('scanner.modes.auto') : t('scanner.modes.photo')}
+                          {modeOption === 'auto' ? t('scanner.modes.auto') : modeOption === 'photo' ? t('scanner.modes.photo') : t('scanner.modes.file')}
                         </span>
                       </button>
                     );
                   })}
                 </div>
                 <div className="text-xs text-textMuted text-center mt-3">
-                  {scanMode === 'auto' ? t('scanner.modeDescriptions.auto') : t('scanner.modeDescriptions.photo')}
+                  {scanMode === 'auto' ? t('scanner.modeDescriptions.auto') : scanMode === 'photo' ? t('scanner.modeDescriptions.photo') : t('scanner.modeDescriptions.file')}
                 </div>
               </div>
 
@@ -577,6 +636,24 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
                   </button>
                   <span className="text-xs uppercase tracking-wide text-textLight">{t('scanner.actions.capture')}</span>
                   <span className="text-[11px] text-textMuted">{t('scanner.modeDescriptions.photo')}</span>
+                </div>
+              )}
+
+              { scanMode === 'file' && (
+                <div className="flex flex-col items-center gap-2 pointer-events-auto">
+                  <button
+                    type="button"
+                    onClick={handleImportFile}
+                    disabled={isAnalyzing}
+                    aria-label={t('scanner.actions.import')}
+                    className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white flex items-center justify-center shadow-xl shadow-blue-500/40 border border-white/20 transition-transform hover:scale-105 disabled:opacity-60 disabled:hover:scale-100"
+                  >
+                    <span className="material-icons text-3xl">
+                      {isAnalyzing ? 'hourglass_top' : 'folder_open'}
+                    </span>
+                  </button>
+                  <span className="text-xs uppercase tracking-wide text-textLight">{t('scanner.actions.import')}</span>
+                  <span className="text-[11px] text-textMuted">{t('scanner.modeDescriptions.file')}</span>
                 </div>
               )}
             </div>

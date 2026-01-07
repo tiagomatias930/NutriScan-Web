@@ -5,6 +5,118 @@ import { FoodItem } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import { useTranslation } from '../utils/i18n';
 
+const MAX_UPLOAD_BYTES = 4.5 * 1024 * 1024;
+const DEFAULT_ANALYSIS_MAX_DIMENSION = 1280;
+const HIGH_QUALITY_MAX_DIMENSION = 1600;
+
+type OptimizeOptions = {
+  maxDimension?: number;
+  maxBytes?: number;
+  initialQuality?: number;
+  minQuality?: number;
+  qualityStep?: number;
+  scaleStep?: number;
+};
+
+const getDataUrlByteLength = (dataUrl: string): number => {
+  const base64 = dataUrl.split(',')[1];
+  return base64 ? Math.ceil((base64.length * 3) / 4) : 0;
+};
+
+const loadImageElement = (dataUrl: string): Promise<HTMLImageElement> => {
+  return new Promise((resolve, reject) => {
+    if (typeof Image === 'undefined') {
+      reject(new Error('Image constructor unavailable'));
+      return;
+    }
+
+    const img = new Image();
+    img.onload = () => resolve(img);
+    img.onerror = () => reject(new Error('Image load failed'));
+    img.src = dataUrl;
+  });
+};
+
+const drawOptimizedDataUrl = (
+  img: HTMLImageElement,
+  canvas: HTMLCanvasElement,
+  ctx: CanvasRenderingContext2D,
+  scale: number,
+  quality: number
+): string => {
+  const width = Math.max(1, Math.round(img.width * scale));
+  const height = Math.max(1, Math.round(img.height * scale));
+  canvas.width = width;
+  canvas.height = height;
+  ctx.imageSmoothingEnabled = true;
+  ctx.imageSmoothingQuality = 'high';
+  ctx.clearRect(0, 0, width, height);
+  ctx.drawImage(img, 0, 0, width, height);
+  return canvas.toDataURL('image/jpeg', quality);
+};
+
+// Keeps uploaded frames within the Gemini upload size constraints.
+const optimizeImageDataUrl = async (dataUrl: string, options?: OptimizeOptions): Promise<string> => {
+  if (typeof document === 'undefined') {
+    return dataUrl;
+  }
+
+  const {
+    maxDimension = DEFAULT_ANALYSIS_MAX_DIMENSION,
+    maxBytes = MAX_UPLOAD_BYTES,
+    initialQuality = 0.92,
+    minQuality = 0.6,
+    qualityStep = 0.08,
+    scaleStep = 0.85
+  } = options ?? {};
+
+  try {
+    const img = await loadImageElement(dataUrl);
+    const needsResize = Math.max(img.width, img.height) > maxDimension;
+    const originalBytes = getDataUrlByteLength(dataUrl);
+    const needsByteReduction = originalBytes > maxBytes;
+
+    if (!needsResize && !needsByteReduction) {
+      return dataUrl;
+    }
+
+    const canvas = document.createElement('canvas');
+    const ctx = canvas.getContext('2d');
+    if (!ctx) {
+      return dataUrl;
+    }
+
+    let scale = needsResize ? Math.min(1, maxDimension / Math.max(img.width, img.height)) : 1;
+    let quality = Math.min(1, Math.max(0.1, initialQuality));
+    let optimized = drawOptimizedDataUrl(img, canvas, ctx, scale, quality);
+    let optimizedBytes = getDataUrlByteLength(optimized);
+    let attempts = 0;
+
+    while (optimizedBytes > maxBytes && attempts < 8) {
+      attempts += 1;
+      if (quality - qualityStep >= minQuality) {
+        quality = Math.max(minQuality, quality - qualityStep);
+      } else if (scale * scaleStep >= 0.4) {
+        scale = scale * scaleStep;
+      } else {
+        break;
+      }
+
+      optimized = drawOptimizedDataUrl(img, canvas, ctx, scale, quality);
+      optimizedBytes = getDataUrlByteLength(optimized);
+    }
+
+    if (optimizedBytes > maxBytes) {
+      console.warn('Image optimization could not reach target size limit.');
+    }
+
+    return optimized;
+  } catch (error) {
+    console.warn('Image optimization failed, using original data URL.', error);
+    return dataUrl;
+  }
+};
+
 interface ScannerProps {
   onClose: () => void;
 }
@@ -24,6 +136,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   const streamRef = useRef<MediaStream | null>(null);
   const isAnalyzingRef = useRef(false);
   const resultRef = useRef<AnalyzedFood | null>(null);
+  const originalImageRef = useRef<string | null>(null);
   const scanModeRef = useRef<'auto' | 'photo'>('photo');
   const { t, locale } = useTranslation();
   const [scanMode, setScanMode] = useState<'auto' | 'photo'>(scanModeRef.current);
@@ -122,6 +235,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
     setErrorMessage(null);
     setResult(null);
     setImage(null);
+    originalImageRef.current = null;
     setUploadId(null);
     setIsAnalyzing(false);
     isAnalyzingRef.current = false;
@@ -222,8 +336,14 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
       return;
     }
 
-    setImage(frame);
-    await analyze(frame);
+    originalImageRef.current = frame;
+    const optimizedFrame = await optimizeImageDataUrl(frame, {
+      maxDimension: DEFAULT_ANALYSIS_MAX_DIMENSION,
+      maxBytes: MAX_UPLOAD_BYTES
+    });
+
+    setImage(optimizedFrame);
+    await analyze(optimizedFrame);
   }, [analyze, captureFrame, t]);
 
   useEffect(() => {
@@ -231,18 +351,26 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
       return;
     }
 
-    const intervalId = window.setInterval(async () => {
-      if (isAnalyzingRef.current || resultRef.current) {
-        return;
-      }
+    const intervalId = window.setInterval(() => {
+      void (async () => {
+        if (isAnalyzingRef.current || resultRef.current) {
+          return;
+        }
 
-      const frame = captureFrame();
-      if (!frame) {
-        return;
-      }
+        const frame = captureFrame();
+        if (!frame) {
+          return;
+        }
 
-      setImage(frame);
-      await analyze(frame);
+        originalImageRef.current = frame;
+        const optimizedFrame = await optimizeImageDataUrl(frame, {
+          maxDimension: DEFAULT_ANALYSIS_MAX_DIMENSION,
+          maxBytes: MAX_UPLOAD_BYTES
+        });
+
+        setImage(optimizedFrame);
+        await analyze(optimizedFrame);
+      })();
     }, SCAN_INTERVAL);
 
     return () => {
@@ -273,6 +401,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
     setImage(null);
     setResult(null);
     setErrorMessage(null);
+    originalImageRef.current = null;
     setUploadId(null);
     setIsScanningActive(scanMode === 'auto');
     const video = videoRef.current;
@@ -288,47 +417,26 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
 
   // Re-analyze the current image attempting to use a higher export quality / larger size
   const reAnalyzeHighQuality = async () => {
-    if (!image) return;
+    const sourceImage = originalImageRef.current ?? image;
+    if (!sourceImage) return;
+
     setIsAnalyzing(true);
     isAnalyzingRef.current = true;
     try {
-      // Create a high-quality version by converting dataURL to canvas directly
-      const img = new Image();
-      img.onload = async () => {
-        try {
-          const { width, height } = img;
-          const maxDim = Math.max(width, height);
-          const scale = maxDim > 1400 ? 1400 / maxDim : 1;
-          const newW = Math.round(width * scale);
-          const newH = Math.round(height * scale);
+      const highQualityFrame = await optimizeImageDataUrl(sourceImage, {
+        maxDimension: HIGH_QUALITY_MAX_DIMENSION,
+        maxBytes: MAX_UPLOAD_BYTES,
+        initialQuality: 0.95,
+        minQuality: 0.65,
+        qualityStep: 0.05
+      });
 
-          const canvas = document.createElement('canvas');
-          canvas.width = newW;
-          canvas.height = newH;
-          const ctx = canvas.getContext('2d');
-          if (!ctx) throw new Error('Canvas context not available');
-          ctx.drawImage(img, 0, 0, newW, newH);
-
-          const dataUrl = canvas.toDataURL('image/jpeg', 0.95);
-          await analyze(dataUrl);
-        } catch (err) {
-          console.error('Reanalysis processing failed', err);
-          setErrorMessage(t('scanner.errors.reanalyzeFailed'));
-          setIsAnalyzing(false);
-          isAnalyzingRef.current = false;
-        }
-      };
-      
-      img.onerror = () => {
-        setErrorMessage(t('scanner.errors.reanalyzeLoadFailed'));
-        setIsAnalyzing(false);
-        isAnalyzingRef.current = false;
-      };
-      
-      img.src = image;
+      setImage(highQualityFrame);
+      await analyze(highQualityFrame);
     } catch (err) {
       console.error('Reanalysis failed', err);
       setErrorMessage(t('scanner.errors.reanalyzeFailed'));
+    } finally {
       setIsAnalyzing(false);
       isAnalyzingRef.current = false;
     }

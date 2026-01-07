@@ -25,6 +25,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   const isAnalyzingRef = useRef(false);
   const resultRef = useRef<AnalyzedFood | null>(null);
   const { t, locale } = useTranslation();
+  const [scanMode, setScanMode] = useState<'auto' | 'photo'>('photo');
 
   const SCAN_INTERVAL = 2000;
 
@@ -114,6 +115,26 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
     }
   }, [result]);
 
+  const handleModeChange = useCallback((mode: 'auto' | 'photo') => {
+    setScanMode(mode);
+    setErrorMessage(null);
+    setResult(null);
+    setImage(null);
+    setUploadId(null);
+    setIsAnalyzing(false);
+    isAnalyzingRef.current = false;
+
+    setIsScanningActive(mode === 'auto');
+
+    const video = videoRef.current;
+    if (video && streamRef.current) {
+      const playPromise = video.play();
+      if (playPromise) {
+        playPromise.catch(() => {});
+      }
+    }
+  }, []);
+
   const captureFrame = useCallback(() => {
     const video = videoRef.current;
     if (!video) return null;
@@ -190,8 +211,21 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
     }
   }, [locale, t, user?.goal, user?.somatotype]);
 
+  const handleCapturePhoto = useCallback(async () => {
+    if (isAnalyzingRef.current) return;
+
+    const frame = captureFrame();
+    if (!frame) {
+      setErrorMessage(t('scanner.live.frameUnavailable'));
+      return;
+    }
+
+    setImage(frame);
+    await analyze(frame);
+  }, [analyze, captureFrame, t]);
+
   useEffect(() => {
-    if (!isScanningActive || !isCameraReady || resultRef.current) {
+    if (!isScanningActive || !isCameraReady || resultRef.current || scanMode !== 'auto') {
       return;
     }
 
@@ -212,7 +246,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
     return () => {
       window.clearInterval(intervalId);
     };
-  }, [analyze, captureFrame, isCameraReady, isScanningActive]);
+  }, [analyze, captureFrame, isCameraReady, isScanningActive, scanMode]);
 
   const handleConfirm = () => {
     if (!result) return;
@@ -238,7 +272,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
     setResult(null);
     setErrorMessage(null);
     setUploadId(null);
-    setIsScanningActive(true);
+    setIsScanningActive(scanMode === 'auto');
     const video = videoRef.current;
     if (video && streamRef.current) {
       const playPromise = video.play();

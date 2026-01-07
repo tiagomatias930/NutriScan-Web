@@ -127,8 +127,8 @@ const translations: Translations = {
       macros: '{{protein}}g P • {{carbs}}g C • {{fats}}g G',
     },
     hydrationToggle: {
-      on: 'Ligado',
-      off: 'Desligado',
+      on: 'On',
+      off: 'Off',
       titleOn: 'Lembretes de hidratação ativados',
       titleOff: 'Lembretes de hidratação desativados',
     },

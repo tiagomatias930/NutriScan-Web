@@ -22,6 +22,22 @@ interface NotificationAction {
   icon?: string;
 }
 
+interface PeriodicSyncManager {
+  register: (tag: string, options: { minInterval: number }) => Promise<void>;
+  unregister: (tag: string) => Promise<void>;
+  getTags: () => Promise<string[]>;
+}
+
+interface HydrationReminderState {
+  enabled: boolean;
+  intervalMs: number;
+  lastDrinkAt: number;
+  title: string;
+  body: string;
+}
+
+const HYDRATION_REMINDER_TAG = 'hydration-reminder';
+
 class PushNotificationService {
   private registration: ServiceWorkerRegistration | null = null;
   private isSupported = false;
@@ -47,6 +63,24 @@ class PushNotificationService {
     } catch (error) {
       console.error('Erro ao registrar Service Worker:', error);
       return false;
+    }
+  }
+
+  private async ensureRegistration(): Promise<ServiceWorkerRegistration | null> {
+    if (!this.isSupported) {
+      return null;
+    }
+
+    if (this.registration) {
+      return this.registration;
+    }
+
+    try {
+      this.registration = await navigator.serviceWorker.ready;
+      return this.registration;
+    } catch (error) {
+      console.error('Erro ao aguardar Service Worker pronto:', error);
+      return null;
     }
   }
 
@@ -176,6 +210,100 @@ class PushNotificationService {
         // Fallback para a API padrão de Notification
         new Notification(options.title, notificationOptions);
       }
+    }
+  }
+
+  private async postMessageToServiceWorker(message: unknown): Promise<void> {
+    if (!this.isSupported) {
+      return;
+    }
+
+    const registration = await this.ensureRegistration();
+    const controller = navigator.serviceWorker.controller || registration?.active;
+
+    if (!controller) {
+      return;
+    }
+
+    controller.postMessage(message);
+  }
+
+  async syncHydrationReminderState(state: HydrationReminderState): Promise<void> {
+    await this.postMessageToServiceWorker({
+      type: 'HYDRATION_SETTINGS_SYNC',
+      payload: state,
+    });
+
+    if (state.enabled) {
+      await this.registerHydrationReminder(state.intervalMs);
+    } else {
+      await this.unregisterHydrationReminder();
+    }
+  }
+
+  async recordHydrationIntake(timestamp: number): Promise<void> {
+    await this.postMessageToServiceWorker({
+      type: 'HYDRATION_LOG_DRINK',
+      payload: { timestamp },
+    });
+  }
+
+  async registerHydrationReminder(intervalMs: number): Promise<boolean> {
+    const registration = await this.ensureRegistration();
+    if (!registration) {
+      return false;
+    }
+
+    const periodicSync = (registration as ServiceWorkerRegistration & { periodicSync?: PeriodicSyncManager }).periodicSync;
+    if (!periodicSync) {
+      console.warn('Periodic background sync não suportado neste navegador');
+      return false;
+    }
+
+    try {
+      const permissionDescriptor = { name: 'periodic-background-sync' } as PermissionDescriptor;
+      const permissionStatus = await navigator.permissions?.query?.(permissionDescriptor).catch(() => null);
+      if (permissionStatus && permissionStatus.state === 'denied') {
+        console.warn('Permissão de periodic background sync negada');
+        return false;
+      }
+
+      const existingTags = await periodicSync.getTags();
+      if (existingTags.includes(HYDRATION_REMINDER_TAG)) {
+        await periodicSync.unregister(HYDRATION_REMINDER_TAG);
+      }
+
+      await periodicSync.register(HYDRATION_REMINDER_TAG, { minInterval: intervalMs });
+      console.log('Periodic hydration reminder registrado');
+      return true;
+    } catch (error) {
+      console.error('Erro ao registrar periodic hydration reminder:', error);
+      return false;
+    }
+  }
+
+  async unregisterHydrationReminder(): Promise<boolean> {
+    const registration = await this.ensureRegistration();
+    if (!registration) {
+      return false;
+    }
+
+    const periodicSync = (registration as ServiceWorkerRegistration & { periodicSync?: PeriodicSyncManager }).periodicSync;
+    if (!periodicSync) {
+      return false;
+    }
+
+    try {
+      const tags = await periodicSync.getTags();
+      if (!tags.includes(HYDRATION_REMINDER_TAG)) {
+        return true;
+      }
+      await periodicSync.unregister(HYDRATION_REMINDER_TAG);
+      console.log('Periodic hydration reminder cancelado');
+      return true;
+    } catch (error) {
+      console.error('Erro ao cancelar periodic hydration reminder:', error);
+      return false;
     }
   }
 

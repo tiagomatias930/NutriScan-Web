@@ -30,6 +30,13 @@ interface AppState {
   clearHistory: () => void;
 }
 
+const HISTORY_RETENTION_MS = 24 * 60 * 60 * 1000;
+
+const pruneHistoryEntries = (entries: { date: number; foodLog: FoodItem[]; waterIntake: number }[]) => {
+  const cutoff = Date.now() - HISTORY_RETENTION_MS;
+  return entries.filter((entry) => entry.date >= cutoff);
+};
+
 const INITIAL_USER: UserProfile = {
   name: '',
   gender: Gender.MALE,
@@ -78,7 +85,7 @@ export const useAppStore = create<AppState>()(
           const prevHistory = get().history || [];
           if ((prevFood && prevFood.length) || prevWater) {
             const archiveEntry = { date: last, foodLog: prevFood, waterIntake: prevWater };
-            set({ history: [archiveEntry, ...prevHistory] });
+            set({ history: pruneHistoryEntries([archiveEntry, ...prevHistory]) });
           }
           set({ foodLog: [], waterIntake: 0, lastReset: now });
         }
@@ -112,7 +119,7 @@ export const useAppStore = create<AppState>()(
           const prevHistory = get().history || [];
           if ((prevFood && prevFood.length) || prevWater) {
             const archiveEntry = { date: last, foodLog: prevFood, waterIntake: prevWater };
-            set({ history: [archiveEntry, ...prevHistory] });
+            set({ history: pruneHistoryEntries([archiveEntry, ...prevHistory]) });
           }
           set({ foodLog: [], waterIntake: 0, lastReset: now });
         }
@@ -143,13 +150,13 @@ export const useAppStore = create<AppState>()(
         const last = get().lastReset || now;
         if ((prevFood && prevFood.length) || prevWater) {
           const archiveEntry = { date: last, foodLog: prevFood, waterIntake: prevWater };
-          set({ history: [archiveEntry, ...prevHistory] });
+          set({ history: pruneHistoryEntries([archiveEntry, ...prevHistory]) });
         }
         set({ foodLog: [], waterIntake: 0, lastReset: now });
       },
 
       deleteHistoryEntry: (timestamp) => {
-        set((state) => ({ history: state.history.filter(h => h.date !== timestamp) }));
+        set((state) => ({ history: pruneHistoryEntries(state.history.filter(h => h.date !== timestamp)) }));
       },
 
       clearHistory: () => {
@@ -174,6 +181,10 @@ export const useAppStore = create<AppState>()(
             return d.getTime();
           };
 
+          if (state) {
+            state.history = pruneHistoryEntries(state.history || []);
+          }
+
           if (!persistedLast) {
             // initialize lastReset
             if (state) {
@@ -191,7 +202,7 @@ export const useAppStore = create<AppState>()(
               if ((prevFood && prevFood.length) || prevWater) {
                 const archiveEntry = { date: persistedLast, foodLog: prevFood, waterIntake: prevWater };
                 if (state) {
-                  state.history = [archiveEntry, ...prevHistory];
+                  state.history = pruneHistoryEntries([archiveEntry, ...prevHistory]);
                 }
               }
             } catch (e) {

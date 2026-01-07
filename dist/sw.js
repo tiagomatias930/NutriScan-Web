@@ -11,6 +11,21 @@ const CACHE_NAME = 'nutriscan-cache-v1';
 const RUNTIME_CACHE = 'nutriscan-runtime-v1';
 const API_CACHE = 'nutriscan-api-v1';
 const IMAGE_CACHE = 'nutriscan-images-v1';
+const HYDRATION_SETTINGS_CACHE = 'nutriscan-hydration-settings-v1';
+
+const HYDRATION_SETTINGS_KEY = '/hydration-settings';
+const HYDRATION_REMINDER_TAG = 'hydration-reminder';
+const HYDRATION_DEFAULT_INTERVAL = 2 * 60 * 60 * 1000;
+
+const DEFAULT_HYDRATION_SETTINGS = {
+  enabled: false,
+  lastDrinkAt: Date.now(),
+  intervalMs: HYDRATION_DEFAULT_INTERVAL,
+  title: 'Hora de se hidratar',
+  body: 'Beba um copo de água para manter o desempenho.'
+};
+
+let hydrationSettingsCache = null;
 
 // Assets para fazer pre-cache (carregam na instalação)
 const URLS_TO_CACHE = [
@@ -43,7 +58,7 @@ self.addEventListener('activate', (event) => {
       return Promise.all(
         keys.map((key) => {
           // Manter caches atuais
-          if (![CACHE_NAME, RUNTIME_CACHE, API_CACHE, IMAGE_CACHE].includes(key)) {
+          if (![CACHE_NAME, RUNTIME_CACHE, API_CACHE, IMAGE_CACHE, HYDRATION_SETTINGS_CACHE].includes(key)) {
             console.log('Service Worker: Deletando cache antigo:', key);
             return caches.delete(key);
           }
@@ -224,6 +239,34 @@ self.addEventListener('notificationclose', (event) => {
   console.log('Notification closed:', event.notification.tag);
 });
 
+self.addEventListener('message', (event) => {
+  const { data } = event;
+  if (!data || !data.type) {
+    return;
+  }
+
+  if (data.type === 'HYDRATION_SETTINGS_SYNC') {
+    const payload = data.payload || {};
+    hydrationSettingsCache = {
+      ...DEFAULT_HYDRATION_SETTINGS,
+      ...payload,
+      lastDrinkAt: payload.lastDrinkAt ?? DEFAULT_HYDRATION_SETTINGS.lastDrinkAt,
+    };
+    event.waitUntil(storeHydrationSettings(hydrationSettingsCache));
+  } else if (data.type === 'HYDRATION_LOG_DRINK') {
+    const timestamp = data.payload?.timestamp || Date.now();
+    hydrationSettingsCache = hydrationSettingsCache || { ...DEFAULT_HYDRATION_SETTINGS };
+    hydrationSettingsCache.lastDrinkAt = timestamp;
+    event.waitUntil(storeHydrationSettings(hydrationSettingsCache));
+  }
+});
+
+self.addEventListener('periodicsync', (event) => {
+  if (event.tag === HYDRATION_REMINDER_TAG) {
+    event.waitUntil(handleHydrationPeriodicReminder());
+  }
+});
+
 // Background Sync para sincronizar dados offline
 self.addEventListener('sync', (event) => {
   console.log('Background sync triggered:', event.tag);
@@ -292,4 +335,72 @@ async function syncWaterIntake() {
     console.error('Error syncing water intake:', error);
     throw error;
   }
+}
+
+async function handleHydrationPeriodicReminder() {
+  const settings = await getHydrationSettings();
+  if (!settings.enabled) {
+    return;
+  }
+
+  const interval = settings.intervalMs || HYDRATION_DEFAULT_INTERVAL;
+  const lastDrinkAt = settings.lastDrinkAt || 0;
+  const now = Date.now();
+
+  if (now - lastDrinkAt < interval) {
+    return;
+  }
+
+  const notificationOptions = {
+    body: settings.body,
+    icon: '/iconApp.png',
+    badge: '/iconApp.png',
+    tag: HYDRATION_REMINDER_TAG,
+    vibrate: [200, 100, 200],
+    data: {
+      url: '/',
+      type: 'hydration-reminder'
+    },
+    requireInteraction: true
+  };
+
+  await self.registration.showNotification(settings.title, notificationOptions);
+  hydrationSettingsCache = {
+    ...settings,
+    lastDrinkAt: now
+  };
+  await storeHydrationSettings(hydrationSettingsCache);
+}
+
+async function getHydrationSettings() {
+  if (hydrationSettingsCache) {
+    return hydrationSettingsCache;
+  }
+
+  const cache = await caches.open(HYDRATION_SETTINGS_CACHE);
+  const match = await cache.match(HYDRATION_SETTINGS_KEY);
+
+  if (!match) {
+    hydrationSettingsCache = { ...DEFAULT_HYDRATION_SETTINGS };
+    return hydrationSettingsCache;
+  }
+
+  try {
+    const stored = await match.json();
+    hydrationSettingsCache = {
+      ...DEFAULT_HYDRATION_SETTINGS,
+      ...stored
+    };
+  } catch (error) {
+    console.warn('Falha ao ler configurações de hidratação, usando padrão:', error);
+    hydrationSettingsCache = { ...DEFAULT_HYDRATION_SETTINGS };
+  }
+
+  return hydrationSettingsCache;
+}
+
+async function storeHydrationSettings(settings) {
+  const cache = await caches.open(HYDRATION_SETTINGS_CACHE);
+  const response = new Response(JSON.stringify(settings));
+  await cache.put(HYDRATION_SETTINGS_KEY, response);
 }

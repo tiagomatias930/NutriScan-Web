@@ -13,6 +13,8 @@ export const HydrationReminder: React.FC = () => {
   const timeoutRef = useRef<number | null>(null);
   const [showNotification, setShowNotification] = useState(false);
   const { t } = useTranslation();
+  const hydrationTitle = t('hydrationReminder.title');
+  const hydrationBody = t('hydrationReminder.body');
 
   useEffect(() => {
     // Request notification permission once when the component mounts if enabled
@@ -29,6 +31,29 @@ export const HydrationReminder: React.FC = () => {
       }
     })();
   }, [hydrationEnabled]);
+
+  useEffect(() => {
+    const syncBackgroundReminder = async () => {
+      if (!pushNotificationService.isNotificationSupported()) {
+        return;
+      }
+
+      try {
+        await pushNotificationService.init();
+        await pushNotificationService.syncHydrationReminderState({
+          enabled: hydrationEnabled,
+          intervalMs: TWO_HOURS,
+          lastDrinkAt: lastDrinkAt ?? Date.now(),
+          title: hydrationTitle,
+          body: hydrationBody,
+        });
+      } catch (error) {
+        console.error('Failed to sync hydration reminder state with Service Worker:', error);
+      }
+    };
+
+    syncBackgroundReminder();
+  }, [hydrationBody, hydrationEnabled, hydrationTitle, lastDrinkAt]);
 
   useEffect(() => {
     // Clear any existing timeout
@@ -61,15 +86,12 @@ export const HydrationReminder: React.FC = () => {
   }, [hydrationEnabled, lastDrinkAt]);
 
   const sendReminder = async () => {
-    const title = t('hydrationReminder.title');
-    const body = t('hydrationReminder.body');
-
     // Tenta enviar como Web Push primeiro (funciona mesmo com app fechado)
     if (pushNotificationService.isNotificationEnabled()) {
       try {
         await pushNotificationService.showLocalNotification({
-          title,
-          body,
+          title: hydrationTitle,
+          body: hydrationBody,
           tag: 'hydration-reminder',
           icon: '/iconApp.png',
           badge: '/iconApp.png',
@@ -88,7 +110,7 @@ export const HydrationReminder: React.FC = () => {
     // Fallback: Desktop/browser notification quando permitido
     if (typeof Notification !== 'undefined' && Notification.permission === 'granted') {
       try {
-        new Notification(title, { body, tag: 'hydration-reminder', icon: '💧' });
+        new Notification(hydrationTitle, { body: hydrationBody, tag: 'hydration-reminder', icon: '💧' });
       } catch (e) {
         console.warn('Standard notification failed, showing modal instead', e);
         setShowNotification(true);
@@ -102,7 +124,9 @@ export const HydrationReminder: React.FC = () => {
   const handleNotificationConfirm = () => {
     setShowNotification(false);
     // Update the last drink time to reset the 2-hour timer
-    setLastDrinkAt(Date.now());
+    const now = Date.now();
+    setLastDrinkAt(now);
+    pushNotificationService.recordHydrationIntake(now).catch(() => {});
   };
 
   const handleNotificationDismiss = () => {

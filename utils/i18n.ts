@@ -168,8 +168,8 @@ const translations: Translations = {
     },
     scanner: {
       headerTitle: 'Analisador de imagem',
-      captureTitle: 'Tirar foto',
-      captureSubtitle: 'ou selecione na galeria',
+      captureTitle: ' ',
+      captureSubtitle: ' ',
       processing: {
         title: 'Processando imagem...',
         description: 'Compactando e preparando para análise',
@@ -388,8 +388,8 @@ const translations: Translations = {
     },
     scanner: {
       headerTitle: 'Image analyzer',
-      captureTitle: 'Take a photo',
-      captureSubtitle: 'or pick from gallery',
+      captureTitle: ' ',
+      captureSubtitle: ' ',
       processing: {
         title: 'Processing image...',
         description: 'Compressing and preparing for analysis',

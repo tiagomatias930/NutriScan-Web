@@ -111,7 +111,7 @@ Additional notes (if applicable):
         }
       });
 
-      const text = response.text;
+      const text = response.text();
       if (!text) throw new Error("No response from Gemini");
 
       // Clean up markdown if present (just in case)

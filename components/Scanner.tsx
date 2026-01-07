@@ -5,7 +5,7 @@ import { FoodItem } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import { useTranslation } from '../utils/i18n';
 
-const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
+const MAX_UPLOAD_BYTES = 3 * 1024 * 1024;
 const DEFAULT_ANALYSIS_MAX_DIMENSION = 1280;
 const HIGH_QUALITY_MAX_DIMENSION = 1600;
 
@@ -17,6 +17,7 @@ type OptimizeOptions = {
   qualityStep?: number;
   scaleStep?: number;
   minScale?: number;
+  preferWebp?: boolean;
 };
 
 const getDataUrlByteLength = (dataUrl: string): number => {
@@ -43,7 +44,8 @@ const drawOptimizedDataUrl = (
   canvas: HTMLCanvasElement,
   ctx: CanvasRenderingContext2D,
   scale: number,
-  quality: number
+  quality: number,
+  mimeType: 'image/jpeg' | 'image/webp' = 'image/jpeg'
 ): string => {
   const width = Math.max(1, Math.round(img.width * scale));
   const height = Math.max(1, Math.round(img.height * scale));
@@ -53,7 +55,7 @@ const drawOptimizedDataUrl = (
   ctx.imageSmoothingQuality = 'high';
   ctx.clearRect(0, 0, width, height);
   ctx.drawImage(img, 0, 0, width, height);
-  return canvas.toDataURL('image/jpeg', quality);
+  return canvas.toDataURL(mimeType, quality);
 };
 
 // Keeps uploaded frames within the Gemini upload size constraints.
@@ -69,7 +71,8 @@ const optimizeImageDataUrl = async (dataUrl: string, options?: OptimizeOptions):
     minQuality = 0.4,
     qualityStep = 0.05,
     scaleStep = 0.75,
-    minScale = 0.3
+    minScale = 0.3,
+    preferWebp = true
   } = options ?? {};
 
   try {
@@ -88,13 +91,24 @@ const optimizeImageDataUrl = async (dataUrl: string, options?: OptimizeOptions):
       return dataUrl;
     }
 
+    const canUseWebp = preferWebp
+      ? (() => {
+          try {
+            return canvas.toDataURL('image/webp').startsWith('data:image/webp');
+          } catch {
+            return false;
+          }
+        })()
+      : false;
+
     let scale = needsResize ? Math.min(1, maxDimension / Math.max(img.width, img.height)) : 1;
     let quality = Math.min(1, Math.max(0.1, initialQuality));
-    let optimized = drawOptimizedDataUrl(img, canvas, ctx, scale, quality);
+    let mimeType: 'image/jpeg' | 'image/webp' = 'image/jpeg';
+    let optimized = drawOptimizedDataUrl(img, canvas, ctx, scale, quality, mimeType);
     let optimizedBytes = getDataUrlByteLength(optimized);
     let attempts = 0;
 
-    while (optimizedBytes > maxBytes && attempts < 18) {
+    while (optimizedBytes > maxBytes && attempts < 24) {
       attempts += 1;
       const canReduceQuality = quality - qualityStep >= minQuality - 0.001;
       const canReduceScale = scale * scaleStep >= minScale - 0.001;
@@ -103,12 +117,15 @@ const optimizeImageDataUrl = async (dataUrl: string, options?: OptimizeOptions):
         quality = Math.max(minQuality, quality - qualityStep);
       } else if (canReduceScale) {
         scale = Math.max(minScale, scale * scaleStep);
-        quality = Math.min(1, Math.max(minQuality, initialQuality));
+        quality = Math.max(minQuality, Math.min(quality, initialQuality));
+      } else if (mimeType === 'image/jpeg' && canUseWebp) {
+        mimeType = 'image/webp';
+        quality = Math.max(minQuality, Math.min(0.9, quality));
       } else {
         break;
       }
 
-      optimized = drawOptimizedDataUrl(img, canvas, ctx, scale, quality);
+      optimized = drawOptimizedDataUrl(img, canvas, ctx, scale, quality, mimeType);
       optimizedBytes = getDataUrlByteLength(optimized);
     }
 
@@ -275,7 +292,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
     ctx.drawImage(video, 0, 0, width, height);
-    return canvas.toDataURL('image/jpeg', 0.85);
+    return canvas.toDataURL('image/jpeg', 0.8);
   }, []);
 
   const analyze = useCallback(async (base64Full: string) => {

@@ -5,7 +5,7 @@ import { FoodItem } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import { useTranslation } from '../utils/i18n';
 
-const MAX_UPLOAD_BYTES = 4.5 * 1024 * 1024;
+const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
 const DEFAULT_ANALYSIS_MAX_DIMENSION = 1280;
 const HIGH_QUALITY_MAX_DIMENSION = 1600;
 
@@ -16,6 +16,7 @@ type OptimizeOptions = {
   minQuality?: number;
   qualityStep?: number;
   scaleStep?: number;
+  minScale?: number;
 };
 
 const getDataUrlByteLength = (dataUrl: string): number => {
@@ -64,10 +65,11 @@ const optimizeImageDataUrl = async (dataUrl: string, options?: OptimizeOptions):
   const {
     maxDimension = DEFAULT_ANALYSIS_MAX_DIMENSION,
     maxBytes = MAX_UPLOAD_BYTES,
-    initialQuality = 0.92,
-    minQuality = 0.6,
-    qualityStep = 0.08,
-    scaleStep = 0.85
+    initialQuality = 0.88,
+    minQuality = 0.4,
+    qualityStep = 0.05,
+    scaleStep = 0.75,
+    minScale = 0.3
   } = options ?? {};
 
   try {
@@ -92,12 +94,16 @@ const optimizeImageDataUrl = async (dataUrl: string, options?: OptimizeOptions):
     let optimizedBytes = getDataUrlByteLength(optimized);
     let attempts = 0;
 
-    while (optimizedBytes > maxBytes && attempts < 8) {
+    while (optimizedBytes > maxBytes && attempts < 18) {
       attempts += 1;
-      if (quality - qualityStep >= minQuality) {
+      const canReduceQuality = quality - qualityStep >= minQuality - 0.001;
+      const canReduceScale = scale * scaleStep >= minScale - 0.001;
+
+      if (canReduceQuality) {
         quality = Math.max(minQuality, quality - qualityStep);
-      } else if (scale * scaleStep >= 0.4) {
-        scale = scale * scaleStep;
+      } else if (canReduceScale) {
+        scale = Math.max(minScale, scale * scaleStep);
+        quality = Math.min(1, Math.max(minQuality, initialQuality));
       } else {
         break;
       }

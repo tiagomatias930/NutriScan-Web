@@ -24,8 +24,9 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   const streamRef = useRef<MediaStream | null>(null);
   const isAnalyzingRef = useRef(false);
   const resultRef = useRef<AnalyzedFood | null>(null);
+  const scanModeRef = useRef<'auto' | 'photo'>('photo');
   const { t, locale } = useTranslation();
-  const [scanMode, setScanMode] = useState<'auto' | 'photo'>('photo');
+  const [scanMode, setScanMode] = useState<'auto' | 'photo'>(scanModeRef.current);
 
   const SCAN_INTERVAL = 2000;
 
@@ -62,7 +63,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
           video.onloadedmetadata = () => {
             if (cancelled) return;
             setIsCameraReady(true);
-            setIsScanningActive(true);
+            setIsScanningActive(scanModeRef.current === 'auto');
             setErrorMessage(null);
             const playPromise = video.play();
             if (playPromise) {
@@ -72,7 +73,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
 
           if (video.readyState >= 2) {
             setIsCameraReady(true);
-            setIsScanningActive(true);
+            setIsScanningActive(scanModeRef.current === 'auto');
             setErrorMessage(null);
             const playPromise = video.play();
             if (playPromise) {
@@ -81,7 +82,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
           }
         } else {
           setIsCameraReady(true);
-          setIsScanningActive(true);
+          setIsScanningActive(scanModeRef.current === 'auto');
           setErrorMessage(null);
         }
       } catch (err) {
@@ -116,6 +117,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   }, [result]);
 
   const handleModeChange = useCallback((mode: 'auto' | 'photo') => {
+    scanModeRef.current = mode;
     setScanMode(mode);
     setErrorMessage(null);
     setResult(null);
@@ -383,9 +385,64 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
           )}
 
           {!result && isCameraReady && (
-            <div className="absolute bottom-10 left-1/2 -translate-x-1/2 bg-dark/70 px-5 py-3 rounded-2xl text-center text-textLight z-10 border border-glassMedium shadow-lg">
-              <div className="font-semibold uppercase tracking-wide text-xs text-primary/80">{t('scanner.live.title')}</div>
-              <div className="text-sm text-textMuted mt-1">{t('scanner.live.subtitle')}</div>
+            <div className="absolute bottom-6 left-0 right-0 px-6 flex flex-col items-center gap-4 z-30 pointer-events-none">
+              <div className="bg-dark/80 px-6 py-4 rounded-2xl text-center text-textLight border border-glassMedium shadow-lg pointer-events-auto w-full max-w-md">
+                <div className="font-semibold uppercase tracking-wide text-xs text-primary/80">
+                  {scanMode === 'auto' ? t('scanner.live.title') : t('scanner.captureTitle')}
+                </div>
+                <div className="text-sm text-textMuted mt-1">
+                  {scanMode === 'auto' ? t('scanner.live.subtitle') : t('scanner.captureSubtitle')}
+                </div>
+              </div>
+
+              <div className="glass-lg rounded-2xl p-4 border border-white/10 shadow-xl pointer-events-auto w-full max-w-md">
+                <div className="grid grid-cols-2 gap-2">
+                  {(['auto', 'photo'] as const).map((modeOption) => {
+                    const isActive = scanMode === modeOption;
+                    return (
+                      <button
+                        key={modeOption}
+                        type="button"
+                        onClick={() => handleModeChange(modeOption)}
+                        aria-pressed={isActive}
+                        className={`py-2 px-3 rounded-xl border text-sm font-semibold flex items-center justify-center gap-2 transition-all ${
+                          isActive
+                            ? 'bg-primary/20 border-primary text-white shadow-lg shadow-primary/30'
+                            : 'bg-glassDark border-transparent text-textMuted hover:bg-glass'
+                        }`}
+                      >
+                        <span className="material-icons text-base">
+                          {modeOption === 'auto' ? 'autorenew' : 'photo_camera'}
+                        </span>
+                        <span>
+                          {modeOption === 'auto' ? t('scanner.modes.auto') : t('scanner.modes.photo')}
+                        </span>
+                      </button>
+                    );
+                  })}
+                </div>
+                <div className="text-xs text-textMuted text-center mt-3">
+                  {scanMode === 'auto' ? t('scanner.modeDescriptions.auto') : t('scanner.modeDescriptions.photo')}
+                </div>
+              </div>
+
+              {scanMode === 'photo' && (
+                <div className="flex flex-col items-center gap-2 pointer-events-auto">
+                  <button
+                    type="button"
+                    onClick={handleCapturePhoto}
+                    disabled={isAnalyzing || !isCameraReady}
+                    aria-label={t('scanner.actions.capture')}
+                    className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-secondary text-dark flex items-center justify-center shadow-xl shadow-primary/40 border border-white/20 transition-transform hover:scale-105 disabled:opacity-60 disabled:hover:scale-100"
+                  >
+                    <span className="material-icons text-3xl">
+                      {isAnalyzing ? 'hourglass_top' : 'photo_camera'}
+                    </span>
+                  </button>
+                  <span className="text-xs uppercase tracking-wide text-textLight">{t('scanner.actions.capture')}</span>
+                  <span className="text-[11px] text-textMuted">{t('scanner.modeDescriptions.photo')}</span>
+                </div>
+              )}
             </div>
           )}
 

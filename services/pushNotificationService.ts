@@ -261,7 +261,7 @@ class PushNotificationService {
     }
 
     try {
-      const permissionDescriptor = { name: 'periodic-background-sync' } as PermissionDescriptor;
+      const permissionDescriptor = { name: 'periodic-background-sync' } as unknown as PermissionDescriptor;
       const permissionStatus = await navigator.permissions?.query?.(permissionDescriptor).catch(() => null);
       if (permissionStatus && permissionStatus.state === 'denied') {
         console.warn('Permissão de periodic background sync negada');

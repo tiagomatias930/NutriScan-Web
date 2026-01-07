@@ -184,6 +184,14 @@ const translations: Translations = {
         waitCamera: 'Preparando a câmera...',
         frameUnavailable: 'Não foi possível capturar a imagem do scanner.',
       },
+      modes: {
+        auto: 'Escaneamento automático',
+        photo: 'Captura manual',
+      },
+      modeDescriptions: {
+        auto: 'Captura frames automaticamente a cada poucos segundos.',
+        photo: 'Toque no botão para tirar uma foto quando estiver pronto.',
+      },
       confidence: 'Confiança:',
       lowConfidenceTitle: 'Baixa confiança na estimativa',
       lowConfidenceMessage: 'Se os valores parecerem incorretos, ajuste manualmente ou reanalise em maior qualidade.',
@@ -198,6 +206,7 @@ const translations: Translations = {
         reanalyze: 'Reanalisar',
         add: 'Adicionar ao registro',
         listen: 'Ouvir resultado',
+        capture: 'Capturar foto',
       },
       errors: {
         invalidFormat: 'Formato inválido. Selecione uma imagem.',
@@ -395,6 +404,14 @@ const translations: Translations = {
         waitCamera: 'Warming up the camera...',
         frameUnavailable: 'Could not capture the video frame.',
       },
+      modes: {
+        auto: 'Auto scan',
+        photo: 'Photo capture',
+      },
+      modeDescriptions: {
+        auto: 'Captures frames every few seconds without tapping.',
+        photo: 'Tap the shutter button whenever you are ready.',
+      },
       confidence: 'Confidence:',
       lowConfidenceTitle: 'Low confidence in this estimate',
       lowConfidenceMessage: 'If the values look off, adjust manually or re-run with a higher quality photo.',
@@ -409,6 +426,7 @@ const translations: Translations = {
         reanalyze: 'Re-analyze',
         add: 'Add to log',
         listen: 'Listen to results',
+        capture: 'Capture photo',
       },
       errors: {
         invalidFormat: 'Invalid format. Please pick an image.',

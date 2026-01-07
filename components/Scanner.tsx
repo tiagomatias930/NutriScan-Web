@@ -5,8 +5,8 @@ import { FoodItem } from '../types';
 import { v4 as uuidv4 } from 'uuid';
 import { useTranslation } from '../utils/i18n';
 
-const MAX_UPLOAD_BYTES = 2.5 * 1024 * 1024;
-const DEFAULT_ANALYSIS_MAX_DIMENSION = 960;
+const MAX_UPLOAD_BYTES = 3.5 * 1024 * 1024;
+const DEFAULT_ANALYSIS_MAX_DIMENSION = 1024;
 const HIGH_QUALITY_MAX_DIMENSION = 1280;
 
 type OptimizeOptions = {
@@ -67,11 +67,11 @@ const optimizeImageDataUrl = async (dataUrl: string, options?: OptimizeOptions):
   const {
     maxDimension = DEFAULT_ANALYSIS_MAX_DIMENSION,
     maxBytes = MAX_UPLOAD_BYTES,
-    initialQuality = 0.88,
-    minQuality = 0.4,
+    initialQuality = 0.85,
+    minQuality = 0.5,
     qualityStep = 0.05,
-    scaleStep = 0.75,
-    minScale = 0.3,
+    scaleStep = 0.8,
+    minScale = 0.4,
     preferWebp = true
   } = options ?? {};
 
@@ -108,18 +108,18 @@ const optimizeImageDataUrl = async (dataUrl: string, options?: OptimizeOptions):
     let optimizedBytes = getDataUrlByteLength(optimized);
     let attempts = 0;
 
-    while (optimizedBytes > maxBytes && attempts < 32) {
+    while (optimizedBytes > maxBytes && attempts < 28) {
       attempts += 1;
-      const canReduceScale = scale * scaleStep >= minScale - 0.001;
       const canReduceQuality = quality - qualityStep >= minQuality - 0.001;
+      const canReduceScale = scale * scaleStep >= minScale - 0.001;
 
-      if (canReduceScale) {
-        scale = Math.max(minScale, scale * scaleStep);
-      } else if (canReduceQuality) {
+      if (canReduceQuality) {
         quality = Math.max(minQuality, quality - qualityStep);
+      } else if (canReduceScale) {
+        scale = Math.max(minScale, scale * scaleStep);
       } else if (mimeType === 'image/jpeg' && canUseWebp) {
         mimeType = 'image/webp';
-        quality = Math.max(minQuality, quality - 0.1);
+        quality = Math.max(minQuality, quality - 0.08);
       } else {
         break;
       }
@@ -291,7 +291,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
     const ctx = canvas.getContext('2d');
     if (!ctx) return null;
     ctx.drawImage(video, 0, 0, width, height);
-    return canvas.toDataURL('image/jpeg', 0.7);
+    return canvas.toDataURL('image/jpeg', 0.82);
   }, []);
 
   const analyze = useCallback(async (base64Full: string) => {
@@ -362,9 +362,9 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
     const optimizedFrame = await optimizeImageDataUrl(frame, {
       maxDimension: DEFAULT_ANALYSIS_MAX_DIMENSION,
       maxBytes: MAX_UPLOAD_BYTES,
-      initialQuality: 0.75,
-      minQuality: 0.3,
-      qualityStep: 0.08
+      initialQuality: 0.85,
+      minQuality: 0.5,
+      qualityStep: 0.05
     });
 
     setImage(optimizedFrame);
@@ -391,9 +391,9 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
         const optimizedFrame = await optimizeImageDataUrl(frame, {
           maxDimension: DEFAULT_ANALYSIS_MAX_DIMENSION,
           maxBytes: MAX_UPLOAD_BYTES,
-          initialQuality: 0.75,
-          minQuality: 0.3,
-          qualityStep: 0.08
+          initialQuality: 0.85,
+          minQuality: 0.5,
+          qualityStep: 0.05
         });
 
         setImage(optimizedFrame);

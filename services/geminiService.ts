@@ -99,7 +99,7 @@ Additional notes (if applicable):
     try {
       // Using Gemini 3 Flash for high reasoning capabilities on images
       const response = await ai.models.generateContent({
-        model: 'gemini-3-flash',
+        model: 'gemini-2.5-flash',
         contents: {
           parts: [
             { inlineData: { mimeType: 'image/jpeg', data: base64Image } },
@@ -111,7 +111,7 @@ Additional notes (if applicable):
         }
       });
 
-      const text = response.text();
+      const text = response.text?.toString();
       if (!text) throw new Error("No response from Gemini");
 
       // Clean up markdown if present (just in case)
@@ -155,7 +155,7 @@ Additional notes (if applicable):
       // Ideally use ai.chats.create, but to mix search grounding dynamically, we'll use generateContent with tools.
       
       const response = await ai.models.generateContent({
-        model: 'gemini-3-pro-preview', // Using Flash for fast chat + Search
+        model: 'gemini-2.5-flash', // Using Flash for fast chat + Search
         contents: [
             { role: 'user', parts: [{ text: `System: ${systemInstruction}` }] },
             ...history.map(h => ({ role: h.role, parts: [{ text: h.text }] })),

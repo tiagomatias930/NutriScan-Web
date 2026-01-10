@@ -160,17 +160,11 @@ const translations: Translations = {
       },
       sources: 'Fontes',
     },
-    imagePicker: {
-      title: 'Selecionar fonte',
-      camera: 'Usar câmera',
-      gallery: 'Escolher da galeria',
-      cancel: 'Cancelar',
-    },
     scanner: {
       headerTitle: 'Analisador de imagem',
       captureTitle: ' ',
       captureSubtitle: ' ',
-      importTitle: 'Importar imagem',
+      importTitle: 'Escolher a imagem',
       importSubtitle: 'Selecione uma imagem do seu dispositivo',
       processing: {
         title: 'Processando imagem...',
@@ -179,26 +173,6 @@ const translations: Translations = {
       analyzing: {
         title: 'Analisando os alimentos...',
         description: 'Identificando macronutrientes e calorias',
-      },
-      live: {
-        title: 'Posicione o alimento',
-        subtitle: 'Mantenha a câmera firme e aguarde a análise automática.',
-        waitCamera: 'Preparando a câmera...',
-        frameUnavailable: 'Não foi possível capturar a imagem do scanner.',
-      },
-      fileMode: {
-        title: 'Pronto para importar',
-        subtitle: 'Clique no botão abaixo para selecionar uma imagem',
-      },
-      modes: {
-        auto: 'Escaneamento automático',
-        photo: 'Captura manual',
-        file: 'Importar arquivo',
-      },
-      modeDescriptions: {
-        auto: 'Captura frames automaticamente a cada poucos segundos.',
-        photo: 'Toque no botão para tirar uma foto quando estiver pronto.',
-        file: 'Selecione uma imagem do seu dispositivo para análise.',
       },
       confidence: 'Confiança:',
       lowConfidenceTitle: 'Baixa confiança na estimativa',
@@ -215,7 +189,7 @@ const translations: Translations = {
         add: 'Adicionar ao registro',
         listen: 'Ouvir resultado',
         capture: 'Capturar foto',
-        import: 'Importar imagem',
+        import: 'Escolher imagem',
       },
       errors: {
         invalidFormat: 'Formato inválido. Selecione uma imagem.',
@@ -391,17 +365,11 @@ const translations: Translations = {
       },
       sources: 'Sources',
     },
-    imagePicker: {
-      title: 'Choose source',
-      camera: 'Use camera',
-      gallery: 'Pick from gallery',
-      cancel: 'Cancel',
-    },
     scanner: {
       headerTitle: 'Image analyzer',
       captureTitle: ' ',
       captureSubtitle: ' ',
-      importTitle: 'Import image',
+      importTitle: 'choose an image',
       importSubtitle: 'Select an image from your device',
       processing: {
         title: 'Processing image...',
@@ -410,26 +378,6 @@ const translations: Translations = {
       analyzing: {
         title: 'Analyzing your food...',
         description: 'Identifying macronutrients and calories',
-      },
-      live: {
-        title: 'Frame your meal',
-        subtitle: 'Hold the camera steady and we will analyze automatically.',
-        waitCamera: 'Warming up the camera...',
-        frameUnavailable: 'Could not capture the video frame.',
-      },
-      fileMode: {
-        title: 'Ready to import',
-        subtitle: 'Click the button below to select an image',
-      },
-      modes: {
-        auto: 'Auto scan',
-        photo: 'Photo capture',
-        file: 'Import file',
-      },
-      modeDescriptions: {
-        auto: 'Captures frames every few seconds without tapping.',
-        photo: 'Tap the shutter button whenever you are ready.',
-        file: 'Select an image from your device for analysis.',
       },
       confidence: 'Confidence:',
       lowConfidenceTitle: 'Low confidence in this estimate',
@@ -445,7 +393,7 @@ const translations: Translations = {
         reanalyze: 'Re-analyze',
         add: 'Add to log',
         listen: 'Listen to results',
-        capture: 'Capture photo',        import: 'Import image',      },
+        capture: 'Capture photo',        import: 'Choose image',      },
       errors: {
         invalidFormat: 'Invalid format. Please pick an image.',
         tooLarge: 'Image is too large. Try a smaller photo (max 5MB).',

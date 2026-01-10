@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from 'react';
+import React, { useCallback, useRef, useState } from 'react';
 import { geminiService, AnalyzedFood } from '../services/geminiService';
 import { useAppStore } from '../store';
 import { FoodItem } from '../types';
@@ -171,151 +171,12 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   const [image, setImage] = useState<string | null>(null);
   const [uploadId, setUploadId] = useState<string | null>(null);
   const [isAnalyzing, setIsAnalyzing] = useState(false);
-  const [isCameraReady, setIsCameraReady] = useState(false);
-  const [isScanningActive, setIsScanningActive] = useState(false);
   const [result, setResult] = useState<AnalyzedFood | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
   const [isPlayingAudio, setIsPlayingAudio] = useState(false);
-  const videoRef = useRef<HTMLVideoElement>(null);
-  const offscreenCanvasRef = useRef<HTMLCanvasElement | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
   const isAnalyzingRef = useRef(false);
-  const resultRef = useRef<AnalyzedFood | null>(null);
   const originalImageRef = useRef<string | null>(null);
-  const scanModeRef = useRef<'auto' | 'photo' | 'file'>('photo');
   const { t, locale } = useTranslation();
-  const [scanMode, setScanMode] = useState<'auto' | 'photo' | 'file'>(scanModeRef.current);
-
-  const SCAN_INTERVAL = 2000;
-
-  const stopCamera = useCallback(() => {
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach((track) => track.stop());
-      streamRef.current = null;
-    }
-  }, []);
-
-  useEffect(() => {
-    let cancelled = false;
-
-    const initCamera = async () => {
-      if (!navigator.mediaDevices?.getUserMedia) {
-        setErrorMessage(t('scanner.errors.cameraUnavailable'));
-        return;
-      }
-
-      setIsCameraReady(false);
-
-      try {
-        const stream = await navigator.mediaDevices.getUserMedia({ video: { facingMode: 'environment' } });
-        if (cancelled) {
-          stream.getTracks().forEach((track) => track.stop());
-          return;
-        }
-
-        streamRef.current = stream;
-        const video = videoRef.current;
-
-        if (video) {
-          video.srcObject = stream;
-          video.onloadedmetadata = () => {
-            if (cancelled) return;
-            setIsCameraReady(true);
-            setIsScanningActive(scanModeRef.current === 'auto');
-            setErrorMessage(null);
-            const playPromise = video.play();
-            if (playPromise) {
-              playPromise.catch(() => {});
-            }
-          };
-
-          if (video.readyState >= 2) {
-            setIsCameraReady(true);
-            setIsScanningActive(scanModeRef.current === 'auto');
-            setErrorMessage(null);
-            const playPromise = video.play();
-            if (playPromise) {
-              playPromise.catch(() => {});
-            }
-          }
-        } else {
-          setIsCameraReady(true);
-          setIsScanningActive(scanModeRef.current === 'auto');
-          setErrorMessage(null);
-        }
-      } catch (err) {
-        console.error('Camera initialization failed', err);
-        setErrorMessage(t('scanner.errors.cameraUnavailable'));
-      }
-    };
-
-    initCamera();
-
-    return () => {
-      cancelled = true;
-      setIsScanningActive(false);
-      stopCamera();
-    };
-  }, [stopCamera, t]);
-
-  useEffect(() => {
-    resultRef.current = result;
-  }, [result]);
-
-  useEffect(() => {
-    if (!result) {
-      return;
-    }
-
-    setIsScanningActive(false);
-    const video = videoRef.current;
-    if (video && !video.paused) {
-      video.pause();
-    }
-  }, [result]);
-
-  const handleModeChange = useCallback((mode: 'auto' | 'photo' | 'file') => {
-    scanModeRef.current = mode;
-    setScanMode(mode);
-    setErrorMessage(null);
-    setResult(null);
-    setImage(null);
-    originalImageRef.current = null;
-    setUploadId(null);
-    setIsAnalyzing(false);
-    isAnalyzingRef.current = false;
-
-    setIsScanningActive(mode === 'auto');
-
-    const video = videoRef.current;
-    if (video && streamRef.current) {
-      const playPromise = video.play();
-      if (playPromise) {
-        playPromise.catch(() => {});
-      }
-    }
-  }, []);
-
-  const captureFrame = useCallback(() => {
-    const video = videoRef.current;
-    if (!video) return null;
-
-    const isReady = video.readyState >= 2;
-    if (!isReady) return null;
-
-    const width = video.videoWidth;
-    const height = video.videoHeight;
-    if (!width || !height) return null;
-
-    const canvas = offscreenCanvasRef.current ?? document.createElement('canvas');
-    offscreenCanvasRef.current = canvas;
-    canvas.width = width;
-    canvas.height = height;
-    const ctx = canvas.getContext('2d');
-    if (!ctx) return null;
-    ctx.drawImage(video, 0, 0, width, height);
-    return canvas.toDataURL('image/jpeg', 0.85);
-  }, []);
 
   const analyze = useCallback(async (base64Full: string) => {
     // Expect a dataURL (e.g. data:image/jpeg;base64,....)
@@ -372,25 +233,6 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
     }
   }, [locale, t, user?.goal, user?.somatotype]);
 
-  const handleCapturePhoto = useCallback(async () => {
-    if (isAnalyzingRef.current) return;
-
-    const frame = captureFrame();
-    if (!frame) {
-      setErrorMessage(t('scanner.live.frameUnavailable'));
-      return;
-    }
-
-    originalImageRef.current = frame;
-    const optimizedFrame = await optimizeImageDataUrl(frame, {
-      maxDimension: DEFAULT_ANALYSIS_MAX_DIMENSION,
-      maxBytes: MAX_UPLOAD_BYTES
-    });
-
-    setImage(optimizedFrame);
-    await analyze(optimizedFrame);
-  }, [analyze, captureFrame, t]);
-
   const handleImportFile = useCallback(async () => {
     if (isAnalyzingRef.current) return;
 
@@ -425,38 +267,6 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
     }
   }, [analyze, t]);
 
-  useEffect(() => {
-    if (!isScanningActive || !isCameraReady || resultRef.current || scanMode !== 'auto') {
-      return;
-    }
-
-    const intervalId = window.setInterval(() => {
-      void (async () => {
-        if (isAnalyzingRef.current || resultRef.current) {
-          return;
-        }
-
-        const frame = captureFrame();
-        if (!frame) {
-          return;
-        }
-
-        originalImageRef.current = frame;
-        const optimizedFrame = await optimizeImageDataUrl(frame, {
-          maxDimension: DEFAULT_ANALYSIS_MAX_DIMENSION,
-          maxBytes: MAX_UPLOAD_BYTES
-        });
-
-        setImage(optimizedFrame);
-        await analyze(optimizedFrame);
-      })();
-    }, SCAN_INTERVAL);
-
-    return () => {
-      window.clearInterval(intervalId);
-    };
-  }, [analyze, captureFrame, isCameraReady, isScanningActive, scanMode]);
-
   const handleConfirm = () => {
     if (!result) return;
 
@@ -482,14 +292,6 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
     setErrorMessage(null);
     originalImageRef.current = null;
     setUploadId(null);
-    setIsScanningActive(scanMode === 'auto');
-    const video = videoRef.current;
-    if (video && streamRef.current) {
-      const playPromise = video.play();
-      if (playPromise) {
-        playPromise.catch(() => {});
-      }
-    }
   };
 
   // (Removed manual-edit inputs; keep model estimates read-only)
@@ -550,112 +352,41 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
                 {t('scanner.live.frameUnavailable')}
               </div>
             )
-          ) : scanMode !== 'file' ? (
-            <video
-              ref={videoRef}
-              className="w-full h-full object-cover"
-              playsInline
-              muted
-              autoPlay
-            />
+          ) : image ? (
+            <img src={image} alt="Food" className="w-full h-full object-cover opacity-80" />
           ) : (
             <div className="w-full h-full flex items-center justify-center bg-dark/50">
               <div className="text-center text-textLight/60">
-                <span className="material-icons text-6xl mb-4">folder_open</span>
-                <p className="text-lg font-semibold">{t('scanner.fileMode.title')}</p>
-                <p className="text-sm">{t('scanner.fileMode.subtitle')}</p>
+                <span className="material-icons text-6xl mb-4">photo</span>
               </div>
             </div>
           )}
 
-          {!isCameraReady && !result && (
-            <div className="absolute inset-0 bg-dark/80 flex flex-col items-center justify-center z-20 backdrop-blur-sm">
-              <div className="relative w-20 h-20">
-                <div className="absolute inset-0 border-4 border-glassMedium rounded-full"></div>
-                <div className="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin glow-cyan"></div>
-              </div>
-              <p className="text-textLight font-semibold text-lg mt-6">{t('scanner.processing.title')}</p>
-              <p className="text-textMuted text-sm">{t('scanner.live.waitCamera')}</p>
-            </div>
-          )}
-
-          {!result && isCameraReady && scanMode !== 'file' && (
+          {!result && (
             <div className="absolute bottom-6 left-0 right-0 px-6 flex flex-col items-center gap-4 z-30 pointer-events-none">
               <div className="bg-dark/80 px-6 py-4 rounded-2xl text-center text-textLight border border-glassMedium shadow-lg pointer-events-auto w-full max-w-md">
                 <div className="font-semibold uppercase tracking-wide text-xs text-primary/80">
-                  {scanMode === 'auto' ? t('scanner.live.title') : scanMode === 'photo' ? t('scanner.captureTitle') : t('scanner.importTitle')}
+                  {t('scanner.importTitle')}
                 </div>
                 <div className="text-sm text-textMuted mt-1">
-                  {scanMode === 'auto' ? t('scanner.live.subtitle') : scanMode === 'photo' ? t('scanner.captureSubtitle') : t('scanner.importSubtitle')}
+                  {t('scanner.importSubtitle')}
                 </div>
               </div>
 
-              <div className="glass-lg rounded-2xl p-4 border border-white/10 shadow-xl pointer-events-auto w-full max-w-md">
-                <div className="grid grid-cols-3 gap-2">
-                  {(['auto', 'photo', 'file'] as const).map((modeOption) => {
-                    const isActive = scanMode === modeOption;
-                    return (
-                      <button
-                        key={modeOption}
-                        type="button"
-                        onClick={() => handleModeChange(modeOption)}
-                        aria-pressed={isActive}
-                        className={`py-2 px-3 rounded-xl border text-sm font-semibold flex items-center justify-center gap-2 transition-all ${
-                          isActive
-                            ? 'bg-primary/20 border-primary text-white shadow-lg shadow-primary/30'
-                            : 'bg-glassDark border-transparent text-textMuted hover:bg-glass'
-                        }`}
-                      >
-                        <span className="material-icons text-base">
-                          {modeOption === 'auto' ? 'autorenew' : modeOption === 'photo' ? 'photo_camera' : 'folder_open'}
-                        </span>
-                        <span>
-                          {modeOption === 'auto' ? t('scanner.modes.auto') : modeOption === 'photo' ? t('scanner.modes.photo') : t('scanner.modes.file')}
-                        </span>
-                      </button>
-                    );
-                  })}
-                </div>
-                <div className="text-xs text-textMuted text-center mt-3">
-                  {scanMode === 'auto' ? t('scanner.modeDescriptions.auto') : scanMode === 'photo' ? t('scanner.modeDescriptions.photo') : t('scanner.modeDescriptions.file')}
-                </div>
+              <div className="flex flex-col items-center gap-2 pointer-events-auto">
+                <button
+                  type="button"
+                  onClick={handleImportFile}
+                  disabled={isAnalyzing}
+                  aria-label={t('scanner.actions.import')}
+                  className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white flex items-center justify-center shadow-xl shadow-blue-500/40 border border-white/20 transition-transform hover:scale-105 disabled:opacity-60 disabled:hover:scale-100"
+                >
+                  <span className="material-icons text-3xl">
+                    {isAnalyzing ? 'camera_alt' : 'camera_alt'}
+                  </span>
+                </button>
+                <span className="text-xs uppercase tracking-wide text-textLight">{t('scanner.actions.import')}</span>
               </div>
-
-              {scanMode === 'photo' && (
-                <div className="flex flex-col items-center gap-2 pointer-events-auto">
-                  <button
-                    type="button"
-                    onClick={handleCapturePhoto}
-                    disabled={isAnalyzing || !isCameraReady}
-                    aria-label={t('scanner.actions.capture')}
-                    className="w-20 h-20 rounded-full bg-gradient-to-br from-primary to-secondary text-dark flex items-center justify-center shadow-xl shadow-primary/40 border border-white/20 transition-transform hover:scale-105 disabled:opacity-60 disabled:hover:scale-100"
-                  >
-                    <span className="material-icons text-3xl">
-                      {isAnalyzing ? 'hourglass_top' : 'photo_camera'}
-                    </span>
-                  </button>
-                  <span className="text-xs uppercase tracking-wide text-textLight">{t('scanner.actions.capture')}</span>
-                  <span className="text-[11px] text-textMuted">{t('scanner.modeDescriptions.photo')}</span>
-                </div>
-              )}
-
-              { scanMode === 'file' && (
-                <div className="flex flex-col items-center gap-2 pointer-events-auto">
-                  <button
-                    type="button"
-                    onClick={handleImportFile}
-                    disabled={isAnalyzing}
-                    aria-label={t('scanner.actions.import')}
-                    className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white flex items-center justify-center shadow-xl shadow-blue-500/40 border border-white/20 transition-transform hover:scale-105 disabled:opacity-60 disabled:hover:scale-100"
-                  >
-                    <span className="material-icons text-3xl">
-                      {isAnalyzing ? 'hourglass_top' : 'folder_open'}
-                    </span>
-                  </button>
-                  <span className="text-xs uppercase tracking-wide text-textLight">{t('scanner.actions.import')}</span>
-                  <span className="text-[11px] text-textMuted">{t('scanner.modeDescriptions.file')}</span>
-                </div>
-              )}
             </div>
           )}
 

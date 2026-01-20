@@ -3,7 +3,7 @@ import { FoodItem, Somatotype, Goal } from "../types";
 
 // NOTE: In a production app, never expose keys in client code. 
 // Since this is a demo running in a controlled environment, we access process.env.API_KEY.
-const ai = new GoogleGenAI({ apiKey: "AIzaSyCAbxH6qH2e_z2QxCxB7_9BPXKTAyvCcqA" });
+const ai = new GoogleGenAI({ apiKey: "AIzaSyBpbyWrlhUT8TkHVtQN1EAdBVDDtshe_7k" });
 
 export interface AnalyzedFood {
   foodName: string;
@@ -74,19 +74,19 @@ Return ONLY valid JSON with this exact structure (no markdown, no extra text):
     try {
       // Using Gemini 3 Flash for high reasoning capabilities on images
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash',
-        contents: {
-          parts: [
-            { inlineData: { mimeType: 'image/jpeg', data: base64Image } },
-            { text: prompt }
-          ]
-        },
-        config: {
-            responseMimeType: 'application/json'
-        }
+        model: 'gemini-3-flash-preview',
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              { inlineData: { mimeType: 'image/jpeg', data: base64Image } },
+              { text: prompt }
+            ]
+          }
+        ]
       });
 
-      const text = response.text?.toString();
+      const text = response.candidates?.[0]?.content?.parts?.[0]?.text;
       if (!text) throw new Error("No response from Gemini");
 
       // Clean up markdown if present (just in case)
@@ -172,19 +172,18 @@ Return ONLY valid JSON with this exact structure (no markdown, no extra text):
       // Ideally use ai.chats.create, but to mix search grounding dynamically, we'll use generateContent with tools.
       
       const response = await ai.models.generateContent({
-        model: 'gemini-2.5-flash', // Using Flash for fast chat + Search
+        model: 'gemini-3-flash-preview', // Using Flash for fast chat + Search
         contents: [
             { role: 'user', parts: [{ text: `System: ${systemInstruction}` }] },
-            ...history.map(h => ({ role: h.role, parts: [{ text: h.text }] })),
+            ...history.map(h => ({ role: h.role === 'model' ? 'model' : 'user', parts: [{ text: h.text }] })),
             { role: 'user', parts: [{ text: currentMessage }] }
-        ],
-        config: {
-            tools: [{ googleSearch: {} }]
-        }
+        ]
       });
       
+      const responseText = response.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't process that.";
+      
       return {
-          text: response.text || "I couldn't process that.",
+          text: responseText,
           groundingChunks: response.candidates?.[0]?.groundingMetadata?.groundingChunks
       };
 
@@ -195,56 +194,25 @@ Return ONLY valid JSON with this exact structure (no markdown, no extra text):
   },
 
   /**
-   * Generates spoken audio for a message using Gemini 3 TTS.
-   * Returns a Promise that resolves when playback starts.
+   * Speak a message using Web Speech API
    */
-  speakMessage: async (text: string, locale?: string): Promise<void> => {
+  speakMessage: async (message: string, locale?: string): Promise<void> => {
+    return new Promise((resolve, reject) => {
       try {
-        // Use Gemini 3 Flash TTS with native Web Audio API
-        const response = await ai.models.generateContent({
-            model: "gemini-2.5-flash-preview-tts",
-            contents: [{ parts: [{ text: text }] }],
-            config: {
-              responseModalities: [Modality.AUDIO],
-              speechConfig: {
-                  voiceConfig: {
-                    // Use Portuguese-friendly voice
-                    prebuiltVoiceConfig: { 
-                      voiceName: locale === 'pt' ? 'Jacinto' : 'Kore'
-                    },
-                  },
-              },
-            },
-          });
-
-          const base64Audio = response.candidates?.[0]?.content?.parts?.[0]?.inlineData?.data;
-          if (!base64Audio) {
-            console.warn('No audio data from TTS response');
-            return;
-          }
-
-          // Use native Web Audio API for better compatibility
-          const AudioContextPolyfill = window.AudioContext || (window as any).webkitAudioContext;
-          const audioContext = new AudioContextPolyfill();
-          
-          const audioBuffer = await decodeAudioData(base64Audio, audioContext);
-          
-          const source = audioContext.createBufferSource();
-          source.buffer = audioBuffer;
-          source.connect(audioContext.destination);
-          source.start(0);
-
-      } catch (e) {
-          console.error("TTS Error:", e);
-          // Fallback: use Web Speech API if Gemini TTS fails
-          try {
-            const utterance = new SpeechSynthesisUtterance(text);
-            utterance.lang = locale === 'pt' ? 'pt-PT' : 'en-US';
-            utterance.rate = 0.95;
-            window.speechSynthesis.speak(utterance);
-          } catch (fallbackError) {
-            console.error("Speech synthesis fallback also failed:", fallbackError);
-          }
+        // Use Web Speech API for text-to-speech
+        const utterance = new SpeechSynthesisUtterance(message);
+        utterance.lang = locale === 'pt' ? 'pt-PT' : 'en-US';
+        utterance.rate = 0.95;
+        utterance.pitch = 1;
+        
+        utterance.onend = () => resolve();
+        utterance.onerror = (event) => reject(new Error(`Speech synthesis error: ${event.error}`));
+        
+        speechSynthesis.speak(utterance);
+      } catch (error) {
+        reject(error);
       }
-  }
+    });
+  },
+
 };

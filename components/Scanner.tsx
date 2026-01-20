@@ -137,11 +137,11 @@ const optimizeImageDataUrl = async (dataUrl: string, options?: OptimizeOptions):
     let optimizedBytes = getDataUrlByteLength(optimized);
     let attempts = 0;
 
-    while (optimizedBytes > effectiveMaxBytes && attempts < 8) {
+    while (optimizedBytes > effectiveMaxBytes && attempts < 15) {
       attempts += 1;
       if (quality - qualityStep >= minQuality) {
         quality = Math.max(minQuality, quality - qualityStep);
-      } else if (scale * scaleStep >= 0.4) {
+      } else if (scale * scaleStep >= 0.2) {
         scale = scale * scaleStep;
       } else {
         break;
@@ -206,23 +206,55 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
 
       const context = `${user?.somatotype} with goal to ${user?.goal}${uploadedId ? `; uploadId:${uploadedId}` : ''}`;
 
-      const data = await geminiService.analyzeFoodImage(base64Data, context, locale);
-      setResult(data);
+      let analysisAttempt = 0;
+      let lastError: Error | null = null;
 
-      // Speak the result details in the appropriate language
-      if (data.foodName) {
-        const voiceMessage = locale === 'pt' 
-          ? `Encontrei ${data.foodName}. ${data.calories} calorias, ${data.protein} gramas de proteína, ${data.carbs} gramas de carboidratos, e ${data.fats} gramas de gordura.`
-          : `I found ${data.foodName}. ${data.calories} calories, ${data.protein} grams of protein, ${data.carbs} grams of carbs, and ${data.fats} grams of fat.`;
-        
+      // Tentar análise até 2 vezes com diferentes configurações
+      while (analysisAttempt < 2) {
         try {
-          setIsPlayingAudio(true);
-          await geminiService.speakMessage(voiceMessage, locale);
-        } catch (audioError) {
-          console.warn('Audio playback failed:', audioError);
-        } finally {
-          setIsPlayingAudio(false);
+          const data = await geminiService.analyzeFoodImage(base64Data, context, locale);
+          setResult(data);
+
+          // Speak the result details in the appropriate language
+          if (data.foodName) {
+            const voiceMessage = locale === 'pt' 
+              ? `Encontrei ${data.foodName}. ${data.calories} calorias, ${data.protein} gramas de proteína, ${data.carbs} gramas de carboidratos, e ${data.fats} gramas de gordura.`
+              : `I found ${data.foodName}. ${data.calories} calories, ${data.protein} grams of protein, ${data.carbs} grams of carbs, and ${data.fats} grams of fat.`;
+            
+            try {
+              setIsPlayingAudio(true);
+              await geminiService.speakMessage(voiceMessage, locale);
+            } catch (audioError) {
+              console.warn('Audio playback failed:', audioError);
+            } finally {
+              setIsPlayingAudio(false);
+            }
+          }
+          return; // Sucesso, sair do loop
+        } catch (error) {
+          lastError = error as Error;
+          console.warn(`Analysis attempt ${analysisAttempt + 1} failed:`, error);
+          analysisAttempt++;
+          
+          // Se falhar na primeira tentativa, comprimir mais e tentar novamente
+          if (analysisAttempt < 2) {
+            console.log('Retrying with more aggressive compression...');
+            const recompressedFrame = await optimizeImageDataUrl(base64Full, {
+              maxDimension: 720,
+              maxBytes: 1024 * 1024, // 1MB
+              initialQuality: 0.70,
+              minQuality: 0.30,
+              qualityStep: 0.15,
+              scaleStep: 0.70
+            });
+            base64Full = recompressedFrame;
+          }
         }
+      }
+
+      // Se chegou aqui, todas as tentativas falharam
+      if (lastError) {
+        throw lastError;
       }
     } catch (error) {
       console.error(error);
@@ -266,9 +298,10 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
       const optimizedFrame = await optimizeImageDataUrl(dataUrl, {
         maxDimension: FILE_UPLOAD_MAX_DIMENSION,
         maxBytes: FILE_UPLOAD_MAX_BYTES,
-        initialQuality: 0.95,
-        minQuality: 0.7,
-        qualityStep: 0.05,
+        initialQuality: 0.80,
+        minQuality: 0.35,
+        qualityStep: 0.12,
+        scaleStep: 0.75,
         isFileUpload: true
       });
 
@@ -320,9 +353,10 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
       const highQualityFrame = await optimizeImageDataUrl(sourceImage, {
         maxDimension: HIGH_QUALITY_MAX_DIMENSION,
         maxBytes: MAX_UPLOAD_BYTES,
-        initialQuality: 0.95,
-        minQuality: 0.65,
-        qualityStep: 0.05
+        initialQuality: 0.80,
+        minQuality: 0.35,
+        qualityStep: 0.12,
+        scaleStep: 0.75
       });
 
       setImage(highQualityFrame);

@@ -612,7 +612,7 @@ const translations: Translations = {
         fileImportFailed: 'Falha ao importar arquivo. Tente novamente.',
         processingFailed: 'Não foi possível processar: {{message}}. Tente outra foto ou em menor resolução.',
         generic: 'Não foi possível processar a imagem. Tente novamente.',
-        analyzeFailed: 'Não foi possível analisar a imagem. Tente novamente com uma foto menor ou mais nítida.',
+        analyzeFailed: 'Erro ao analisar. Escolha uma foto mais nítida e com menor tamanho.',
         reanalyzeFailed: 'Reanálise falhou. Tente outra foto ou usar uma de maior qualidade.',
         reanalyzeLoadFailed: 'Erro ao carregar imagem para reanálise.',
         cameraUnavailable: 'Não foi possível aceder à câmera. Verifique as permissões e tente novamente.',

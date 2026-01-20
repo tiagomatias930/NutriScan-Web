@@ -39,61 +39,36 @@ export const geminiService = {
       ? 'Respond in ENGLISH. The values for "foodName" and "reasoning" must be written in English.'
       : 'Respond IN PORTUGUESE FROM PORTUGAL. The values for "foodName" and "reasoning" must be written in Portuguese.';
     const prompt = `
-      You are a nutritional analyst specializing in computer vision. Follow these rules rigorously:
+      You are a nutritional analyst specializing in computer vision. Analyze the provided image and extract nutritional information.
 
-1. First mandatory check:
+IMPORTANT INSTRUCTIONS:
+- You MUST respond with ONLY a valid JSON object, nothing else.
+- If the image contains food/drink (prepared meals, ingredients, beverages, etc.), analyze it and provide nutritional estimates.
+- If the image does NOT contain any food, drink, or edible items (e.g., people, animals, landscapes, objects, text), return this JSON:
+  {"foodName": "NOT_FOOD", "calories": 0, "protein": 0, "carbs": 0, "fats": 0, "weightEstimate": 0, "confidence": 0, "reasoning": "Image does not contain identifiable food or drink"}
 
-- Analyze the provided image.
+ANALYSIS FORMAT (for valid food images):
+- Identify the main dish/items visible
+- Estimate portion size based on visual comparison
+- Provide realistic nutritional values for Portuguese/European portions
+- Include visible ingredients and preparations
+- Be honest about uncertainty in estimates
 
-- Answer ONLY if the image clearly shows food or an edible dish/drink.
+${userContext ? `User Context: ${userContext}` : ''}
 
-- If the image does not contain food (e.g., people, animals, objects, landscapes, memes, plain text, etc.), answer exactly: "This image does not contain identifiable food or dish." and stop there.
+${languageInstruction}
 
-2. If it is food, proceed with the complete analysis in the following exact format (do not add extra text before or after):
-
-Main dish: [precise name of the dish or clear description in Portuguese, e.g., "Duck rice Minho style" or "Homemade hamburger with french fries"]
-
-Identifiable ingredients (list in order of approximate quantity):
-• [ingredient 1] – estimated visual quantity
-• [ingredient 2] – estimated visual quantity
-• ...
-
-Estimated portion: [realistic number] g or ml (e.g., 450 g or 330 ml)
-
-Estimated nutritional values ​​for the entire portion:
-- Calories: ___ kcal
-- Protein: ___ g
-- Carbohydrates: ___ g (of which sugars: ___ g when identifiable)
-- Fat: ___ g (of which saturated: ___ g when identifiable)
-
-Estimating method: [brief explanation of 1-2] Phrases about how you arrived at the values ​​– e.g., "Based on standard Portuguese portions + table from the National Institute of Health + visual comparison with known references"
-
-Additional notes (if applicable):
-
-• [e.g., "Appears to have extra sauce", "The potatoes are deep-fried", "Probable presence of melted cheese not fully visible", etc.]
-
-3. Important rules:
-- Be as precise as possible, but always admit that it is a visual estimate.
-- Always use realistic values ​​from Portuguese or European restaurants/homes when applicable.
-- Never invent ingredients that you cannot clearly see.
-- If there are major doubts about quantity or composition, indicate it in the notes.
-      
-      ${userContext ? `Context: The user is a ${userContext}.` : ''}
-
-      IMPORTANT: ${languageInstruction} Numeric fields should remain numbers.
-
-      Return ONLY a valid JSON object with this structure (keys must be exactly as shown):
-      {
-        "foodName": "${locale === 'en' ? 'Detailed name of the dish (in English)' : 'Nome detalhado do prato (em Português)'}",
-        "weightEstimate": number (grams),
-        "calories": number,
-        "protein": number,
-        "carbs": number,
-        "fats": number,
-        "confidence": number (0-100) ,
-        "reasoning": "${locale === 'en' ? 'Brief explanation of how you estimated (1 sentence, in English)' : 'Breve explicação de como estimou (1 frase, em Português)'}"
-      }
-      Do not include markdown formatting like \`\`\`json. Return raw JSON only.
+Return ONLY valid JSON with this exact structure (no markdown, no extra text):
+{
+  "foodName": "string - precise name or description of the dish",
+  "weightEstimate": number (grams),
+  "calories": number,
+  "protein": number (grams),
+  "carbs": number (grams),
+  "fats": number (grams),
+  "confidence": number (0-100, how certain is the estimate),
+  "reasoning": "string - brief explanation of estimation method"
+}
     `;
 
     try {
@@ -116,7 +91,26 @@ Additional notes (if applicable):
 
       // Clean up markdown if present (just in case)
       const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
-      const data = JSON.parse(jsonStr) as AnalyzedFood;
+      
+      // Validate JSON structure
+      let data: AnalyzedFood;
+      try {
+        data = JSON.parse(jsonStr) as AnalyzedFood;
+      } catch (parseError) {
+        console.error("Failed to parse Gemini response:", jsonStr);
+        throw new Error(`Invalid JSON response from Gemini: ${parseError}`);
+      }
+
+      // Check if the model detected it's not food (foodName = "NOT_FOOD")
+      if (data.foodName === "NOT_FOOD" || !data.foodName || data.confidence === 0) {
+        throw new Error("Image does not contain identifiable food or dish");
+      }
+
+      // Validate that we got actual food data with reasonable values
+      if (typeof data.calories !== 'number' || data.calories <= 0 || data.calories > 5000) {
+        throw new Error("Invalid calorie estimate");
+      }
+
       return data;
 
     } catch (error) {

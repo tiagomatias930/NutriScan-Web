@@ -226,7 +226,20 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
       }
     } catch (error) {
       console.error(error);
-      setErrorMessage(t('scanner.errors.analyzeFailed'));
+      
+      // Provide specific error messages
+      if (error instanceof Error) {
+        if (error.message.includes("does not contain identifiable food") || 
+            error.message.includes("does not contain food")) {
+          setErrorMessage(t('scanner.errors.notFood'));
+        } else if (error.message.includes("Invalid JSON")) {
+          setErrorMessage(t('scanner.errors.analyzeFailed'));
+        } else {
+          setErrorMessage(t('scanner.errors.analyzeFailed'));
+        }
+      } else {
+        setErrorMessage(t('scanner.errors.analyzeFailed'));
+      }
     } finally {
       setIsAnalyzing(false);
       isAnalyzingRef.current = false;
@@ -488,7 +501,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
 
 const NutrientBox = ({ label, value, unit, color = 'text-white' }: { label: string, value: number, unit: string, color?: string }) => (
     <div className="bg-gray-800/50 p-3 rounded-2xl text-center border border-gray-700/50">
-        <div className="text-[10px] text-gray-500 uppercase font-bold tracking-wider mb-1">{label}</div>
+        <div className="text-[10px] text-white-500 uppercase font-bold tracking-wider mb-1">{label}</div>
         <div className={`font-bold text-lg ${color}`}>{value}</div>
         <div className="text-[10px] text-gray-500 font-medium">{unit}</div>
     </div>

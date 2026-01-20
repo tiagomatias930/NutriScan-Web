@@ -8,6 +8,8 @@ const LanguageSwitcher: React.FC = () => {
   const options: Array<{ code: Locale; label: string; flag: string }> = [
     { code: 'pt', label: t('language.portuguese'), flag: '/flags/pt.svg' },
     { code: 'en', label: t('language.english'), flag: '/flags/en.svg' },
+    { code: 'zh', label: t('language.mandarin'), flag: '/flags/zh.svg' },
+    { code: 'fr', label: t('language.french'), flag: '/flags/fr.svg' },
   ];
 
   return (

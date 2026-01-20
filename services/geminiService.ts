@@ -5,6 +5,8 @@ import { FoodItem, Somatotype, Goal } from "../types";
 // Since this is a demo running in a controlled environment, we access process.env.API_KEY.
 const ai = new GoogleGenAI({ apiKey: "AIzaSyBpbyWrlhUT8TkHVtQN1EAdBVDDtshe_7k" });
 
+export type Locale = 'pt' | 'en' | 'zh' | 'fr';
+
 export interface AnalyzedFood {
   foodName: string;
   calories: number;
@@ -30,14 +32,39 @@ async function decodeAudioData(
     return ctx.decodeAudioData(bytes.buffer);
   }
 
+// Helper to generate voice message in the appropriate language
+function generateFoodVoiceMessage(
+  foodName: string,
+  calories: number,
+  protein: number,
+  carbs: number,
+  fats: number,
+  locale?: string
+): string {
+  const loc = locale as Locale || 'en';
+  
+  const messages: Record<Locale, string> = {
+    'pt': `Encontrei ${foodName}. ${calories} calorias, ${protein} gramas de proteína, ${carbs} gramas de carboidratos, e ${fats} gramas de gordura.`,
+    'en': `I found ${foodName}. ${calories} calories, ${protein} grams of protein, ${carbs} grams of carbs, and ${fats} grams of fat.`,
+    'zh': `我找到了${foodName}。${calories}卡路里，${protein}克蛋白质，${carbs}克碳水化合物，${fats}克脂肪。`,
+    'fr': `J'ai trouvé ${foodName}. ${calories} calories, ${protein} grammes de protéines, ${carbs} grammes de glucides et ${fats} grammes de graisse.`,
+  };
+  
+  return messages[loc] || messages['en'];
+}
+
 export const geminiService = {
   /**
    * Analyzes an image of food using Gemini 3 Flash (multimodal).
    */
   analyzeFoodImage: async (base64Image: string, userContext?: string, locale?: string): Promise<AnalyzedFood> => {
-    const languageInstruction = locale === 'en' 
-      ? 'Respond in ENGLISH. The values for "foodName" and "reasoning" must be written in English.'
-      : 'Respond IN PORTUGUESE FROM PORTUGAL. The values for "foodName" and "reasoning" must be written in Portuguese.';
+    const languageInstructions: Record<string, string> = {
+      'pt': 'Respond in PORTUGUESE FROM PORTUGAL. The values for "foodName" and "reasoning" must be written in Portuguese.',
+      'en': 'Respond in ENGLISH. The values for "foodName" and "reasoning" must be written in English.',
+      'zh': 'Respond in SIMPLIFIED CHINESE (Mandarin). The values for "foodName" and "reasoning" must be written in Simplified Chinese.',
+      'fr': 'Respond in FRENCH. The values for "foodName" and "reasoning" must be written in French.',
+    };
+    const languageInstruction = languageInstructions[locale || 'en'] || languageInstructions['en'];
     const prompt = `
       You are a nutritional analyst specializing in computer vision. Analyze the provided image and extract nutritional information.
 
@@ -152,9 +179,13 @@ Return ONLY valid JSON with this exact structure (no markdown, no extra text):
     locale?: string
   ) => {
     try {
-      const languageInstruction = locale === 'en'
-        ? 'Respond in English. Always answer in English, regardless of the user\'s language.'
-        : 'Responda em Português de Portugal. Sempre responda em Português, independentemente do idioma do utilizador.';
+      const languageInstructions: Record<string, string> = {
+        'pt': 'Responda em Português de Portugal. Sempre responda em Português, independentemente do idioma do utilizador.',
+        'en': 'Respond in English. Always answer in English, regardless of the user\'s language.',
+        'zh': 'Respond in Simplified Chinese (Mandarin). Always answer in Simplified Chinese, regardless of the user\'s language.',
+        'fr': 'Respond in French. Always answer in French, regardless of the user\'s language.',
+      };
+      const languageInstruction = languageInstructions[locale || 'en'] || languageInstructions['en'];
 
       const systemInstruction = `
         You are NutriScan Coach, an expert sports nutritionist.
@@ -199,9 +230,15 @@ Return ONLY valid JSON with this exact structure (no markdown, no extra text):
   speakMessage: async (message: string, locale?: string): Promise<void> => {
     return new Promise((resolve, reject) => {
       try {
+        const languageMap: Record<string, string> = {
+          'pt': 'pt-PT',
+          'en': 'en-US',
+          'zh': 'zh-CN',
+          'fr': 'fr-FR',
+        };
         // Use Web Speech API for text-to-speech
         const utterance = new SpeechSynthesisUtterance(message);
-        utterance.lang = locale === 'pt' ? 'pt-PT' : 'en-US';
+        utterance.lang = languageMap[locale || 'en'] || 'en-US';
         utterance.rate = 0.95;
         utterance.pitch = 1;
         
@@ -214,5 +251,10 @@ Return ONLY valid JSON with this exact structure (no markdown, no extra text):
       }
     });
   },
+
+  /**
+   * Generate a voice message describing food analysis in the user's language
+   */
+  generateFoodVoiceMessage,
 
 };

@@ -217,9 +217,14 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
 
           // Speak the result details in the appropriate language
           if (data.foodName) {
-            const voiceMessage = locale === 'pt' 
-              ? `Encontrei ${data.foodName}. ${data.calories} calorias, ${data.protein} gramas de proteína, ${data.carbs} gramas de carboidratos, e ${data.fats} gramas de gordura.`
-              : `I found ${data.foodName}. ${data.calories} calories, ${data.protein} grams of protein, ${data.carbs} grams of carbs, and ${data.fats} grams of fat.`;
+            const voiceMessage = geminiService.generateFoodVoiceMessage(
+              data.foodName,
+              data.calories,
+              data.protein,
+              data.carbs,
+              data.fats,
+              locale
+            );
             
             try {
               setIsPlayingAudio(true);
@@ -461,9 +466,14 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
                    <button
                      onClick={async () => {
                        setIsPlayingAudio(true);
-                       const voiceMessage = locale === 'pt' 
-                         ? `Encontrei ${result.foodName}. ${result.calories} calorias, ${result.protein} gramas de proteína, ${result.carbs} gramas de carboidratos, e ${result.fats} gramas de gordura.`
-                         : `I found ${result.foodName}. ${result.calories} calories, ${result.protein} grams of protein, ${result.carbs} grams of carbs, and ${result.fats} grams of fat.`;
+                       const voiceMessage = geminiService.generateFoodVoiceMessage(
+                         result.foodName,
+                         result.calories,
+                         result.protein,
+                         result.carbs,
+                         result.fats,
+                         locale
+                       );
                        try {
                          await geminiService.speakMessage(voiceMessage, locale);
                        } catch (err) {

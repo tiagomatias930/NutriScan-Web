@@ -34,6 +34,12 @@ const translations: Translations = {
       loading: '加载中...',
       unknownError: '未知错误',
     },
+    navigation: {
+      home: '主页',
+      scan: '扫描',
+      chat: '聊天',
+      about: '关于',
+    },
     onboarding: {
       step1: {
         title: '让我们开始吧。',
@@ -206,6 +212,20 @@ const translations: Translations = {
         cameraUnavailable: '无法访问相机。检查权限并重试。',
       },
     },
+    about: {
+      title: '关于',
+      appTitle: '关于 NutriScan',
+      appDescription: 'NutriScan 是一款先进的营养追踪应用，利用人工智能技术帮助您实现健康目标。通过拍摄食物照片，应用会自动识别营养成分并计算卡路里，同时提供个性化的营养建议。',
+      features: '主要功能',
+      feature1: '使用人工智能的食物识别和营养分析',
+      feature2: '个性化的宏营养目标和每日跟踪',
+      feature3: '与 NutriCoach AI 助手进行交互式营养指导',
+      feature4: '每日水合作用提醒和历史记录管理',
+      developerTitle: '关于开发者',
+      developerDescription: '该应用由才华横溢的开发者设计和开发，致力于创建帮助人们过上更健康生活的工具。',
+      visitPortfolio: '访问投资组合',
+      copyright: 'NutriScan - 所有权利保留',
+    },
     offlineBanner: {
       offlineTitle: '无连接',
       offlinePending: '{{count}} 项目等待同步',
@@ -240,6 +260,12 @@ const translations: Translations = {
       active: 'Actif',
       loading: 'Chargement...',
       unknownError: 'Erreur inconnue',
+    },
+    navigation: {
+      home: 'Accueil',
+      scan: 'Scanner',
+      chat: 'Chat',
+      about: 'À propos',
     },
     onboarding: {
       step1: {
@@ -413,6 +439,20 @@ const translations: Translations = {
         cameraUnavailable: 'Impossible d\'accéder à la caméra. Vérifiez les autorisations et réessayez.',
       },
     },
+    about: {
+      title: 'À propos',
+      appTitle: 'À propos de NutriScan',
+      appDescription: 'NutriScan est une application avancée de suivi nutritionnel qui utilise l\'intelligence artificielle pour vous aider à atteindre vos objectifs de santé. En prenant des photos de vos aliments, l\'application identifie automatiquement les nutriments et calcule les calories, tout en fournissant des recommandations nutritionnelles personnalisées.',
+      features: 'Caractéristiques principales',
+      feature1: 'Reconnaissance et analyse nutritionnelle des aliments basées sur l\'IA',
+      feature2: 'Objectifs macronutriments personnalisés et suivi quotidien',
+      feature3: 'Conseils nutritionnels interactifs avec l\'assistant NutriCoach AI',
+      feature4: 'Rappels d\'hydratation quotidiens et gestion historique',
+      developerTitle: 'À propos du développeur',
+      developerDescription: 'Cette application a été conçue et développée par Tiago Matias, un développeur talentueux dédié à la création d\'outils pour aider les gens à vivre une vie plus saine.',
+      visitPortfolio: 'Visiter le portefeuille',
+      copyright: 'NutriScan - Tous droits réservés',
+    },
     offlineBanner: {
       offlineTitle: 'Pas de connexion',
       offlinePending: '{{count}} article(s) en attente de synchronisation',
@@ -445,6 +485,12 @@ const translations: Translations = {
       active: 'Ativo',
       loading: 'Carregando...',
       unknownError: 'Erro desconhecido',
+    },
+    navigation: {
+      home: 'Início',
+      scan: 'Escanear',
+      chat: 'Chat',
+      about: 'Sobre',
     },
     onboarding: {
       step1: {
@@ -619,6 +665,20 @@ const translations: Translations = {
         notFood: 'A imagem não contém comida identificável. Tente novamente com uma foto clara de comida.',
       },
     },
+    about: {
+      title: 'Sobre',
+      appTitle: 'Sobre o NutriScan',
+      appDescription: 'NutriScan é um aplicativo avançado de rastreamento nutricional que utiliza inteligência artificial para ajudá-lo a atingir seus objetivos de saúde. Ao fotografar seus alimentos, o aplicativo identifica automaticamente os nutrientes e calcula as calorias, além de fornecer recomendações nutricionais personalizadas.',
+      features: 'Principais funcionalidades',
+      feature1: 'Reconhecimento e análise nutricional de alimentos com IA',
+      feature2: 'Objetivos de macronutrientes personalizados e rastreamento diário',
+      feature3: 'Orientação nutricional interativa com o assistente NutriCoach AI',
+      feature4: 'Lembretes diários de hidratação e gerenciamento de histórico',
+      developerTitle: 'Sobre o desenvolvedor',
+      developerDescription: 'Este aplicativo foi projetado e desenvolvido por Tiago Matias, um desenvolvedor talentoso dedicado a criar ferramentas para ajudar as pessoas a viverem uma vida mais saudável.',
+      visitPortfolio: 'Visitar portfólio',
+      copyright: 'NutriScan - Todos os direitos reservados',
+    },
     offlineBanner: {
       offlineTitle: 'Sem conexão',
       offlinePending: '{{count}} item(s) em espera de sincronização',
@@ -651,6 +711,12 @@ const translations: Translations = {
       active: 'Active',
       loading: 'Loading...',
       unknownError: 'Unknown error',
+    },
+    navigation: {
+      home: 'Home',
+      scan: 'Scan',
+      chat: 'Chat',
+      about: 'About',
     },
     onboarding: {
       step1: {
@@ -822,6 +888,20 @@ const translations: Translations = {
         cameraUnavailable: 'Unable to access the camera. Check permissions and try again.',
         notFood: 'The image does not contain identifiable food. Please try again with a clear food image.',
       },
+    },
+    about: {
+      title: 'About',
+      appTitle: 'About NutriScan',
+      appDescription: 'NutriScan is an advanced nutrition tracking application that uses artificial intelligence to help you achieve your health goals. By taking photos of your food, the app automatically identifies nutrients and calculates calories while providing personalized nutritional recommendations.',
+      features: 'Key Features',
+      feature1: 'AI-powered food recognition and nutritional analysis',
+      feature2: 'Personalized macronutrient targets and daily tracking',
+      feature3: 'Interactive nutritional guidance with NutriCoach AI assistant',
+      feature4: 'Daily hydration reminders and history management',
+      developerTitle: 'About the Developer',
+      developerDescription: 'This application was designed and developed by Tiago Matias, a talented developer dedicated to creating tools that help people live healthier lives.',
+      visitPortfolio: 'Visit Portfolio',
+      copyright: 'NutriScan - All Rights Reserved',
     },
     offlineBanner: {
       offlineTitle: 'No connection',

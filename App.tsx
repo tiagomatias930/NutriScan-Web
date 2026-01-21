@@ -4,14 +4,18 @@ import { Onboarding } from './components/Onboarding';
 import { Dashboard } from './components/Dashboard';
 import { ChatCoach } from './components/ChatCoach';
 import { Scanner } from './components/Scanner';
+import { About } from './components/About';
 import HydrationReminder from './components/HydrationReminder';
 import PushNotificationInitializer from './components/PushNotificationInitializer';
 import OfflineStatusBanner from './components/OfflineStatusBanner';
+import { useTranslation } from './utils/i18n';
 
 const App: React.FC = () => {
   const user = useAppStore((state) => state.user);
+  const { t } = useTranslation();
   const [currentTab, setCurrentTab] = useState<'home' | 'chat'>('home');
   const [showScanner, setShowScanner] = useState(false);
+  const [showAbout, setShowAbout] = useState(false);
 
   if (!user || !user.onboardingCompleted) {
     return <Onboarding />;
@@ -42,39 +46,62 @@ const App: React.FC = () => {
       {/* Bottom Navigation */}
       <div className="fixed bottom-0 w-full max-w-md z-40">
           {/* Gradient fade up for content below nav */}
-          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-dark/80 to-transparent pointer-events-none"></div>
+          <div className="absolute bottom-0 left-0 right-0 h-24 bg-gradient-to-t from-dark/90 to-transparent pointer-events-none"></div>
           
-          <div className="glass backdrop-blur-xl border-t border-glassDark h-[80px] flex items-center justify-between px-8 pb-4 relative">
+          <div className="glass backdrop-blur-xl h-[90px] flex items-center justify-center gap-6 pb-4 relative">
+            {/* Home Button */}
             <button 
                 onClick={() => setCurrentTab('home')}
-                className={`flex flex-col items-center justify-center w-16 gap-1 transition-all duration-300 ${currentTab === 'home' ? 'text-primary scale-110' : 'text-textMuted hover:text-textLight'}`}
+                className={`flex flex-col items-center justify-center py-2 px-3 rounded-xl transition-all duration-300 ${
+                  currentTab === 'home' 
+                    ? 'text-primary' 
+                    : 'text-textMuted'
+                }`}
             >
-                <span className="material-icons text-3xl">home</span>
-                <span className="text-[10px] font-medium"></span>
+                <span className="material-icons text-2xl mb-1">home</span>
+                <span className="text-[9px] font-semibold uppercase tracking-wider">{t('navigation.home')}</span>
             </button>
 
-            {/* Floating Scan Button */}
-            <div className="relative -top-6">
-                <button 
-                    onClick={() => setShowScanner(true)}
-                    className="w-16 h-16 rounded-full bg-gradient-to-br from-primary to-secondary shadow-2xl glow-cyan flex items-center justify-center transform active:scale-95 transition-all border border-primary/50 hover:shadow-lg text-white"
-                >
-                    <span className="material-icons text-3xl">camera</span>
-                </button>
-            </div>
+            {/* Scan Button */}
+            <button 
+                onClick={() => setShowScanner(true)}
+                className="flex flex-col items-center justify-center py-2 px-3 rounded-xl text-textMuted transition-all duration-300"
+                title="Scan Food"
+            >
+                <span className="material-icons text-2xl mb-1">camera</span>
+                <span className="text-[9px] font-semibold uppercase tracking-wider">{t('navigation.scan')}</span>
+            </button>
 
+            {/* Chat Button */}
             <button 
                 onClick={() => setCurrentTab('chat')}
-                className={`flex flex-col items-center justify-center w-16 gap-1 transition-all duration-300 ${currentTab === 'chat' ? 'text-primary scale-110' : 'text-textMuted hover:text-textLight'}`}
+                className={`flex flex-col items-center justify-center py-2 px-3 rounded-xl transition-all duration-300 ${
+                  currentTab === 'chat' 
+                    ? 'text-primary' 
+                    : 'text-textMuted'
+                }`}
             >
-                <span className="material-icons text-3xl">chat_bubble</span>
-                <span className="text-[10px] font-medium"></span>
+                <span className="material-icons text-2xl mb-1">chat_bubble</span>
+                <span className="text-[9px] font-semibold uppercase tracking-wider">{t('navigation.chat')}</span>
+            </button>
+
+            {/* About Button */}
+            <button 
+                onClick={() => setShowAbout(true)}
+                className="flex flex-col items-center justify-center py-2 px-3 rounded-xl text-textMuted transition-all duration-300"
+                title="About"
+            >
+                <span className="material-icons text-2xl mb-1">info</span>
+                <span className="text-[9px] font-semibold uppercase tracking-wider">{t('navigation.about')}</span>
             </button>
           </div>
       </div>
 
       {/* Scanner Modal */}
       {showScanner && <Scanner onClose={() => setShowScanner(false)} />}
+      
+      {/* About Modal */}
+      {showAbout && <About onClose={() => setShowAbout(false)} />}
     </div>
   );
 };

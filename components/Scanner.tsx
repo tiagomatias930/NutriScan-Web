@@ -334,6 +334,15 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
     };
 
     addFood(newFood);
+    
+    // Reset all internal state before closing
+    setImage(null);
+    setResult(null);
+    setErrorMessage(null);
+    setUploadId(null);
+    originalImageRef.current = null;
+    isAnalyzingRef.current = false;
+    
     onClose();
   };
 
@@ -463,31 +472,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
                      <h3 className="text-2xl font-bold text-primary mb-2 leading-tight text-glow">{result.foodName}</h3>
                      <p className="text-white text-sm mb-4 leading-relaxed border-l-2 border-primary pl-3">{result.reasoning}</p>
                    </div>
-                   <button
-                     onClick={async () => {
-                       setIsPlayingAudio(true);
-                       const voiceMessage = geminiService.generateFoodVoiceMessage(
-                         result.foodName,
-                         result.calories,
-                         result.protein,
-                         result.carbs,
-                         result.fats,
-                         locale
-                       );
-                       try {
-                         await geminiService.speakMessage(voiceMessage, locale);
-                       } catch (err) {
-                         console.error('Audio failed:', err);
-                       } finally {
-                         setIsPlayingAudio(false);
-                       }
-                     }}
-                     disabled={isPlayingAudio}
-                     className="flex-shrink-0 ml-3 w-10 h-10 rounded-full glass-lg flex items-center justify-center text-primary hover:text-white hover:bg-primary/20 transition-all disabled:opacity-50"
-                     title={t('scanner.actions.listen')}
-                   >
-                     <span className="material-icons">{isPlayingAudio ? 'volume_off' : 'volume_up'}</span>
-                   </button>
+                   
                  </div>
 
                  <div className="flex items-center justify-between mb-4">

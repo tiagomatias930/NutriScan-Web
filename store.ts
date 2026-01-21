@@ -106,6 +106,7 @@ export const useAppStore = create<AppState>()(
       addWater: (amount) => {
         const now = Date.now();
         const last = get().lastReset || now;
+        const MAX_WATER = 2000;
         const startOfDay = (t: number) => {
           const d = new Date(t);
           d.setHours(0, 0, 0, 0);
@@ -124,7 +125,7 @@ export const useAppStore = create<AppState>()(
           set({ foodLog: [], waterIntake: 0, lastReset: now });
         }
         set((state) => ({
-          waterIntake: state.waterIntake + amount,
+          waterIntake: Math.min(MAX_WATER, state.waterIntake + amount),
           lastDrinkAt: Date.now(),
         }));
       },

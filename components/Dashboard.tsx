@@ -115,7 +115,7 @@ export const Dashboard: React.FC = () => {
              </div>
              <div className="flex items-center gap-3">
                  <div className="text-right">
-                     <span className="text-2xl font-bold text-primary">{waterIntake}</span>
+                     <span className="text-lg font-bold text-primary">{waterIntake}</span>
                      <span className="text-sm text-textMuted ml-1">{t('common.ml')}</span>
                  </div>
                  {/* Hydration reminder toggle */}

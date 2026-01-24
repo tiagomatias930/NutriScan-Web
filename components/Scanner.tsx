@@ -350,25 +350,63 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   // Initialize camera
   const initializeCamera = useCallback(async () => {
     try {
-      const constraints = {
-        video: {
-          facingMode: 'environment',
-          width: { ideal: 1280 },
-          height: { ideal: 720 }
-        },
-        audio: false
-      };
+      // Tenta usar getUserMedia primeiro (navegadores modernos)
+      if (navigator.mediaDevices && navigator.mediaDevices.getUserMedia) {
+        const constraints = {
+          video: {
+            facingMode: 'environment',
+            width: { ideal: 1280 },
+            height: { ideal: 720 }
+          },
+          audio: false
+        };
 
-      const stream = await navigator.mediaDevices.getUserMedia(constraints);
-      streamRef.current = stream;
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia(constraints);
+          streamRef.current = stream;
 
-      if (videoRef.current) {
-        videoRef.current.srcObject = stream;
-        videoRef.current.play();
-        setIsCameraActive(true);
+          if (videoRef.current) {
+            videoRef.current.srcObject = stream;
+            videoRef.current.play();
+            setIsCameraActive(true);
+            return;
+          }
+        } catch (userMediaError) {
+          console.warn('getUserMedia failed, trying alternative methods:', userMediaError);
+        }
       }
+
+      // Fallback para deprecated getUserMedia (navegadores antigos/AppGyser)
+      if ((navigator as any).getUserMedia) {
+        const constraints = {
+          video: {
+            facingMode: 'environment'
+          },
+          audio: false
+        };
+
+        (navigator as any).getUserMedia(
+          constraints,
+          (stream: MediaStream) => {
+            streamRef.current = stream;
+            if (videoRef.current) {
+              (videoRef.current as any).srcObject = stream;
+              videoRef.current.play();
+              setIsCameraActive(true);
+            }
+          },
+          (error: Error) => {
+            console.warn('Deprecated getUserMedia failed:', error);
+            setErrorMessage(t('scanner.errors.cameraAccessDenied'));
+          }
+        );
+        return;
+      }
+
+      // Se nenhum método funcionou
+      throw new Error('Camera API not available');
     } catch (error) {
-      console.error('Camera access denied:', error);
+      console.error('Camera initialization failed:', error);
       if (error instanceof Error) {
         if (error.name === 'NotAllowedError') {
           setErrorMessage(t('scanner.errors.cameraPermissionDenied'));
@@ -392,6 +430,60 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
 
   // Capture frame from camera
   const captureFrame = useCallback(async () => {
+    // Verifica se temos acesso a Cordova (AppGyser)
+    if ((window as any).cordova && (window as any).navigator.camera) {
+      try {
+        const cameraPlugin = (window as any).navigator.camera;
+        cameraPlugin.getPicture(
+          async (imageData: string) => {
+            try {
+              // imageData é uma base64 encoded JPEG image
+              const dataUrl = 'data:image/jpeg;base64,' + imageData;
+              originalImageRef.current = dataUrl;
+
+              // Optimize the frame
+              const optimizedFrame = await optimizeImageDataUrl(dataUrl, {
+                maxDimension: 1024,
+                maxBytes: MAX_UPLOAD_BYTES,
+                initialQuality: 0.90,
+                minQuality: 0.70,
+                qualityStep: 0.05,
+                scaleStep: 0.90,
+                isFileUpload: false
+              });
+
+              setImage(optimizedFrame);
+              stopCamera();
+              await analyze(optimizedFrame);
+            } catch (error) {
+              console.error('Capture processing failed:', error);
+              setErrorMessage(t('scanner.errors.captureFailed'));
+            }
+          },
+          (message: string) => {
+            console.warn('Camera capture failed:', message);
+            if (message !== 'No Image Selected' && message !== 'Selection cancelled.') {
+              setErrorMessage(t('scanner.errors.captureFailed'));
+            }
+          },
+          {
+            quality: 95,
+            destinationType: (window as any).navigator.camera.DestinationType.DATA_URL,
+            sourceType: (window as any).navigator.camera.PictureSourceType.CAMERA,
+            targetWidth: 1280,
+            targetHeight: 720,
+            encodingType: (window as any).navigator.camera.EncodingType.JPEG,
+            cameraDirection: (window as any).navigator.camera.Direction.BACK,
+            correctOrientation: true
+          }
+        );
+        return;
+      } catch (error) {
+        console.error('Cordova camera error:', error);
+      }
+    }
+
+    // Fallback para captura via canvas (navegadores web)
     if (!videoRef.current || !canvasRef.current) return;
 
     const ctx = canvasRef.current.getContext('2d');

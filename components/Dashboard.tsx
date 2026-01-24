@@ -46,9 +46,7 @@ export const Dashboard: React.FC = () => {
         </div>
                                 <div className="flex items-center gap-3">
                                         <LanguageSwitcher />
-                                        <div className="w-12 h-12 rounded-full bg-gradient-to-br from-primary to-secondary flex items-center justify-center text-white font-bold glow-cyan shadow-sm">
-                                                {user.name.charAt(0).toUpperCase()}
-                                        </div>
+                                        
                                 </div>
       </div>
 
@@ -109,14 +107,14 @@ export const Dashboard: React.FC = () => {
                     <span className="material-icons">water_drop</span>
                 </div>
                 <div>
-                    <h3 className="font-bold text-textLight">{t('dashboard.hydration.title')}</h3>
+                    <h3 className="font-bold text-textLight text-sm">{t('dashboard.hydration.title')}</h3>
                     <div className="text-xs text-textMuted font-medium">{t('dashboard.hydration.goal', { goal: WATER_GOAL })}</div>
                 </div>
              </div>
              <div className="flex items-center gap-3">
                  <div className="text-right">
-                     <span className="text-lg font-bold text-primary">{waterIntake}</span>
-                     <span className="text-sm text-textMuted ml-1">{t('common.ml')}</span>
+                     <span className="text-sm font-bold text-primary">{waterIntake}</span>
+                     <span className="text-xs text-textMuted ml-1">{t('common.ml')}</span>
                  </div>
                  {/* Hydration reminder toggle */}
                  <HydrationToggle />

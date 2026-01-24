@@ -178,12 +178,18 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   const originalImageRef = useRef<string | null>(null);
   const { t, locale } = useTranslation();
 
+  // Camera refs
+  const videoRef = useRef<HTMLVideoElement | null>(null);
+  const canvasRef = useRef<HTMLCanvasElement | null>(null);
+  const [isCameraActive, setIsCameraActive] = useState(false);
+  const streamRef = useRef<MediaStream | null>(null);
+
   const analyze = useCallback(async (base64Full: string) => {
     // Expect a dataURL (e.g. data:image/jpeg;base64,....)
     try {
       setIsAnalyzing(true);
       isAnalyzingRef.current = true;
-      const base64Data = base64Full.split(',')[1];
+      let base64Data = base64Full.split(',')[1];
 
       // First, upload image to temporary server so we have an id and persistent URL
       let uploadedId: string | null = null;
@@ -209,8 +215,8 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
       let analysisAttempt = 0;
       let lastError: Error | null = null;
 
-      // Tentar análise até 2 vezes com diferentes configurações
-      while (analysisAttempt < 2) {
+      // Tentar análise até 3 vezes com diferentes estratégias
+      while (analysisAttempt < 3) {
         try {
           const data = await geminiService.analyzeFoodImage(base64Data, context, locale);
           setResult(data);
@@ -241,18 +247,35 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
           console.warn(`Analysis attempt ${analysisAttempt + 1} failed:`, error);
           analysisAttempt++;
           
-          // Se falhar na primeira tentativa, comprimir mais e tentar novamente
-          if (analysisAttempt < 2) {
-            console.log('Retrying with more aggressive compression...');
-            const recompressedFrame = await optimizeImageDataUrl(base64Full, {
-              maxDimension: 720,
-              maxBytes: 1024 * 1024, // 1MB
-              initialQuality: 0.70,
-              minQuality: 0.30,
-              qualityStep: 0.15,
-              scaleStep: 0.70
-            });
-            base64Full = recompressedFrame;
+          // Se falhar, tentar com diferentes estratégias
+          if (analysisAttempt < 3) {
+            if (analysisAttempt === 1) {
+              // Segunda tentativa: compressão moderada
+              console.log('Retrying with moderate compression...');
+              const recompressedFrame = await optimizeImageDataUrl(base64Full, {
+                maxDimension: 1024,
+                maxBytes: 2 * 1024 * 1024, // 2MB
+                initialQuality: 0.85,
+                minQuality: 0.55,
+                qualityStep: 0.10,
+                scaleStep: 0.88
+              });
+              base64Full = recompressedFrame;
+              base64Data = base64Full.split(',')[1];
+            } else if (analysisAttempt === 2) {
+              // Terceira tentativa: compressão agressiva
+              console.log('Retrying with aggressive compression...');
+              const aggressiveFrame = await optimizeImageDataUrl(base64Full, {
+                maxDimension: 768,
+                maxBytes: 1024 * 1024, // 1MB
+                initialQuality: 0.75,
+                minQuality: 0.40,
+                qualityStep: 0.15,
+                scaleStep: 0.80
+              });
+              base64Full = aggressiveFrame;
+              base64Data = base64Full.split(',')[1];
+            }
           }
         }
       }
@@ -262,16 +285,22 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
         throw lastError;
       }
     } catch (error) {
-      console.error(error);
+      console.error('Analysis error:', error);
       
       // Provide specific error messages
       if (error instanceof Error) {
-        if (error.message.includes("does not contain identifiable food") || 
-            error.message.includes("does not contain food")) {
+        const errorMsg = error.message.toLowerCase();
+        if (errorMsg.includes("does not contain identifiable food") || 
+            errorMsg.includes("does not contain food") ||
+            errorMsg.includes("not_food")) {
           setErrorMessage(t('scanner.errors.notFood'));
-        } else if (error.message.includes("Invalid JSON")) {
+        } else if (errorMsg.includes("invalid json") || errorMsg.includes("failed to parse")) {
           setErrorMessage(t('scanner.errors.analyzeFailed'));
+        } else if (errorMsg.includes("no response") || errorMsg.includes("timeout")) {
+          setErrorMessage(t('scanner.errors.analyzeTimeout'));
         } else {
+          // Log full error for debugging
+          console.error('Full error details:', error.message);
           setErrorMessage(t('scanner.errors.analyzeFailed'));
         }
       } else {
@@ -317,6 +346,111 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
       setErrorMessage(t('scanner.errors.fileImportFailed'));
     }
   }, [analyze, t]);
+
+  // Initialize camera
+  const initializeCamera = useCallback(async () => {
+    try {
+      const constraints = {
+        video: {
+          facingMode: 'environment',
+          width: { ideal: 1280 },
+          height: { ideal: 720 }
+        },
+        audio: false
+      };
+
+      const stream = await navigator.mediaDevices.getUserMedia(constraints);
+      streamRef.current = stream;
+
+      if (videoRef.current) {
+        videoRef.current.srcObject = stream;
+        videoRef.current.play();
+        setIsCameraActive(true);
+      }
+    } catch (error) {
+      console.error('Camera access denied:', error);
+      if (error instanceof Error) {
+        if (error.name === 'NotAllowedError') {
+          setErrorMessage(t('scanner.errors.cameraPermissionDenied'));
+        } else if (error.name === 'NotFoundError') {
+          setErrorMessage(t('scanner.errors.cameraNotFound'));
+        } else {
+          setErrorMessage(t('scanner.errors.cameraAccessDenied'));
+        }
+      }
+    }
+  }, [t]);
+
+  // Stop camera
+  const stopCamera = useCallback(() => {
+    if (streamRef.current) {
+      streamRef.current.getTracks().forEach(track => track.stop());
+      streamRef.current = null;
+    }
+    setIsCameraActive(false);
+  }, []);
+
+  // Capture frame from camera
+  const captureFrame = useCallback(async () => {
+    if (!videoRef.current || !canvasRef.current) return;
+
+    const ctx = canvasRef.current.getContext('2d');
+    if (!ctx) return;
+
+    try {
+      // Set canvas dimensions to match video
+      canvasRef.current.width = videoRef.current.videoWidth;
+      canvasRef.current.height = videoRef.current.videoHeight;
+
+      // Draw current video frame to canvas with better rendering
+      ctx.imageSmoothingEnabled = true;
+      ctx.imageSmoothingQuality = 'high';
+      ctx.drawImage(videoRef.current, 0, 0);
+
+      // Get data URL with high quality (0.95 instead of 0.9)
+      let dataUrl = canvasRef.current.toDataURL('image/jpeg', 0.95);
+      originalImageRef.current = dataUrl;
+
+      // For camera capture, use more conservative optimization
+      // Don't compress too aggressively - better to keep quality
+      const optimizedFrame = await optimizeImageDataUrl(dataUrl, {
+        maxDimension: 1024, // Reduce dimension but keep good quality
+        maxBytes: MAX_UPLOAD_BYTES,
+        initialQuality: 0.90, // Start higher
+        minQuality: 0.70, // Don't go too low
+        qualityStep: 0.05, // Smaller steps
+        scaleStep: 0.90, // Smaller scale reductions
+        isFileUpload: false
+      });
+
+      setImage(optimizedFrame);
+      stopCamera();
+      await analyze(optimizedFrame);
+    } catch (error) {
+      console.error('Capture failed:', error);
+      setErrorMessage(t('scanner.errors.captureFailed'));
+    }
+  }, [analyze, stopCamera, t]);
+
+  // Initialize camera on mount
+  React.useEffect(() => {
+    initializeCamera();
+    return () => {
+      stopCamera();
+    };
+  }, [initializeCamera, stopCamera]);
+
+  // Handle component close with cleanup
+  const handleClose = useCallback(() => {
+    stopCamera();
+    setImage(null);
+    setResult(null);
+    setErrorMessage(null);
+    setUploadId(null);
+    originalImageRef.current = null;
+    isAnalyzingRef.current = false;
+    onClose();
+  }, [stopCamera, onClose]);
 
   const handleConfirm = () => {
     if (!result) return;
@@ -388,7 +522,7 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
     <div className="fixed inset-0 z-50 bg-dark flex flex-col h-full animate-fade-in">
       {/* Header Overlay */}
       <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-20 bg-gradient-to-b from-dark/80 to-transparent">
-        <button onClick={onClose} className="w-10 h-10 rounded-full glass-lg flex items-center justify-center text-textLight hover:glass transition-all">
+        <button onClick={handleClose} className="w-10 h-10 rounded-full glass-lg flex items-center justify-center text-textLight hover:glass transition-all">
             <span className="material-icons">close</span>
         </button>
         <h2 className="text-textLight font-semibold tracking-wide uppercase text-sm opacity-80">{t('scanner.headerTitle')}</h2>
@@ -405,6 +539,18 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
 
       <div className="flex-1 relative flex flex-col">
         <div className="relative flex-1 bg-black">
+          {/* Video stream - always visible when not showing result or image */}
+          {!result && !image && (
+            <video
+              ref={videoRef}
+              className="w-full h-full object-cover"
+              playsInline
+              autoPlay
+              muted
+            />
+          )}
+
+          {/* Captured image or result image */}
           {result ? (
             image ? (
               <img src={image} alt="Food" className="w-full h-full object-cover opacity-80" />
@@ -415,39 +561,39 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
             )
           ) : image ? (
             <img src={image} alt="Food" className="w-full h-full object-cover opacity-80" />
-          ) : (
-            <div className="w-full h-full flex items-center justify-center bg-dark/50">
-              <div className="text-center text-textLight/60">
-                <span className="material-icons text-6xl mb-4">photo</span>
+          ) : null}
+
+          {/* Capture button - visible when camera is active and no result */}
+          {!result && isCameraActive && !image && (
+            <div className="absolute bottom-6 left-0 right-0 px-6 flex flex-col items-center gap-4 z-30 pointer-events-none">
+              <div className="flex flex-col items-center gap-2 pointer-events-auto">
+                <button
+                  type="button"
+                  onClick={captureFrame}
+                  disabled={isAnalyzing}
+                  aria-label={t('scanner.actions.capture')}
+                  className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white flex items-center justify-center shadow-xl shadow-blue-500/40 border border-white/20 transition-transform hover:scale-105 disabled:opacity-60 disabled:hover:scale-100"
+                >
+                  <span className="material-icons text-3xl">camera</span>
+                </button>
+                <span className="text-xs uppercase tracking-wide text-textLight">{t('scanner.actions.capture')}</span>
               </div>
             </div>
           )}
 
-          {!result && (
-            <div className="absolute bottom-6 left-0 right-0 px-6 flex flex-col items-center gap-4 z-30 pointer-events-none">
-              <div className="bg-dark/80 px-6 py-4 rounded-2xl text-center text-textLight border border-glassMedium shadow-lg pointer-events-auto w-full max-w-md">
-                <div className="font-semibold uppercase tracking-wide text-xs text-primary/80">
-                  {t('scanner.importTitle')}
-                </div>
-                <div className="text-sm text-textMuted mt-1">
-                  {t('scanner.importSubtitle')}
-                </div>
-              </div>
-
-              <div className="flex flex-col items-center gap-2 pointer-events-auto">
-                <button
-                  type="button"
-                  onClick={handleImportFile}
-                  disabled={isAnalyzing}
-                  aria-label={t('scanner.actions.import')}
-                  className="w-20 h-20 rounded-full bg-gradient-to-br from-blue-500 to-purple-600 text-white flex items-center justify-center shadow-xl shadow-blue-500/40 border border-white/20 transition-transform hover:scale-105 disabled:opacity-60 disabled:hover:scale-100"
-                >
-                  <span className="material-icons text-3xl">
-                    {isAnalyzing ? 'camera_alt' : 'camera_alt'}
-                  </span>
-                </button>
-                <span className="text-xs uppercase tracking-wide text-textLight">{t('scanner.actions.import')}</span>
-              </div>
+          {/* Import file option - shown when image is captured but before analysis */}
+          {!result && image && !isAnalyzing && (
+            <div className="absolute top-20 right-6 z-30">
+              <button
+                type="button"
+                onClick={handleImportFile}
+                disabled={isAnalyzing}
+                aria-label={t('scanner.actions.import')}
+                className="px-4 py-2 rounded-full bg-gray-700/80 text-textLight text-sm font-medium hover:bg-gray-600 transition-colors flex items-center gap-2"
+              >
+                <span className="material-icons text-lg">image_search</span>
+                {t('scanner.actions.import')}
+              </button>
             </div>
           )}
 
@@ -524,6 +670,9 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
           )}
         </div>
       </div>
+
+      {/* Hidden canvas for frame capture */}
+      <canvas ref={canvasRef} style={{ display: 'none' }} />
     </div>
   );
 };

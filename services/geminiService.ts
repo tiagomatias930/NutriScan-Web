@@ -69,17 +69,20 @@ export const geminiService = {
       You are a nutritional analyst specializing in computer vision. Analyze the provided image and extract nutritional information.
 
 IMPORTANT INSTRUCTIONS:
-- You MUST respond with ONLY a valid JSON object, nothing else.
-- If the image contains food/drink (prepared meals, ingredients, beverages, etc.), analyze it and provide nutritional estimates.
-- If the image does NOT contain any food, drink, or edible items (e.g., people, animals, landscapes, objects, text), return this JSON:
-  {"foodName": "NOT_FOOD", "calories": 0, "protein": 0, "carbs": 0, "fats": 0, "weightEstimate": 0, "confidence": 0, "reasoning": "Image does not contain identifiable food or drink"}
+- Respond with ONLY a valid JSON object, nothing else. No text, no markdown, no code fences.
+- If the image shows food, drink, prepared meal, ingredient, snack or beverage, analyze it and estimate nutrition.
+- If the image contains NO food/drink/edible items (people, animals, objects, landscapes, text, empty plates, etc.), return exactly:
+  {"foodName": "NOT_FOOD", "calories": 0, "protein": 0, "carbs": 0, "fats": 0, "fiber": 0, "sodium": 0, "weightEstimate": 0, "confidence": 0, "reasoning": "Image does not contain identifiable food or drink"}
 
-ANALYSIS FORMAT (for valid food images):
-- Identify the main dish/items visible
-- Estimate portion size based on visual comparison
-- Provide realistic nutritional values for Portuguese/European portions
-- Include visible ingredients and preparations
-- Be honest about uncertainty in estimates
+ANALYSIS FORMAT (for food images):
+- Identify all visible main dishes/items and key ingredients
+- Estimate realistic portion size using common visual references (plate ≈ 350–500 g, bowl ≈ 300–450 g, spoon ≈ 15 g, etc.)
+- Provide nutritional values based on typical Portuguese/European portions and reliable sources (e.g. INSA/PortFIR tables)
+- Include: calories (kcal), protein (g), carbs (g), fats (g), fiber (g), sodium (mg)
+- Mention visible preparation methods (grilled, fried, boiled, raw, etc.)
+- Include a clear "reasoning" explaining identifications, portion logic, sources/references used and any uncertainty
+- Use conservative estimates when uncertain — better to under-estimate than over-estimate calories/sodium
+- Confidence score 0–100 based on image quality, clarity and identifiability.
 
 ${userContext ? `User Context: ${userContext}` : ''}
 

@@ -18,12 +18,21 @@ if ((window as any).cordova) {
 function initializeApp() {
   console.log('Initializing NutriScan application...');
   
-  const root = ReactDOM.createRoot(rootElement!);
-  root.render(
-    <React.StrictMode>
-      <App />
-    </React.StrictMode>
-  );
+  try {
+    const root = ReactDOM.createRoot(rootElement!);
+    root.render(
+      <React.StrictMode>
+        <App />
+      </React.StrictMode>
+    );
+    console.log('Application rendered successfully');
+  } catch (error) {
+    console.error('Failed to initialize application:', error);
+    // Display error message on screen
+    if (rootElement) {
+      rootElement.innerHTML = `<div style="padding: 20px; color: red; font-family: monospace;"><h2>Erro ao inicializar a aplicação</h2><pre>${String(error)}</pre></div>`;
+    }
+  }
 
   // Register service worker for PWA support
   if ('serviceWorker' in navigator && !(window as any).cordova) {

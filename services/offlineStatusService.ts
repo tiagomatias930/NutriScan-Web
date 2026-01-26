@@ -1,6 +1,7 @@
 /**
  * Offline Status Service
  * Gerencia detecção de status online/offline e sincronização
+ * Integrado com Supabase para persistência confiável de dados offline
  */
 
 interface OfflineEvent {
@@ -17,13 +18,15 @@ class OfflineStatusService {
   private listeners: Set<OfflineListener> = new Set();
   private pendingSync: Set<string> = new Set();
   private syncInProgress = false;
+  private syncIntervalId: NodeJS.Timeout | null = null;
+  private autoSyncEnabled = false;
 
   constructor() {
     this.setupEventListeners();
   }
 
   /**
-   * Configura listeners para eventos de conectividade
+   * Configura listeners para eventos de conectividade e auto-sync periódico
    */
   private setupEventListeners(): void {
     window.addEventListener('online', () => this.handleOnline());
@@ -37,6 +40,22 @@ class OfflineStatusService {
         }
       });
     }
+
+    // Periodic sync attempt quando online (a cada 30 segundos)
+    this.setupAutoSync();
+  }
+
+  /**
+   * Configura sincronização automática periódica
+   */
+  private setupAutoSync(): void {
+    if (this.syncIntervalId) clearInterval(this.syncIntervalId);
+
+    this.syncIntervalId = setInterval(() => {
+      if (this.isOnline && !this.syncInProgress) {
+        this.syncPendingData();
+      }
+    }, 30000); // 30 segundos
   }
 
   /**
@@ -154,6 +173,29 @@ class OfflineStatusService {
   }
 
   /**
+   * Inicia sincronização automática periódica
+   */
+  initAutoSync(): void {
+    if (!this.autoSyncEnabled) {
+      this.autoSyncEnabled = true;
+      this.setupAutoSync();
+      console.log('Auto-sync initialized');
+    }
+  }
+
+  /**
+   * Para sincronização automática periódica
+   */
+  stopAutoSync(): void {
+    if (this.syncIntervalId) {
+      clearInterval(this.syncIntervalId);
+      this.syncIntervalId = null;
+    }
+    this.autoSyncEnabled = false;
+    console.log('Auto-sync stopped');
+  }
+
+  /**
    * Tenta sincronizar dados offline
    */
   private async syncPendingData(): Promise<void> {
@@ -164,6 +206,7 @@ class OfflineStatusService {
     this.syncInProgress = true;
 
     try {
+      // Handle legacy pending sync items
       const pending = Array.from(this.pendingSync);
 
       for (const syncType of pending) {

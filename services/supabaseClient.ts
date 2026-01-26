@@ -2,8 +2,8 @@
 
 import { createClient } from '@supabase/supabase-js';
 
-const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string) || '';
-const SUPABASE_ANON_KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY as string) || '';
+const SUPABASE_URL = (import.meta.env.VITE_SUPABASE_URL as string) || 'https://udpebblfnqrjpavyfwbc.supabase.co';
+const SUPABASE_ANON_KEY = (import.meta.env.VITE_SUPABASE_ANON_KEY as string) || 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6InVkcGViYmxmbnFyanBhdnlmd2JjIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NjkzOTY2NTcsImV4cCI6MjA4NDk3MjY1N30.Ji46bXLpiIOjUXkrdCfxs5Ob6t20jL73zNlxPOjrQpk';
 
 if (!SUPABASE_URL || !SUPABASE_ANON_KEY)
 {

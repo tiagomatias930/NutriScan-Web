@@ -1,0 +1,628 @@
+import { supabase, isOnline, getCurrentUser, isSupabaseConfigured } from './supabaseClient';
+import { UserProfile, FoodItem, ChatMessage } from '../types';
+import { v4 as uuidv4 } from 'uuid';
+
+/**
+ * Local storage helpers for offline-first approach
+ */
+const LOCAL_STORAGE_KEYS = {
+  FOOD_LOGS: 'nutriscan-food-logs',
+  CHAT_HISTORY: 'nutriscan-chat-history',
+  HYDRATION_LOGS: 'nutriscan-hydration-logs',
+  PENDING_SYNC: 'nutriscan-pending-sync',
+};
+
+/**
+ * Save food log locally
+ */
+const saveLocalFoodLog = (food: FoodItem) => {
+  try {
+    const logs = JSON.parse(localStorage.getItem(LOCAL_STORAGE_KEYS.FOOD_LOGS) || '[]');
+    logs.unshift(food);
+    localStorage.setItem(LOCAL_STORAGE_KEYS.FOOD_LOGS, JSON.stringify(logs));
+  } catch (error) {
+    console.warn('Failed to save food log locally:', error);
+  }
+};
+
+/**
+ * FOOD LOG OPERATIONS
+ */
+
+export const addFoodLog = async (
+  food: Omit<FoodItem, 'id'>
+): Promise<{ success: boolean; data?: FoodItem; error?: string }> => {
+  try {
+    const foodWithId = { id: uuidv4(), ...food } as FoodItem;
+    
+    // Always save locally first
+    saveLocalFoodLog(foodWithId);
+
+    // If Supabase is configured and we're online, sync to cloud
+    if (isSupabaseConfigured() && isOnline()) {
+      const user = await getCurrentUser();
+      if (user) {
+        // Try to sync to Supabase in background (don't block)
+        syncFoodLogToSupabase(user.id, food).catch(err => 
+          console.warn('Failed to sync to Supabase:', err)
+        );
+      }
+    }
+
+    return { success: true, data: foodWithId };
+  } catch (error) {
+    console.error('Error adding food log:', error);
+    return { success: false, error: String(error) };
+  }
+};
+
+/**
+ * Sync food log to Supabase (background operation)
+ */
+const syncFoodLogToSupabase = async (userId: string, food: Omit<FoodItem, 'id'>) => {
+  if (!isSupabaseConfigured() || !isOnline()) return;
+
+    const { data, error } = await supabase
+      .from('food_logs')
+      .insert([
+        {
+          user_id: user.id,
+          name: food.name,
+          calories: food.calories,
+          protein: food.protein,
+          carbs: food.carbs,
+          fats: food.fats,
+          weight: food.weight,
+          meal_type: food.mealType,
+          image_data: food.imageData,
+          timestamp: food.timestamp,
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return {
+      success: true,
+      data: {
+        id: data.id,
+        name: data.name,
+        calories: data.calories,
+        protein: data.protein,
+        carbs: data.carbs,
+        fats: data.fats,
+        weight: data.weight,
+        mealType: data.meal_type,
+        imageData: data.image_data,
+        timestamp: data.timestamp,
+      } as FoodItem,
+    };
+  } catch (error) {
+    console.error('Error adding food log:', error);
+    // Queue for offline sync if online check failed
+    if (isOnline()) {
+      return { success: false, error: String(error) };
+    }
+    await queueSyncOperation('add_food', 'food_logs', food);
+    return { success: true, data: { id: uuidv4(), ...food } as FoodItem };
+  }
+};
+
+export const getFoodLogs = async (
+  fromTimestamp?: number
+): Promise<{ success: boolean; data?: FoodItem[]; error?: string }> => {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return { success: false, error: 'User not authenticated' };
+
+    let query = supabase
+      .from('food_logs')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('timestamp', { ascending: false });
+
+    if (fromTimestamp) {
+      query = query.gte('timestamp', fromTimestamp);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+
+    return {
+      success: true,
+      data: (data || []).map((item) => ({
+        id: item.id,
+        name: item.name,
+        calories: item.calories,
+        protein: item.protein,
+        carbs: item.carbs,
+        fats: item.fats,
+        weight: item.weight,
+        mealType: item.meal_type,
+        imageData: item.image_data,
+        timestamp: item.timestamp,
+      })) as FoodItem[],
+    };
+  } catch (error) {
+    console.error('Error fetching food logs:', error);
+    return { success: false, error: String(error) };
+  }
+};
+
+export const deleteFoodLog = async (
+  foodId: string
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return { success: false, error: 'User not authenticated' };
+
+    if (!isOnline()) {
+      // Queue for offline sync
+      await queueSyncOperation('delete_food', 'food_logs', { id: foodId, user_id: user.id });
+      return { success: true };
+    }
+
+    const { error } = await supabase
+      .from('food_logs')
+      .delete()
+      .eq('id', foodId)
+      .eq('user_id', user.id);
+
+    if (error) throw error;
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error deleting food log:', error);
+    if (isOnline()) {
+      return { success: false, error: String(error) };
+    }
+    await queueSyncOperation('delete_food', 'food_logs', { id: foodId });
+    return { success: true };
+  }
+};
+
+/**
+ * CHAT HISTORY OPERATIONS
+ */
+
+export const addChatMessage = async (
+  message: Omit<ChatMessage, 'id'>
+): Promise<{ success: boolean; data?: ChatMessage; error?: string }> => {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return { success: false, error: 'User not authenticated' };
+
+    if (!isOnline()) {
+      // Queue for offline sync
+      await queueSyncOperation('add_chat', 'chat_history', message);
+      return { success: true, data: { id: uuidv4(), ...message } as ChatMessage };
+    }
+
+    const { data, error } = await supabase
+      .from('chat_history')
+      .insert([
+        {
+          user_id: user.id,
+          role: message.role,
+          text: message.text,
+          sources: message.sources,
+          timestamp: message.timestamp,
+        },
+      ])
+      .select()
+      .single();
+
+    if (error) throw error;
+
+    return {
+      success: true,
+      data: {
+        id: data.id,
+        role: data.role,
+        text: data.text,
+        timestamp: data.timestamp,
+        sources: data.sources,
+      } as ChatMessage,
+    };
+  } catch (error) {
+    console.error('Error adding chat message:', error);
+    if (isOnline()) {
+      return { success: false, error: String(error) };
+    }
+    await queueSyncOperation('add_chat', 'chat_history', message);
+    return { success: true, data: { id: uuidv4(), ...message } as ChatMessage };
+  }
+};
+
+export const getChatHistory = async (): Promise<{
+  success: boolean;
+  data?: ChatMessage[];
+  error?: string;
+}> => {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return { success: false, error: 'User not authenticated' };
+
+    const { data, error } = await supabase
+      .from('chat_history')
+      .select('*')
+      .eq('user_id', user.id)
+      .order('timestamp', { ascending: true });
+
+    if (error) throw error;
+
+    return {
+      success: true,
+      data: (data || []).map((item) => ({
+        id: item.id,
+        role: item.role,
+        text: item.text,
+        timestamp: item.timestamp,
+        sources: item.sources,
+      })) as ChatMessage[],
+    };
+  } catch (error) {
+    console.error('Error fetching chat history:', error);
+    return { success: false, error: String(error) };
+  }
+};
+
+/**
+ * HYDRATION LOG OPERATIONS
+ */
+
+export const addHydrationLog = async (
+  amountMl: number,
+  timestamp: number
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return { success: false, error: 'User not authenticated' };
+
+    if (!isOnline()) {
+      // Queue for offline sync
+      await queueSyncOperation('add_water', 'hydration_logs', { amount_ml: amountMl, timestamp });
+      return { success: true };
+    }
+
+    const { error } = await supabase
+      .from('hydration_logs')
+      .insert([
+        {
+          user_id: user.id,
+          amount_ml: amountMl,
+          timestamp,
+        },
+      ]);
+
+    if (error) throw error;
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error adding hydration log:', error);
+    if (isOnline()) {
+      return { success: false, error: String(error) };
+    }
+    await queueSyncOperation('add_water', 'hydration_logs', { amount_ml: amountMl, timestamp });
+    return { success: true };
+  }
+};
+
+export const getHydrationLogs = async (fromTimestamp?: number): Promise<{
+  success: boolean;
+  data?: { amountMl: number; timestamp: number }[];
+  error?: string;
+}> => {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return { success: false, error: 'User not authenticated' };
+
+    let query = supabase
+      .from('hydration_logs')
+      .select('amount_ml, timestamp')
+      .eq('user_id', user.id)
+      .order('timestamp', { ascending: false });
+
+    if (fromTimestamp) {
+      query = query.gte('timestamp', fromTimestamp);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+
+    return {
+      success: true,
+      data: (data || []).map((item) => ({
+        amountMl: item.amount_ml,
+        timestamp: item.timestamp,
+      })),
+    };
+  } catch (error) {
+    console.error('Error fetching hydration logs:', error);
+    return { success: false, error: String(error) };
+  }
+};
+
+/**
+ * DAILY HISTORY OPERATIONS
+ */
+
+export const saveDailyHistory = async (
+  date: number,
+  foodLog: FoodItem[],
+  waterIntake: number
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return { success: false, error: 'User not authenticated' };
+
+    if (!isOnline()) {
+      // Store in localStorage cache for later sync
+      const queueKey = `daily_history_pending_${date}`;
+      localStorage.setItem(
+        queueKey,
+        JSON.stringify({
+          date,
+          foodLog,
+          waterIntake,
+          timestamp: Date.now(),
+        })
+      );
+      return { success: true };
+    }
+
+    const { error } = await supabase
+      .from('daily_history')
+      .insert([
+        {
+          user_id: user.id,
+          date_timestamp: date,
+          food_data: foodLog,
+          water_intake: waterIntake,
+        },
+      ]);
+
+    if (error) throw error;
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error saving daily history:', error);
+    const queueKey = `daily_history_pending_${date}`;
+    localStorage.setItem(
+      queueKey,
+      JSON.stringify({
+        date,
+        foodLog,
+        waterIntake,
+        timestamp: Date.now(),
+      })
+    );
+    return { success: true };
+  }
+};
+
+export const getDailyHistory = async (
+  fromDate?: number
+): Promise<{
+  success: boolean;
+  data?: { date: number; foodLog: FoodItem[]; waterIntake: number }[];
+  error?: string;
+}> => {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return { success: false, error: 'User not authenticated' };
+
+    let query = supabase
+      .from('daily_history')
+      .select('date_timestamp, food_data, water_intake')
+      .eq('user_id', user.id)
+      .order('date_timestamp', { ascending: false });
+
+    if (fromDate) {
+      query = query.gte('date_timestamp', fromDate);
+    }
+
+    const { data, error } = await query;
+
+    if (error) throw error;
+
+    return {
+      success: true,
+      data: (data || []).map((item) => ({
+        date: item.date_timestamp,
+        foodLog: item.food_data || [],
+        waterIntake: item.water_intake || 0,
+      })),
+    };
+  } catch (error) {
+    console.error('Error fetching daily history:', error);
+    return { success: false, error: String(error) };
+  }
+};
+
+/**
+ * SYNC QUEUE OPERATIONS (for offline-first support)
+ */
+
+export const queueSyncOperation = async (
+  operation: 'add_food' | 'add_water' | 'add_chat' | 'delete_food',
+  tableName: string,
+  recordData: any
+): Promise<void> => {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return;
+
+    const { error } = await supabase
+      .from('sync_queue')
+      .insert([
+        {
+          user_id: user.id,
+          operation,
+          table_name: tableName,
+          record_data: recordData,
+          timestamp: Date.now(),
+          attempted: false,
+          attempt_count: 0,
+        },
+      ]);
+
+    if (error) {
+      console.warn('Failed to queue sync operation (will retry locally):', error);
+      // Fallback to localStorage for sync queue
+      const queueKey = `sync_queue_${user.id}`;
+      const existing = JSON.parse(localStorage.getItem(queueKey) || '[]');
+      existing.push({
+        operation,
+        table_name: tableName,
+        record_data: recordData,
+        timestamp: Date.now(),
+      });
+      localStorage.setItem(queueKey, JSON.stringify(existing));
+    }
+  } catch (error) {
+    console.warn('Error queueing sync operation:', error);
+    // Fallback to localStorage
+    try {
+      const user = await getCurrentUser();
+      if (user) {
+        const queueKey = `sync_queue_${user.id}`;
+        const existing = JSON.parse(localStorage.getItem(queueKey) || '[]');
+        existing.push({
+          operation,
+          table_name: tableName,
+          record_data: recordData,
+          timestamp: Date.now(),
+        });
+        localStorage.setItem(queueKey, JSON.stringify(existing));
+      }
+    } catch (e) {
+      console.error('Failed to queue to localStorage:', e);
+    }
+  }
+};
+
+export const getSyncQueue = async (): Promise<any[]> => {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return [];
+
+    const { data, error } = await supabase
+      .from('sync_queue')
+      .select('*')
+      .eq('user_id', user.id)
+      .eq('attempted', false)
+      .order('created_at', { ascending: true });
+
+    if (error) throw error;
+
+    return data || [];
+  } catch (error) {
+    console.error('Error fetching sync queue:', error);
+    // Fallback to localStorage
+    try {
+      const user = await getCurrentUser();
+      if (user) {
+        const queueKey = `sync_queue_${user.id}`;
+        return JSON.parse(localStorage.getItem(queueKey) || '[]');
+      }
+    } catch (e) {
+      console.error('Failed to fetch from localStorage:', e);
+    }
+    return [];
+  }
+};
+
+export const markSyncQueueAsProcessed = async (queueId: string): Promise<void> => {
+  try {
+    const { error } = await supabase
+      .from('sync_queue')
+      .delete()
+      .eq('id', queueId);
+
+    if (error) throw error;
+  } catch (error) {
+    console.error('Error marking sync queue as processed:', error);
+  }
+};
+
+/**
+ * USER PROFILE OPERATIONS
+ */
+
+export const createOrUpdateUserProfile = async (
+  profile: UserProfile
+): Promise<{ success: boolean; error?: string }> => {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return { success: false, error: 'User not authenticated' };
+
+    const { error: upsertError } = await supabase
+      .from('users')
+      .upsert(
+        [
+          {
+            id: user.id,
+            name: profile.name,
+            gender: profile.gender,
+            age: profile.age,
+            height: profile.height,
+            weight: profile.weight,
+            activity_level: profile.activityLevel,
+            somatotype: profile.somatotype,
+            goal: profile.goal,
+            onboarding_completed: profile.onboardingCompleted,
+          },
+        ],
+        { onConflict: 'id' }
+      );
+
+    if (upsertError) throw upsertError;
+
+    return { success: true };
+  } catch (error) {
+    console.error('Error creating/updating user profile:', error);
+    return { success: false, error: String(error) };
+  }
+};
+
+export const getUserProfile = async (): Promise<{
+  success: boolean;
+  data?: UserProfile;
+  error?: string;
+}> => {
+  try {
+    const user = await getCurrentUser();
+    if (!user) return { success: false, error: 'User not authenticated' };
+
+    const { data, error } = await supabase
+      .from('users')
+      .select('*')
+      .eq('id', user.id)
+      .single();
+
+    if (error && error.code !== 'PGRST116') throw error; // PGRST116 = no rows found
+    if (!data) return { success: false, error: 'Profile not found' };
+
+    return {
+      success: true,
+      data: {
+        name: data.name,
+        gender: data.gender,
+        age: data.age,
+        height: data.height,
+        weight: data.weight,
+        activityLevel: data.activity_level,
+        somatotype: data.somatotype,
+        goal: data.goal,
+        onboardingCompleted: data.onboarding_completed,
+      } as UserProfile,
+    };
+  } catch (error) {
+    console.error('Error fetching user profile:', error);
+    return { success: false, error: String(error) };
+  }
+};

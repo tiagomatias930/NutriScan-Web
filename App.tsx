@@ -8,6 +8,7 @@ import { About } from './components/About';
 import HydrationReminder from './components/HydrationReminder';
 import PushNotificationInitializer from './components/PushNotificationInitializer';
 import OfflineStatusBanner from './components/OfflineStatusBanner';
+import MaintenanceBanner from './components/MaintenanceBanner';
 import { useTranslation } from './utils/i18n';
 
 const App: React.FC = () => {
@@ -16,6 +17,7 @@ const App: React.FC = () => {
   const [currentTab, setCurrentTab] = useState<'home' | 'chat'>('home');
   const [showScanner, setShowScanner] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
+  const [showMaintenance, setShowMaintenance] = useState(true);
 
   if (!user || !user.onboardingCompleted) {
     return <Onboarding />;
@@ -28,6 +30,9 @@ const App: React.FC = () => {
       
       {/* Offline Status Banner */}
       <OfflineStatusBanner />
+
+      {/* Maintenance Warning Banner */}
+      {showMaintenance && <MaintenanceBanner onClose={() => setShowMaintenance(false)} />}
       
       {/* Animated background elements */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>

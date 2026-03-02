@@ -241,6 +241,13 @@ const translations: Translations = {
       errorTitle: '同步错误',
       errorSubtitle: '我们将很快重试',
     },
+    login: {
+      subtitle: '您的AI驱动营养追踪器。登录以将您的数据与Google Fit同步。',
+      googleButton: '使用Google登录',
+      googleFitInfo: '连接Google Fit以同步您的营养数据',
+      terms: '登录即表示您同意我们的服务条款和隐私政策。',
+      signOut: '退出登录',
+    },
   },
   fr: {
     language: {
@@ -472,6 +479,13 @@ const translations: Translations = {
       errorTitle: 'Erreur de synchronisation',
       errorSubtitle: 'Nous réessayerons bientôt',
     },
+    login: {
+      subtitle: 'Votre suivi nutritionnel alimenté par l\'IA. Connectez-vous pour synchroniser vos données avec Google Fit.',
+      googleButton: 'Se connecter avec Google',
+      googleFitInfo: 'Connectez Google Fit pour synchroniser vos données nutritionnelles',
+      terms: 'En vous connectant, vous acceptez nos conditions d\'utilisation et notre politique de confidentialité.',
+      signOut: 'Se déconnecter',
+    },
   },
   pt: {
     language: {
@@ -702,6 +716,13 @@ const translations: Translations = {
       errorTitle: 'Erro na sincronização',
       errorSubtitle: 'Tentaremos novamente quando possível',
     },
+    login: {
+      subtitle: 'O seu rastreador nutricional com IA. Faça login para sincronizar os seus dados com o Google Fit.',
+      googleButton: 'Entrar com Google',
+      googleFitInfo: 'Conecte o Google Fit para sincronizar os seus dados nutricionais',
+      terms: 'Ao fazer login, você concorda com os nossos Termos de Serviço e Política de Privacidade.',
+      signOut: 'Sair',
+    },
   },
   en: {
     language: {
@@ -929,6 +950,13 @@ const translations: Translations = {
       success: 'Data synced successfully',
       errorTitle: 'Sync error',
       errorSubtitle: 'We will try again soon',
+    },
+    login: {
+      subtitle: 'Your AI-powered nutrition tracker. Sign in to sync your data with Google Fit.',
+      googleButton: 'Sign in with Google',
+      googleFitInfo: 'Connect Google Fit to sync your nutritional data',
+      terms: 'By signing in, you agree to our Terms of Service and Privacy Policy.',
+      signOut: 'Sign out',
     },
   },
 };

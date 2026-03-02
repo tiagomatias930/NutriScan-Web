@@ -10,6 +10,7 @@ interface UseSupabaseAuthReturn {
   isConfigured: boolean;
   signUp: (email: string, password: string) => Promise<{ error?: string }>;
   signIn: (email: string, password: string) => Promise<{ error?: string }>;
+  signInWithGoogle: () => Promise<{ error?: string }>;
   signOut: () => Promise<{ error?: string }>;
   resetPassword: (email: string) => Promise<{ error?: string }>;
   updatePassword: (newPassword: string) => Promise<{ error?: string }>;
@@ -116,6 +117,36 @@ export const useSupabaseAuth = (): UseSupabaseAuthReturn => {
     }
   };
 
+  const signInWithGoogle = async (): Promise<{ error?: string }> => {
+    try {
+      setIsLoading(true);
+      const redirectUrl = import.meta.env.VITE_GOOGLE_REDIRECT_URL || `${window.location.origin}`;
+      const { error } = await supabase.auth.signInWithOAuth({
+        provider: 'google',
+        options: {
+          redirectTo: redirectUrl,
+          scopes: 'https://www.googleapis.com/auth/fitness.activity.read https://www.googleapis.com/auth/fitness.nutrition.read https://www.googleapis.com/auth/fitness.nutrition.write',
+          queryParams: {
+            access_type: 'offline',
+            prompt: 'consent',
+          },
+        },
+      });
+
+      if (error) {
+        const message = translateAuthError(error.message);
+        return { error: message };
+      }
+
+      return {};
+    } catch (error) {
+      console.error('Google sign in error:', error);
+      return { error: 'Erro ao fazer login com Google. Tente novamente.' };
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   const signOut = async (): Promise<{ error?: string }> => {
     try {
       setIsLoading(true);
@@ -179,6 +210,7 @@ export const useSupabaseAuth = (): UseSupabaseAuthReturn => {
     isConfigured,
     signUp,
     signIn,
+    signInWithGoogle,
     signOut,
     resetPassword,
     updatePassword,

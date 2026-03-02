@@ -9,15 +9,47 @@ import HydrationReminder from './components/HydrationReminder';
 import PushNotificationInitializer from './components/PushNotificationInitializer';
 import OfflineStatusBanner from './components/OfflineStatusBanner';
 import MaintenanceBanner from './components/MaintenanceBanner';
+import LoginScreen from './components/LoginScreen';
+import { useSupabaseAuth } from './hooks/useSupabaseAuth';
 import { useTranslation } from './utils/i18n';
 
 const App: React.FC = () => {
   const user = useAppStore((state) => state.user);
   const { t } = useTranslation();
+  const { user: authUser, isLoading: authLoading, isAuthenticated, signInWithGoogle, signOut } = useSupabaseAuth();
   const [currentTab, setCurrentTab] = useState<'home' | 'chat'>('home');
   const [showScanner, setShowScanner] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showMaintenance, setShowMaintenance] = useState(true);
+  const [loginError, setLoginError] = useState<string | null>(null);
+
+  const handleGoogleSignIn = async () => {
+    setLoginError(null);
+    const result = await signInWithGoogle();
+    if (result.error) {
+      setLoginError(result.error);
+    }
+  };
+
+  // Show login screen if not authenticated
+  if (!isAuthenticated && !authLoading) {
+    return (
+      <LoginScreen
+        onGoogleSignIn={handleGoogleSignIn}
+        isLoading={authLoading}
+        error={loginError}
+      />
+    );
+  }
+
+  // Show loading while checking auth
+  if (authLoading) {
+    return (
+      <div className="min-h-screen bg-dark flex items-center justify-center">
+        <div className="w-10 h-10 border-3 border-primary border-t-transparent rounded-full animate-spin"></div>
+      </div>
+    );
+  }
 
   if (!user || !user.onboardingCompleted) {
     return <Onboarding />;

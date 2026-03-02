@@ -8,7 +8,7 @@ const GOOGLE_CLIENT_ID = '636934534754-d5opd5uvcmkhg7prfqope2bjennsmmts.apps.goo
 const GOOGLE_REDIRECT_URI = 'http://nutriscan.geniomatias.me/home';
 const GOOGLE_FIT_SCOPES = [
   'https://www.googleapis.com/auth/fitness.activity.read',
-  'https://www.googleapis.com/auth/fitness.activity.write',
+  'https://www.googleapis.com/auth/fitness.nutrition.write',
   'https://www.googleapis.com/auth/fitness.nutrition.read',
 ].join(' ');
 

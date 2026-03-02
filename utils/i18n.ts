@@ -252,6 +252,16 @@ const translations: Translations = {
       requestAccess: '申请测试人员访问权限',
       alreadyTester: '已经是测试人员？',
     },
+    tester: {
+      badge: 'Beta 测试',
+      title: '成为测试人员！',
+      description: '我们的应用正在接受 Google 审核。加入我们的测试团队，抢先体验所有功能并帮助我们改进 NutriScan！',
+      benefit1: '抢先使用新功能',
+      benefit2: '帮助我们发现和修复问题',
+      benefit3: '塑造应用的未来',
+      applyButton: '申请成为测试人员',
+      later: '稍后再说',
+    },
   },
   fr: {
     language: {
@@ -494,6 +504,16 @@ const translations: Translations = {
       requestAccess: 'Demander l\'accès testeur',
       alreadyTester: 'Déjà testeur ?',
     },
+    tester: {
+      badge: 'Bêta Test',
+      title: 'Devenez testeur !',
+      description: 'Notre application est en cours de vérification par Google. Rejoignez notre équipe de test pour accéder à toutes les fonctionnalités et nous aider à améliorer NutriScan !',
+      benefit1: 'Accès anticipé aux nouvelles fonctionnalités',
+      benefit2: 'Aidez-nous à détecter et corriger les problèmes',
+      benefit3: 'Participez à l\'avenir de l\'application',
+      applyButton: 'Postuler comme testeur',
+      later: 'Plus tard',
+    },
   },
   pt: {
     language: {
@@ -735,6 +755,16 @@ const translations: Translations = {
       requestAccess: 'Pedir acesso de tester',
       alreadyTester: 'Já é tester?',
     },
+    tester: {
+      badge: 'Beta Test',
+      title: 'Torna-te Tester!',
+      description: 'A nossa aplicação está em fase de verificação pelo Google. Junta-te à nossa equipa de testers para teres acesso completo e ajudares a melhorar o NutriScan!',
+      benefit1: 'Acesso antecipado a novas funcionalidades',
+      benefit2: 'Ajuda-nos a encontrar e corrigir problemas',
+      benefit3: 'Molda o futuro da aplicação',
+      applyButton: 'Candidatar-me como Tester',
+      later: 'Mais tarde',
+    },
   },
   en: {
     language: {
@@ -973,6 +1003,16 @@ const translations: Translations = {
       testerDescription: 'This app is currently under Google review. To get full access, please submit your Google account through the button below to be added as a tester.',
       requestAccess: 'Request tester access',
       alreadyTester: 'Already a tester?',
+    },
+    tester: {
+      badge: 'Beta Test',
+      title: 'Become a Tester!',
+      description: 'Our app is currently under Google review. Join our testing team to get full access and help us improve NutriScan!',
+      benefit1: 'Early access to new features',
+      benefit2: 'Help us find and fix issues',
+      benefit3: 'Shape the future of the app',
+      applyButton: 'Apply to be a Tester',
+      later: 'Maybe later',
     },
   },
 };

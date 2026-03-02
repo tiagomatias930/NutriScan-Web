@@ -10,6 +10,7 @@ import PushNotificationInitializer from './components/PushNotificationInitialize
 import OfflineStatusBanner from './components/OfflineStatusBanner';
 import MaintenanceBanner from './components/MaintenanceBanner';
 import LoginScreen from './components/LoginScreen';
+import TesterBanner from './components/TesterBanner';
 import { useSupabaseAuth } from './hooks/useSupabaseAuth';
 import { useTranslation } from './utils/i18n';
 
@@ -21,6 +22,9 @@ const App: React.FC = () => {
   const [showScanner, setShowScanner] = useState(false);
   const [showAbout, setShowAbout] = useState(false);
   const [showMaintenance, setShowMaintenance] = useState(true);
+  const [showTesterBanner, setShowTesterBanner] = useState(() => {
+    return localStorage.getItem('testerBannerDismissed') !== 'true';
+  });
   const [loginError, setLoginError] = useState<string | null>(null);
 
   const handleGoogleSignIn = async () => {
@@ -65,6 +69,14 @@ const App: React.FC = () => {
 
       {/* Maintenance Warning Banner */}
       {showMaintenance && <MaintenanceBanner onClose={() => setShowMaintenance(false)} />}
+
+      {/* Tester Invitation Banner */}
+      {showTesterBanner && (
+        <TesterBanner onClose={() => {
+          setShowTesterBanner(false);
+          localStorage.setItem('testerBannerDismissed', 'true');
+        }} />
+      )}
       
       {/* Animated background elements */}
       <div className="absolute top-0 left-0 w-96 h-96 bg-gradient-to-br from-blue-500/10 to-purple-500/10 rounded-full blur-3xl -translate-x-1/2 -translate-y-1/2 pointer-events-none"></div>

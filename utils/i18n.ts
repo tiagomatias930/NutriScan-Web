@@ -247,6 +247,10 @@ const translations: Translations = {
       googleFitInfo: '连接Google Fit以同步您的营养数据',
       terms: '登录即表示您同意我们的服务条款和隐私政策。',
       signOut: '退出登录',
+      testerTitle: '应用测试阶段',
+      testerDescription: '此应用目前处于测试阶段。要使用完整功能，请通过下方按钮提交您的 Google 帐户以获取测试人员访问权限。',
+      requestAccess: '申请测试人员访问权限',
+      alreadyTester: '已经是测试人员？',
     },
   },
   fr: {
@@ -485,6 +489,10 @@ const translations: Translations = {
       googleFitInfo: 'Connectez Google Fit pour synchroniser vos données nutritionnelles',
       terms: 'En vous connectant, vous acceptez nos conditions d\'utilisation et notre politique de confidentialité.',
       signOut: 'Se déconnecter',
+      testerTitle: 'Application en phase de test',
+      testerDescription: 'Cette application est actuellement en phase de test. Pour accéder à toutes les fonctionnalités, veuillez soumettre votre compte Google via le bouton ci-dessous pour obtenir un accès testeur.',
+      requestAccess: 'Demander l\'accès testeur',
+      alreadyTester: 'Déjà testeur ?',
     },
   },
   pt: {
@@ -722,6 +730,10 @@ const translations: Translations = {
       googleFitInfo: 'Conecte o Google Fit para sincronizar os seus dados nutricionais',
       terms: 'Ao fazer login, você concorda com os nossos Termos de Serviço e Política de Privacidade.',
       signOut: 'Sair',
+      testerTitle: 'Aplicação em fase de testes',
+      testerDescription: 'Esta aplicação está em fase de testes pelo Google. Para ter acesso completo, submeta a sua conta Google através do botão abaixo para ser adicionado como tester.',
+      requestAccess: 'Pedir acesso de tester',
+      alreadyTester: 'Já é tester?',
     },
   },
   en: {
@@ -957,6 +969,10 @@ const translations: Translations = {
       googleFitInfo: 'Connect Google Fit to sync your nutritional data',
       terms: 'By signing in, you agree to our Terms of Service and Privacy Policy.',
       signOut: 'Sign out',
+      testerTitle: 'App in testing phase',
+      testerDescription: 'This app is currently under Google review. To get full access, please submit your Google account through the button below to be added as a tester.',
+      requestAccess: 'Request tester access',
+      alreadyTester: 'Already a tester?',
     },
   },
 };

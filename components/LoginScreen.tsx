@@ -29,7 +29,7 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onGoogleSignIn, isLoading, er
   };
 
   const handleTesterRequest = () => {
-    window.open(TESTER_FORM_URL, '_blank', 'noopener,noreferrer');
+    openInExternalBrowser(TESTER_FORM_URL);
   };
 
   return (

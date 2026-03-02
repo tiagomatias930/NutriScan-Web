@@ -2,6 +2,7 @@ import { useState, useEffect } from 'react';
 import { User } from '@supabase/supabase-js';
 import { supabase, isSupabaseConfigured } from '../services/supabaseClient';
 import { useAppStore } from '../store';
+import { isAppGyser, openInExternalBrowser } from '../utils/externalBrowser';
 
 interface UseSupabaseAuthReturn {
   user: User | null;
@@ -151,7 +152,9 @@ export const useSupabaseAuth = (): UseSupabaseAuthReturn => {
     try {
       setIsLoading(true);
       const redirectUrl = import.meta.env.VITE_GOOGLE_REDIRECT_URL || `${window.location.origin}`;
-      const { error } = await supabase.auth.signInWithOAuth({
+      const runningInAppGyser = isAppGyser();
+
+      const { data, error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
         options: {
           redirectTo: redirectUrl,
@@ -160,12 +163,19 @@ export const useSupabaseAuth = (): UseSupabaseAuthReturn => {
             access_type: 'offline',
             prompt: 'consent',
           },
+          // In AppGyser we need to get the URL and open it externally
+          skipBrowserRedirect: runningInAppGyser,
         },
       });
 
       if (error) {
         const message = translateAuthError(error.message);
         return { error: message };
+      }
+
+      // If running in AppGyser, open the OAuth URL in the system browser
+      if (runningInAppGyser && data?.url) {
+        openInExternalBrowser(data.url);
       }
 
       return {};

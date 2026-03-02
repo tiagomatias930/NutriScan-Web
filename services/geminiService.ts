@@ -5,6 +5,11 @@ import { FoodItem, Somatotype, Goal } from "../types";
 // Since this is a demo running in a controlled environment, we access process.env.API_KEY.
 const ai = new GoogleGenAI({ apiKey: "AIzaSyB4wMNQLFCCosYkp_8qMUoKiNwvEUd6Li8" });
 
+
+if (!ai)
+{
+	const ai = new GoogleGenAI({ apiKey: "AIzaSyA2lpbEDmuXGtif8QlBxc26iklkpnJnSo0" });
+}
 export type Locale = 'pt' | 'en' | 'zh' | 'fr';
 
 export interface AnalyzedFood {

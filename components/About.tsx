@@ -1,5 +1,6 @@
 import React from 'react';
 import { useTranslation } from '../utils/i18n';
+import { openInExternalBrowser, isAppGyser } from '../utils/externalBrowser';
 
 interface AboutProps {
   onClose: () => void;
@@ -64,6 +65,12 @@ export const About: React.FC<AboutProps> = ({ onClose }) => {
                 href="https://portfolio.geniomatias.me/" 
                 target="_blank" 
                 rel="noopener noreferrer"
+                onClick={(e) => {
+                  if (isAppGyser()) {
+                    e.preventDefault();
+                    openInExternalBrowser('https://portfolio.geniomatias.me/');
+                  }
+                }}
                 className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-primary to-secondary text-white rounded-xl font-semibold hover:shadow-lg hover:shadow-primary/30 transition-all"
               >
                 <span>{t('about.visitPortfolio')}</span>

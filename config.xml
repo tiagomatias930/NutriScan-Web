@@ -18,6 +18,7 @@
     <plugin name="cordova-plugin-camera" spec="^6.0.0" />
     <plugin name="cordova-plugin-file" spec="^7.0.0" />
     <plugin name="cordova-plugin-media" spec="^6.0.0" />
+    <plugin name="cordova-plugin-inappbrowser" spec="^5.0.0" />
     
     <!-- Preferences -->
     <preference name="EnableViewportScale" value="true" />

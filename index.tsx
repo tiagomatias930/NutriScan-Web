@@ -1,6 +1,7 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import App from './App';
+import { setupExternalLinkInterceptor } from './utils/externalBrowser';
 
 const rootElement = document.getElementById('root');
 if (!rootElement) {
@@ -17,6 +18,9 @@ if ((window as any).cordova) {
 
 function initializeApp() {
   console.log('Initializing NutriScan application...');
+  
+  // Intercept external links in AppGyser to open in system browser
+  setupExternalLinkInterceptor();
   
   try {
     const root = ReactDOM.createRoot(rootElement!);

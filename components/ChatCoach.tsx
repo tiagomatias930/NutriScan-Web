@@ -2,6 +2,7 @@ import React, { useState, useRef, useEffect } from 'react';
 import { geminiService } from '../services/geminiService';
 import { useAppStore } from '../store';
 import { useTranslation } from '../utils/i18n';
+import { openInExternalBrowser, isAppGyser } from '../utils/externalBrowser';
 import LanguageSwitcher from './LanguageSwitcher';
 
 export const ChatCoach: React.FC = () => {
@@ -42,7 +43,14 @@ function parseInline(txt: string): React.ReactNode[] {
             const href = m[6];
             const safeHref = /^\s*(https?:|mailto:|tel:|\/|#)/i.test(href) ? href : `https://${href}`;
             nodes.push(
-                <a key={`il-${key}`} href={safeHref} target="_blank" rel="noreferrer" className="underline text-primary">
+                <a key={`il-${key}`} href={safeHref} target="_blank" rel="noreferrer" className="underline text-primary"
+                    onClick={(e) => {
+                        if (isAppGyser()) {
+                            e.preventDefault();
+                            openInExternalBrowser(safeHref);
+                        }
+                    }}
+                >
                     {textPart}
                 </a>
             );
@@ -174,7 +182,14 @@ function renderFormattedText(text?: string): React.ReactNode {
                             <div className="mt-3 pt-3 border-t border-black/10 flex flex-col gap-1">
                                 <p className="text-[10px] font-bold uppercase opacity-60 mb-1">{t('chat.sources')}</p>
                                 {msg.sources.map((src, i) => (
-                                    <a key={i} href={src.uri} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs opacity-80 hover:opacity-100 truncate">
+                                    <a key={i} href={src.uri} target="_blank" rel="noreferrer" className="flex items-center gap-1 text-xs opacity-80 hover:opacity-100 truncate"
+                                        onClick={(e) => {
+                                            if (isAppGyser()) {
+                                                e.preventDefault();
+                                                openInExternalBrowser(src.uri);
+                                            }
+                                        }}
+                                    >
                                         <span className="material-icons text-[10px]">link</span>
                                         <span className="truncate">{src.title}</span>
                                     </a>

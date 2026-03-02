@@ -79,6 +79,26 @@ export const About: React.FC<AboutProps> = ({ onClose }) => {
             </div>
           </div>
 
+          {/* Privacy Policy */}
+          <div>
+            <a
+              href="https://politicas-de-privacidade-nutriscan.vercel.app/"
+              target="_blank"
+              rel="noopener noreferrer"
+              onClick={(e) => {
+                if (isAppGyser()) {
+                  e.preventDefault();
+                  openInExternalBrowser('https://politicas-de-privacidade-nutriscan.vercel.app/');
+                }
+              }}
+              className="inline-flex items-center gap-2 text-primary text-sm hover:text-secondary transition-colors"
+            >
+              <span className="material-icons text-sm">policy</span>
+              <span className="underline">{t('about.privacyPolicy')}</span>
+              <span className="material-icons text-xs">open_in_new</span>
+            </a>
+          </div>
+
           {/* Version Section */}
           <div className="border-t border-glassMedium pt-4 mt-4">
             <p className="text-xs text-textMuted text-center">

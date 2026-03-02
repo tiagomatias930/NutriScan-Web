@@ -1,6 +1,9 @@
 import React, { useState } from 'react';
 import { useTranslation } from '../utils/i18n';
+import { openInExternalBrowser, isAppGyser } from '../utils/externalBrowser';
 import LanguageSwitcher from './LanguageSwitcher';
+
+const PRIVACY_POLICY_URL = 'https://politicas-de-privacidade-nutriscan.vercel.app/';
 
 const TESTER_FORM_URL = 'https://forms.gle/KZjrcEMQjrPLWFNP9';
 
@@ -131,9 +134,24 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onGoogleSignIn, isLoading, er
           <span>{t('login.googleFitInfo')}</span>
         </div>
 
-        {/* Terms */}
+        {/* Terms & Privacy Policy */}
         <p className="mt-4 text-textMuted text-[10px] text-center leading-relaxed max-w-xs">
           {t('login.terms')}
+          <a
+            href={PRIVACY_POLICY_URL}
+            target="_blank"
+            rel="noopener noreferrer"
+            onClick={(e) => {
+              if (isAppGyser()) {
+                e.preventDefault();
+                openInExternalBrowser(PRIVACY_POLICY_URL);
+              }
+            }}
+            className="text-primary underline hover:text-secondary transition-colors"
+          >
+            {t('login.termsLink')}
+          </a>
+          {t('login.termsAnd')}
         </p>
       </div>
     </div>

@@ -35,6 +35,11 @@ export const useSupabaseAuth = (): UseSupabaseAuthReturn => {
       return;
     }
 
+    // Detect if we're returning from an OAuth redirect (PKCE flow)
+    const url = new URL(window.location.href);
+    const hasOAuthCode = url.searchParams.has('code');
+    const hasHashToken = window.location.hash.includes('access_token');
+
     // Get current session
     const getSession = async () => {
       try {
@@ -47,25 +52,50 @@ export const useSupabaseAuth = (): UseSupabaseAuthReturn => {
         
         if (session?.user) {
           setUser(session.user);
+          // Clean up OAuth params from URL after successful session
+          if (hasOAuthCode || hasHashToken) {
+            window.history.replaceState({}, '', window.location.pathname);
+          }
+          setIsLoading(false);
+        } else if (hasOAuthCode || hasHashToken) {
+          // We have OAuth params but no session yet — Supabase is still
+          // exchanging the code. Keep loading and let onAuthStateChange handle it.
+          console.log('OAuth callback detected, waiting for session exchange...');
+        } else {
+          setIsLoading(false);
         }
       } catch (error) {
         console.error('Error getting session:', error);
-      } finally {
         setIsLoading(false);
       }
     };
 
     getSession();
 
+    // Safety timeout: if we're waiting for OAuth exchange, don't hang forever
+    let safetyTimer: ReturnType<typeof setTimeout> | null = null;
+    if (hasOAuthCode || hasHashToken) {
+      safetyTimer = setTimeout(() => {
+        setIsLoading(false);
+      }, 10000); // 10s max wait
+    }
+
     // Subscribe to auth changes
     const {
       data: { subscription },
     } = supabase.auth.onAuthStateChange((_event, session) => {
       setUser(session?.user || null);
+      // Always resolve loading when auth state actually changes
+      setIsLoading(false);
+      // Clean up OAuth params from URL
+      if (session?.user && (hasOAuthCode || hasHashToken)) {
+        window.history.replaceState({}, '', window.location.pathname);
+      }
     });
 
     return () => {
       subscription?.unsubscribe();
+      if (safetyTimer) clearTimeout(safetyTimer);
     };
   }, [isConfigured]);
 

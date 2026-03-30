@@ -3,7 +3,7 @@ import { useTranslation } from '../utils/i18n';
 import { openInExternalBrowser, isAppGyser } from '../utils/externalBrowser';
 import LanguageSwitcher from './LanguageSwitcher';
 
-const PRIVACY_POLICY_URL = 'politic-nutriscan.geniomatias.me';
+const PRIVACY_POLICY_URL = 'https://politic-nutriscan.geniomatias.me';
 
 const TESTER_FORM_URL = 'https://forms.gle/KZjrcEMQjrPLWFNP9';
 

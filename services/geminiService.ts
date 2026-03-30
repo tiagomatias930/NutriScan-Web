@@ -3,8 +3,10 @@ import { FoodItem, Somatotype, Goal } from "../types";
 
 // NOTE: In a production app, never expose keys in client code. 
 // Since this is a demo running in a controlled environment, we access process.env.API_KEY.
-const ai = new GoogleGenAI({ apiKey: "AIzaSyB4wMNQLFCCosYkp_8qMUoKiNwvEUd6Li8" });
+const ai = new GoogleGenAI({ apiKey: "AIzaSyBGS72zIQTafGHBBH5JAUdDGqrrX_Pv8Tc" });
 
+// Separate client for native audio model
+const aiAudio = new GoogleGenAI({ apiKey: "AIzaSyBGS72zIQTafGHBBH5JAUdDGqrrX_Pv8Tc" });
 
 if (!ai)
 {
@@ -106,7 +108,7 @@ Return ONLY valid JSON with this exact structure (no markdown, no extra text):
     try {
       // Using Gemini 3 Flash for high reasoning capabilities on images
       const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview',
+        model: 'gemini-3.1-flash-image-preview',
         contents: [
           {
             role: 'user',
@@ -208,7 +210,7 @@ Return ONLY valid JSON with this exact structure (no markdown, no extra text):
       // Ideally use ai.chats.create, but to mix search grounding dynamically, we'll use generateContent with tools.
       
       const response = await ai.models.generateContent({
-        model: 'gemini-3-flash-preview', // Using Flash for fast chat + Search
+        model: 'gemini-2.5-flash', // Using Flash for fast chat + Search
         contents: [
             { role: 'user', parts: [{ text: `System: ${systemInstruction}` }] },
             ...history.map(h => ({ role: h.role === 'model' ? 'model' : 'user', parts: [{ text: h.text }] })),
@@ -261,5 +263,122 @@ Return ONLY valid JSON with this exact structure (no markdown, no extra text):
    * Generate a voice message describing food analysis in the user's language
    */
   generateFoodVoiceMessage,
+
+  /**
+   * Voice Chat with AI Coach using Gemini 2.5 Flash Native Audio
+   * Supports real-time audio input and output
+   */
+  voiceChatWithCoach: async (
+    audioBlob: Blob,
+    history: { role: 'user' | 'model'; text: string }[],
+    userProfileStr: string,
+    locale?: string
+  ): Promise<{ text: string; audioBuffer?: ArrayBuffer }> => {
+    try {
+      const languageInstructions: Record<string, string> = {
+        'pt': 'Responda em Português de Portugal. Sempre responda em Português.',
+        'en': 'Respond in English. Always answer in English.',
+        'zh': 'Respond in Simplified Chinese (Mandarin).',
+        'fr': 'Respond in French.',
+      };
+      const languageInstruction = languageInstructions[locale || 'en'] || languageInstructions['en'];
+
+      const systemInstruction = `
+        You are NutriScan Coach, an expert sports nutritionist.
+        User Profile: ${userProfileStr}.
+        Keep answers concise, motivating, and fact-based.
+        ${languageInstruction}
+      `;
+
+      // Convert blob to base64
+      const arrayBuffer = await audioBlob.arrayBuffer();
+      const base64Audio = btoa(
+        new Uint8Array(arrayBuffer).reduce((data, byte) => data + String.fromCharCode(byte), '')
+      );
+
+      // Use Gemini 2.5 Flash Native Audio model
+      const response = await aiAudio.models.generateContent({
+        model: 'gemini-2.5-flash-native-audio-preview-12-2025',
+        contents: [
+          {
+            role: 'user',
+            parts: [
+              { text: systemInstruction },
+              { inlineData: { mimeType: 'audio/wav', data: base64Audio } }
+            ]
+          }
+        ],
+        config: {
+          responseModalities: ['text', 'audio']
+        }
+      });
+
+      const candidate = response.candidates?.[0];
+      const parts = candidate?.content?.parts || [];
+      
+      let responseText = '';
+      let audioData = '';
+
+      for (const part of parts) {
+        if (part.text) {
+          responseText = part.text;
+        }
+        if (part.inlineData) {
+          audioData = part.inlineData.data;
+        }
+      }
+
+      return {
+        text: responseText || "Desculpa, não consegui processar o áudio.",
+        audioBuffer: audioData ? Uint8Array.from(atob(audioData), c => c.charCodeAt(0)).buffer : undefined
+      };
+
+    } catch (error) {
+      console.error("Gemini Voice Chat Error:", error);
+      return { text: "Desculpa, estou com problemas de conexão agora." };
+    }
+  },
+
+  /**
+   * Play audio from ArrayBuffer using Web Audio API
+   */
+  playAudio: async (audioBuffer: ArrayBuffer): Promise<void> => {
+    return new Promise((resolve, reject) => {
+      try {
+        const audioContext = new AudioContext();
+        audioContext.decodeAudioData(audioBuffer, (buffer) => {
+          const source = audioContext.createBufferSource();
+          source.buffer = buffer;
+          source.connect(audioContext.destination);
+          source.onended = () => {
+            audioContext.close();
+            resolve();
+          };
+          source.start(0);
+        }, (error) => {
+          audioContext.close();
+          reject(error);
+        });
+      } catch (error) {
+        reject(error);
+      }
+    });
+  },
+
+  /**
+   * Start voice input recording using MediaRecorder
+   */
+  startVoiceRecording: async (): Promise<MediaRecorder | null> => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const mediaRecorder = new MediaRecorder(stream, {
+        mimeType: 'audio/webm;codecs=opus'
+      });
+      return mediaRecorder;
+    } catch (error) {
+      console.error("Failed to start voice recording:", error);
+      return null;
+    }
+  },
 
 };

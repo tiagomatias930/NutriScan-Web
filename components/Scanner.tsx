@@ -193,8 +193,9 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
 
       // First, upload image to temporary server so we have an id and persistent URL
       let uploadedId: string | null = null;
+      const uploadServerUrl = import.meta.env.VITE_UPLOAD_SERVER_URL;
       try {
-        const resp = await fetch(('http://localhost:5050') + '/api/upload', {
+        const resp = await fetch((uploadServerUrl || 'http://localhost:5050') + '/api/upload', {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ imageBase64: base64Full, filename: 'scan.jpg', metadata: { source: 'scanner' } })

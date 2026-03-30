@@ -94,6 +94,13 @@ const translations: Translations = {
         start: '开始我的计划',
       },
     },
+    confirm: {
+      title: '确认您的数据',
+      subtitle: '数据来自您的 Google 账户',
+      loggedAs: '登录方式',
+      nameLabel: '姓名',
+      genderLabel: '性别',
+    },
     dashboard: {
       loadingProfile: '正在处理您的个人资料...',
       welcomeBack: '欢迎回来，',
@@ -349,6 +356,13 @@ const translations: Translations = {
         start: 'Commencer mon plan',
       },
     },
+    confirm: {
+      title: 'Confirmez vos données',
+      subtitle: 'Les données ont été obtenues à partir de votre compte Google',
+      loggedAs: 'Connecté avec',
+      nameLabel: 'Nom',
+      genderLabel: 'Genre',
+    },
     dashboard: {
       loadingProfile: 'Traitement de votre profil...',
       welcomeBack: 'Bienvenue,',
@@ -525,6 +539,8 @@ const translations: Translations = {
     language: {
       portuguese: 'Português',
       english: 'Inglês',
+      mandarin: 'Mandarim',
+      french: 'Francês',
       tooltip: 'Alterar idioma',
     },
     common: {
@@ -600,7 +616,15 @@ const translations: Translations = {
       actions: {
         continue: 'Continuar',
         start: 'Começar o plano',
+        back: 'Voltar',
       },
+    },
+    confirm: {
+      title: 'Confirme os seus dados',
+      subtitle: 'Os dados foram obtidos da sua conta Google',
+      loggedAs: 'Sessão iniciada com',
+      nameLabel: 'Nome',
+      genderLabel: 'Gênero',
     },
     dashboard: {
       loadingProfile: 'Processando o seu perfil...',
@@ -779,6 +803,8 @@ const translations: Translations = {
     language: {
       portuguese: 'Portuguese',
       english: 'English',
+      mandarin: 'Mandarin',
+      french: 'French',
       tooltip: 'Change language',
     },
     common: {
@@ -854,7 +880,15 @@ const translations: Translations = {
       actions: {
         continue: 'Continue',
         start: 'Start my plan',
+        back: 'Back',
       },
+    },
+    confirm: {
+      title: 'Confirm your data',
+      subtitle: 'Data was obtained from your Google account',
+      loggedAs: 'Signed in with',
+      nameLabel: 'Name',
+      genderLabel: 'Gender',
     },
     dashboard: {
       loadingProfile: 'Processing your profile...',

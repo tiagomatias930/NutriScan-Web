@@ -1,7 +1,7 @@
 <?xml version='1.0' encoding='utf-8'?>
 <widget id="com.nutriscan.app" version="1.0.0" xmlns="http://www.w3.org/ns/widgets" xmlns:cdv="http://cordova.apache.org/ns/1.0">
     <name>NutriScan</name>
-    <description>Advanced nutrition tracking application powered by AI</description>
+    <description>Advanced nutrition tracking application</description>
     <author email="tiagomatias072@gmail.com" href="http://portfolio.geniomatias.me/">NutriScan Team</author>
     
     <content src="index.html" />

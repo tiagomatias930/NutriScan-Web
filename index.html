@@ -4,6 +4,32 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
     <meta name="google-adsense-account" content="ca-pub-5928359598785995">
+    
+    <!-- PWA Meta Tags -->
+    <meta name="application-name" content="NutriScan">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+    <meta name="apple-mobile-web-app-title" content="NutriScan">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="theme-color" content="#00d9ff">
+    <meta name="description" content="Scan food with AI and track your daily nutrition, calories, and macros">
+    
+    <!-- Open Graph / Social -->
+    <meta property="og:type" content="website">
+    <meta property="og:title" content="NutriScan - Scan & Track Nutrition">
+    <meta property="og:description" content="Scan food with AI and track your daily nutrition">
+    <meta property="og:image" content="/iconApp.png">
+    
+    <!-- Twitter -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="NutriScan - Scan & Track Nutrition">
+    <meta name="twitter:description" content="Scan food with AI and track your daily nutrition">
+    <meta name="twitter:image" content="/iconApp.png">
+    
+    <!-- Security -->
+    <meta http-equiv="X-Content-Type-Options" content="nosniff">
+    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
+    
     <title>NutriScan Trainer</title>
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -123,6 +149,16 @@
       }
       .pulse-glow {
         animation: pulse-glow 2s ease-in-out infinite;
+      }
+      /* Skeleton wave animation */
+      @keyframes skeleton-wave {
+        0% { background-position: -200% 0; }
+        100% { background-position: 200% 0; }
+      }
+      .skeleton-wave {
+        background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+        background-size: 200% 100%;
+        animation: skeleton-wave 1.5s ease-in-out infinite;
       }
       input[type="range"]::-webkit-slider-runnable-track {
         width: 100%;

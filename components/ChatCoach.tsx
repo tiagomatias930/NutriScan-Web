@@ -9,6 +9,10 @@ export const ChatCoach: React.FC = () => {
   const { user, chatHistory, addMessage } = useAppStore();
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
+  const [isRecording, setIsRecording] = useState(false);
+  const [isPlaying, setIsPlaying] = useState(false);
+  const [mediaRecorder, setMediaRecorder] = useState<MediaRecorder | null>(null);
+  const [audioChunks, setAudioChunks] = useState<Blob[]>([]);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { t, locale } = useTranslation();
 
@@ -134,6 +138,95 @@ function renderFormattedText(text?: string): React.ReactNode {
     setLoading(false);
   };
 
+  const startRecording = async () => {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      const recorder = new MediaRecorder(stream, {
+        mimeType: 'audio/webm;codecs=opus'
+      });
+      
+      const chunks: Blob[] = [];
+      
+      recorder.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunks.push(e.data);
+        }
+      };
+      
+      recorder.onstop = async () => {
+        const audioBlob = new Blob(chunks, { type: 'audio/webm' });
+        await processVoiceInput(audioBlob);
+        // Stop all tracks
+        stream.getTracks().forEach(track => track.stop());
+      };
+      
+      recorder.start(100);
+      setMediaRecorder(recorder);
+      setIsRecording(true);
+      setAudioChunks(chunks);
+    } catch (error) {
+      console.error("Failed to start recording:", error);
+    }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorder && mediaRecorder.state !== 'inactive') {
+      mediaRecorder.stop();
+      setIsRecording(false);
+    }
+  };
+
+  const processVoiceInput = async (audioBlob: Blob) => {
+    if (!user) return;
+    
+    setLoading(true);
+    
+    const userContext = `${user.age}yo ${user.gender}, ${user.somatotype} body type, goal: ${user.goal}.`;
+    const apiHistory = chatHistory.slice(-10).map(m => ({ role: m.role, text: m.text }));
+    
+    try {
+      const response = await geminiService.voiceChatWithCoach(
+        audioBlob,
+        apiHistory,
+        userContext,
+        locale
+      );
+      
+      // Add user message (we don't have the transcribed text, so use a placeholder)
+      const userMsg = {
+        id: Date.now().toString(),
+        role: 'user' as const,
+        text: t('chat.voiceMessage'),
+        timestamp: Date.now()
+      };
+      addMessage(userMsg);
+      
+      // Add AI response
+      const modelMsg = {
+        id: (Date.now() + 1).toString(),
+        role: 'model' as const,
+        text: response.text,
+        timestamp: Date.now()
+      };
+      addMessage(modelMsg);
+      
+      // Play audio response if available
+      if (response.audioBuffer) {
+        setIsPlaying(true);
+        try {
+          await geminiService.playAudio(response.audioBuffer);
+        } catch (e) {
+          console.warn("Failed to play audio response:", e);
+        }
+        setIsPlaying(false);
+      }
+    } catch (error) {
+      console.error("Voice chat error:", error);
+    }
+    
+    setLoading(false);
+  };
+
     return (
         <div className="flex flex-col min-h-screen h-full bg-dark relative font-sans">
         {/* Header */}
@@ -215,6 +308,24 @@ function renderFormattedText(text?: string): React.ReactNode {
         {/* Input Area */}
         <div className="p-4 bg-dark/50 border-t border-glassDark sticky bottom-20 sm:bottom-[150px] z-30" style={{ paddingBottom: 'calc(env(safe-area-inset-bottom) + 0.5rem)' }}>
             <div className="glass glass-lg p-2 sm:p-1.5 flex flex-row items-center gap-2 transition-all w-full">
+                {/* Voice Input Button */}
+                <button
+                    onClick={isRecording ? stopRecording : startRecording}
+                    disabled={loading}
+                    aria-label={isRecording ? "Stop recording" : "Start voice input"}
+                    className={`w-10 h-10 rounded-full flex items-center justify-center transition-all border border-glassDark focus:outline-none focus:ring-2 focus:ring-primary ${
+                        isRecording 
+                        ? 'bg-red-500 text-white animate-pulse' 
+                        : 'bg-glassMedium text-textMuted hover:text-primary'
+                    }`}
+                >
+                    {isRecording ? (
+                        <span className="material-icons text-xl">stop</span>
+                    ) : (
+                        <span className="material-icons text-xl">mic</span>
+                    )}
+                </button>
+                
                 <textarea
                     value={input}
                     onChange={(e) => setInput(e.target.value)}
@@ -244,6 +355,22 @@ function renderFormattedText(text?: string): React.ReactNode {
                     </button>
                 </div>
             </div>
+            
+            {/* Recording indicator */}
+            {isRecording && (
+                <div className="flex items-center justify-center gap-2 mt-2 text-red-400 animate-pulse">
+                    <span className="w-2 h-2 rounded-full bg-red-500"></span>
+                    <span className="text-xs font-medium">A gravar...</span>
+                </div>
+            )}
+            
+            {/* Playing indicator */}
+            {isPlaying && (
+                <div className="flex items-center justify-center gap-2 mt-2 text-primary animate-pulse">
+                    <span className="material-icons text-sm">volume_up</span>
+                    <span className="text-xs font-medium">A reproduzir áudio...</span>
+                </div>
+            )}
         </div>
     </div>
   );

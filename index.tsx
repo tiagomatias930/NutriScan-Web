@@ -1,6 +1,6 @@
 import React from 'react';
 import ReactDOM from 'react-dom/client';
-import App from './App';
+import { loadRuntimeConfig } from './services/runtimeConfig';
 import { setupExternalLinkInterceptor } from './utils/externalBrowser';
 
 const rootElement = document.getElementById('root');
@@ -16,13 +16,15 @@ if ((window as any).cordova) {
   initializeApp();
 }
 
-function initializeApp() {
+async function initializeApp() {
   console.log('Initializing NutriScan application...');
   
   // Intercept external links in AppGyser to open in system browser
   setupExternalLinkInterceptor();
   
   try {
+    await loadRuntimeConfig();
+    const { default: App } = await import('./App');
     const root = ReactDOM.createRoot(rootElement!);
     root.render(
       <React.StrictMode>

@@ -1,10 +1,16 @@
 {
-  "name": "NutriScan",
+  "name": "NutriScan - Scan & Track Nutrition",
   "short_name": "NutriScan",
+  "description": "Scan food with AI and track your daily nutrition, calories, and macros",
   "start_url": "/",
   "display": "standalone",
-  "background_color": "#09090b",
-  "theme_color": "#10b981",
+  "orientation": "portrait-primary",
+  "background_color": "#0f1729",
+  "theme_color": "#00d9ff",
+  "categories": ["health", "fitness", "nutrition", "lifestyle"],
+  "lang": "pt-BR",
+  "scope": "/",
+  "prefer_related_applications": false,
   "icons": [
     {
       "src": "/iconApp.png",
@@ -19,8 +25,35 @@
       "purpose": "any maskable"
     }
   ],
+  "screenshots": [
+    {
+      "src": "/screenshot-mobile.png",
+      "sizes": "390x844",
+      "type": "image/png",
+      "form_factor": "narrow"
+    }
+  ],
+  "related_applications": [],
   "permissions": [
     "camera",
-    "photo"
+    "photo",
+    "notifications",
+    "persistent-storage"
+  ],
+  "shortcuts": [
+    {
+      "name": "Scan Food",
+      "short_name": "Scan",
+      "description": "Scan food to analyze nutrition",
+      "url": "/?action=scan",
+      "icons": [{ "src": "/iconApp.png", "sizes": "96x96" }]
+    },
+    {
+      "name": "Add Water",
+      "short_name": "Water",
+      "description": "Log water intake",
+      "url": "/?action=water",
+      "icons": [{ "src": "/iconApp.png", "sizes": "96x96" }]
+    }
   ]
 }

@@ -92,6 +92,14 @@ app.get('/health', (_req, res) => {
   res.json({ ok: true });
 });
 
+app.get('/api/runtime-config', (_req, res) => {
+  res.json({
+    supabaseUrl: process.env.VITE_SUPABASE_URL || '',
+    supabaseAnonKey: process.env.VITE_SUPABASE_ANON_KEY || '',
+    debug: process.env.VITE_DEBUG === 'true',
+  });
+});
+
 app.get('/api/auth/session', async (req, res) => {
   try {
     const session = await getSession(req, authConfig);

@@ -5,8 +5,6 @@ import LanguageSwitcher from './LanguageSwitcher';
 
 const PRIVACY_POLICY_URL = 'https://politic-nutriscan.geniomatias.me';
 
-const TESTER_FORM_URL = 'https://forms.gle/KZjrcEMQjrPLWFNP9';
-
 interface LoginScreenProps {
   onGoogleSignIn: () => Promise<void>;
   isLoading: boolean;
@@ -28,10 +26,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onGoogleSignIn, isLoading, er
     }
   };
 
-  const handleTesterRequest = () => {
-    openInExternalBrowser(TESTER_FORM_URL);
-  };
-
   return (
     <div className="min-h-screen bg-dark text-textLight flex flex-col items-center justify-center p-6 font-sans relative overflow-hidden">
       {/* Animated background */}
@@ -49,42 +43,13 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onGoogleSignIn, isLoading, er
           <img src="/iconApp.png" alt="NutriScan Logo" className="w-12 h-12 rounded-3xl bg-gradient-to-br from-primary to-secondary flex items-center justify-center mb-6 shadow-lg shadow-primary/20" />
 
         {/* App Name */}
-        <h1 className="text-4xl font-bold tracking-tight mb-2">
+        <h4 className="text-4xl font-bold tracking-tight mb-2">
           <span className="text-primary text-glow">Nutri</span>
           <span className="text-textLight">Scan</span>
-        </h1>
+        </h4>
         <p className="text-textMuted text-center text-sm mb-6 leading-relaxed max-w-xs">
           {t('login.subtitle')}
         </p>
-
-        {/* Tester Notice Banner */}
-        <div className="w-full glass rounded-2xl p-4 mb-6 border border-amber-500/30 bg-amber-500/5">
-          <div className="flex items-start gap-3">
-            <span className="material-icons text-amber-400 text-xl mt-0.5">science</span>
-            <div>
-              <h3 className="text-amber-400 font-semibold text-sm mb-1">{t('login.testerTitle')}</h3>
-              <p className="text-textMuted text-xs leading-relaxed">{t('login.testerDescription')}</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Request Access Button (primary - redirects to Google Form) */}
-        <button
-          onClick={handleTesterRequest}
-          className="w-full flex items-center justify-center gap-3 py-4 px-6 rounded-2xl 
-                     bg-gradient-to-r from-primary to-secondary text-dark font-bold text-base
-                     hover:opacity-90 transition-all duration-300 shadow-lg shadow-primary/20 mb-3"
-        >
-          <span className="material-icons text-xl">how_to_reg</span>
-          <span>{t('login.requestAccess')}</span>
-        </button>
-
-        {/* Divider */}
-        <div className="w-full flex items-center gap-3 my-4">
-          <div className="flex-1 h-px bg-glassMedium"></div>
-          <span className="text-textMuted text-[11px] uppercase tracking-wider">{t('login.alreadyTester')}</span>
-          <div className="flex-1 h-px bg-glassMedium"></div>
-        </div>
 
         {/* Google Sign-In Button (secondary - for existing testers) */}
         <button
@@ -127,12 +92,6 @@ const LoginScreen: React.FC<LoginScreenProps> = ({ onGoogleSignIn, isLoading, er
             <p className="text-red-400 text-sm text-center">{error}</p>
           </div>
         )}
-
-        {/* Google Fit info */}
-        <div className="mt-6 flex items-center gap-2 text-textMuted text-xs">
-          <span className="material-icons text-sm text-primary/60">fitness_center</span>
-          <span>{t('login.googleFitInfo')}</span>
-        </div>
 
         {/* Terms & Privacy Policy */}
         <p className="mt-4 text-textMuted text-[10px] text-center leading-relaxed max-w-xs">

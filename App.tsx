@@ -1,5 +1,5 @@
-import React, { useState } from 'react';
-import { useAppStore } from './store';
+import React, { useEffect, useState } from 'react';
+import { createInitialUserProfile, useAppStore } from './store';
 import { Onboarding } from './components/Onboarding';
 import { Dashboard } from './components/Dashboard';
 import { ChatCoach } from './components/ChatCoach';
@@ -16,6 +16,7 @@ import { useTranslation } from './utils/i18n';
 
 const App: React.FC = () => {
   const user = useAppStore((state) => state.user);
+  const setUser = useAppStore((state) => state.setUser);
   const { t } = useTranslation();
   const { user: authUser, isLoading: authLoading, isAuthenticated, signInWithGoogle, signOut } = useSupabaseAuth();
   const [currentTab, setCurrentTab] = useState<'home' | 'chat'>('home');
@@ -34,6 +35,12 @@ const App: React.FC = () => {
       setLoginError(result.error);
     }
   };
+
+  useEffect(() => {
+    if (authUser && !user) {
+      setUser(createInitialUserProfile(authUser.name || ''));
+    }
+  }, [authUser, setUser, user]);
 
   // Show login screen if not authenticated
   if (!isAuthenticated && !authLoading) {

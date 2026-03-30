@@ -1,10 +1,8 @@
 node_modules
-<<<<<<< HEAD
 
 # Environment files
 .env
 .env.local
 .env.*.local
-=======
+
 client_secret_636934534754-d5opd5uvcmkhg7prfqope2bjennsmmts.apps.googleusercontent.com.json
->>>>>>> 33b2bb4082273c33cdd40758085ec0c966a2a5a8

@@ -49,6 +49,11 @@ const INITIAL_USER: UserProfile = {
   onboardingCompleted: false,
 };
 
+export const createInitialUserProfile = (name = ''): UserProfile => ({
+  ...INITIAL_USER,
+  name,
+});
+
 export const useAppStore = create<AppState>()(
   persist(
     (set, get) => ({

@@ -2,11 +2,9 @@ const CACHE_NAME = 'nutriscan-v1';
 const STATIC_CACHE = 'nutriscan-static-v1';
 const DYNAMIC_CACHE = 'nutriscan-dynamic-v1';
 
-// Assets to cache immediately on install
 const STATIC_ASSETS = [
   '/',
   '/index.html',
-  '/index.css',
   '/manifest.json',
   '/iconApp.png'
 ];

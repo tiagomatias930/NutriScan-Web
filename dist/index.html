@@ -11,7 +11,7 @@
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
     <meta name="apple-mobile-web-app-title" content="NutriScan">
     <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#00d9ff">
+    <meta name="theme-color" content="#1FAA70">
     <meta name="description" content="Scan food with AI and track your daily nutrition, calories, and macros">
     
     <!-- Open Graph / Social -->
@@ -38,24 +38,17 @@
     <script src="https://cdn.tailwindcss.com"></script>
      <script>
       tailwind.config = {
+        darkMode: 'class',
         theme: {
           extend: {
             fontFamily: {
               sans: ['Inter', 'sans-serif'],
             },
             colors: {
-              primary: '#00d9ff', // Electric cyan
-              primaryDark: '#0099cc',
-              secondary: '#6366f1', // Indigo
-              dark: '#0f1729', // Deep navy background
-              darkCard: '#1a2844', // Dark navy card
-              darkCardHover: '#243558', // Slightly lighter on hover
-              glassLight: 'rgba(255, 255, 255, 0.05)',
-              glassMedium: 'rgba(255, 255, 255, 0.08)',
-              glassDark: 'rgba(255, 255, 255, 0.1)',
-              subtle: '#64748b', // Slate 500
-              textLight: '#e2e8f0', // Light text
-              textMuted: '#94a3b8', // Muted text
+              primary: '#1FAA70', // Clay Food Emerald Green
+              primaryDark: '#128655', 
+              secondary: '#1A2846',
+              subtle: '#D1D5DB', // gray-300
             },
             animation: {
               'fade-in': 'fadeIn 0.5s ease-out',
@@ -77,100 +70,30 @@
     </script>
     <style>
       body {
-        background: linear-gradient(135deg, #0f1729 0%, #1a2950 50%, #1a2850 100%);
-        color: #e2e8f0;
         font-family: 'Inter', sans-serif;
         -webkit-font-smoothing: antialiased;
         overflow: auto;
       }
-      html {
-        background: linear-gradient(135deg, #0f1729 0%, #1a2950 50%, #1a2850 100%);
-      }
-      /* Hide scrollbar for clean mobile look */
       ::-webkit-scrollbar {
         width: 0px;
         background: transparent;
       }
-      input[type="range"]::-webkit-slider-thumb {
-        -webkit-appearance: none;
-        height: 20px;
-        width: 20px;
-        border-radius: 50%;
-        background: linear-gradient(135deg, #00d9ff 0%, #0099cc 100%);
-        cursor: pointer;
-        margin-top: -8px;
-        box-shadow: 0 0 15px rgba(0, 217, 255, 0.5);
-      }
-      /* Glassmorphism styles */
-      .glass {
-        background: rgba(255, 255, 255, 0.08);
-        backdrop-filter: blur(20px);
-        -webkit-backdrop-filter: blur(20px);
-        border: 1px solid rgba(255, 255, 255, 0.1);
-        border-radius: 24px;
-      }
-      .glass-sm {
-        background: rgba(255, 255, 255, 0.05);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        border: 1px solid rgba(255, 255, 255, 0.08);
-      }
-      .glass-lg {
-        background: rgba(255, 255, 255, 0.1);
-        backdrop-filter: blur(30px);
-        -webkit-backdrop-filter: blur(30px);
-        border: 1px solid rgba(255, 255, 255, 0.15);
-      }
-      /* Glow effects */
-      .glow-cyan {
-        box-shadow: 0 0 30px rgba(0, 217, 255, 0.3), 0 0 60px rgba(0, 217, 255, 0.15);
-      }
-      .glow-indigo {
-        box-shadow: 0 0 30px rgba(99, 102, 241, 0.3), 0 0 60px rgba(99, 102, 241, 0.15);
-      }
-      .text-glow {
-        text-shadow: 0 0 20px rgba(0, 217, 255, 0.4);
-      }
-      /* Smooth transitions */
       * {
-        transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
       }
-      /* Animation for elements */
-      @keyframes float {
-        0%, 100% { transform: translateY(0px); }
-        50% { transform: translateY(-10px); }
-      }
-      @keyframes pulse-glow {
-        0%, 100% { box-shadow: 0 0 20px rgba(0, 217, 255, 0.3); }
-        50% { box-shadow: 0 0 40px rgba(0, 217, 255, 0.6); }
-      }
-      .float-animation {
-        animation: float 3s ease-in-out infinite;
-      }
-      .pulse-glow {
-        animation: pulse-glow 2s ease-in-out infinite;
-      }
-      /* Skeleton wave animation */
       @keyframes skeleton-wave {
         0% { background-position: -200% 0; }
         100% { background-position: 200% 0; }
       }
       .skeleton-wave {
-        background: linear-gradient(90deg, rgba(255,255,255,0.05) 25%, rgba(255,255,255,0.1) 50%, rgba(255,255,255,0.05) 75%);
+        background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%);
         background-size: 200% 100%;
         animation: skeleton-wave 1.5s ease-in-out infinite;
-      }
-      input[type="range"]::-webkit-slider-runnable-track {
-        width: 100%;
-        height: 4px;
-        cursor: pointer;
-        background: rgba(255, 255, 255, 0.1);
-        border-radius: 2px;
       }
     </style>
 
 <link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#00d9ff">
+<meta name="theme-color" content="#1FAA70">
 <link rel="apple-touch-icon" href="/iconApp.png">
 <link rel="icon" href="/iconApp.png" sizes="any">
 <link rel="stylesheet" href="/index.css">
@@ -190,9 +113,9 @@
   }
 }
 </script>
-  <script type="module" crossorigin src="/assets/index-D116eNXE.js"></script>
+  <script type="module" crossorigin src="/assets/index-BGfLFS10.js"></script>
 </head>
-  <body>
+  <body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-300">
     <div id="root"></div>
 </body>
 </html>

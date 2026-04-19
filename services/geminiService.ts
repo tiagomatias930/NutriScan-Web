@@ -3,14 +3,13 @@ import { FoodItem, Somatotype, Goal } from "../types";
 
 // NOTE: In a production app, never expose keys in client code. 
 // Since this is a demo running in a controlled environment, we access process.env.API_KEY.
-const ai = new GoogleGenAI({ apiKey: "AIzaSyBGS72zIQTafGHBBH5JAUdDGqrrX_Pv8Tc" });
+let ai = new GoogleGenAI({ apiKey: "AIzaSyBGS72zIQTafGHBBH5JAUdDGqrrX_Pv8Tc" });
 
 // Separate client for native audio model
 const aiAudio = new GoogleGenAI({ apiKey: "AIzaSyBGS72zIQTafGHBBH5JAUdDGqrrX_Pv8Tc" });
 
-if (!ai)
-{
-	const ai = new GoogleGenAI({ apiKey: "AIzaSyA2lpbEDmuXGtif8QlBxc26iklkpnJnSo0" });
+if (!ai) {
+  ai = new GoogleGenAI({ apiKey: "AIzaSyA2lpbEDmuXGtif8QlBxc26iklkpnJnSo0" });
 }
 export type Locale = 'pt' | 'en' | 'zh' | 'fr';
 
@@ -27,17 +26,17 @@ export interface AnalyzedFood {
 
 // Helper to decode base64 audio
 async function decodeAudioData(
-    base64: string,
-    ctx: AudioContext,
-  ): Promise<AudioBuffer> {
-    const binaryString = atob(base64);
-    const len = binaryString.length;
-    const bytes = new Uint8Array(len);
-    for (let i = 0; i < len; i++) {
-      bytes[i] = binaryString.charCodeAt(i);
-    }
-    return ctx.decodeAudioData(bytes.buffer);
+  base64: string,
+  ctx: AudioContext,
+): Promise<AudioBuffer> {
+  const binaryString = atob(base64);
+  const len = binaryString.length;
+  const bytes = new Uint8Array(len);
+  for (let i = 0; i < len; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
   }
+  return ctx.decodeAudioData(bytes.buffer);
+}
 
 // Helper to generate voice message in the appropriate language
 function generateFoodVoiceMessage(
@@ -49,14 +48,14 @@ function generateFoodVoiceMessage(
   locale?: string
 ): string {
   const loc = locale as Locale || 'en';
-  
+
   const messages: Record<Locale, string> = {
     'pt': `Encontrei ${foodName}. ${calories} calorias, ${protein} gramas de proteína, ${carbs} gramas de carboidratos, e ${fats} gramas de gordura.`,
     'en': `I found ${foodName}. ${calories} calories, ${protein} grams of protein, ${carbs} grams of carbs, and ${fats} grams of fat.`,
     'zh': `我找到了${foodName}。${calories}卡路里，${protein}克蛋白质，${carbs}克碳水化合物，${fats}克脂肪。`,
     'fr': `J'ai trouvé ${foodName}. ${calories} calories, ${protein} grammes de protéines, ${carbs} grammes de glucides et ${fats} grammes de graisse.`,
   };
-  
+
   return messages[loc] || messages['en'];
 }
 
@@ -125,7 +124,7 @@ Return ONLY valid JSON with this exact structure (no markdown, no extra text):
 
       // Clean up markdown if present (just in case)
       const jsonStr = text.replace(/```json/g, '').replace(/```/g, '').trim();
-      
+
       // Validate JSON structure
       let data: AnalyzedFood;
       try {
@@ -180,8 +179,8 @@ Return ONLY valid JSON with this exact structure (no markdown, no extra text):
    * Chat with AI Coach using Gemini 3 Pro Preview.
    */
   chatWithCoach: async (
-    history: { role: 'user' | 'model'; text: string }[], 
-    currentMessage: string, 
+    history: { role: 'user' | 'model'; text: string }[],
+    currentMessage: string,
     userProfileStr: string,
     locale?: string
   ) => {
@@ -206,23 +205,23 @@ Return ONLY valid JSON with this exact structure (no markdown, no extra text):
       // For this implementation, we will use a fresh generateContent with history context in prompt or use chat session if persistent.
       // Let's use a stateless approach where we pass relevant context in the prompt for simplicity in this architecture, 
       // but properly formatted for the model.
-      
+
       // Ideally use ai.chats.create, but to mix search grounding dynamically, we'll use generateContent with tools.
-      
+
       const response = await ai.models.generateContent({
         model: 'gemini-2.5-flash', // Using Flash for fast chat + Search
         contents: [
-            { role: 'user', parts: [{ text: `System: ${systemInstruction}` }] },
-            ...history.map(h => ({ role: h.role === 'model' ? 'model' : 'user', parts: [{ text: h.text }] })),
-            { role: 'user', parts: [{ text: currentMessage }] }
+          { role: 'user', parts: [{ text: `System: ${systemInstruction}` }] },
+          ...history.map(h => ({ role: h.role === 'model' ? 'model' : 'user', parts: [{ text: h.text }] })),
+          { role: 'user', parts: [{ text: currentMessage }] }
         ]
       });
-      
+
       const responseText = response.candidates?.[0]?.content?.parts?.[0]?.text || "I couldn't process that.";
-      
+
       return {
-          text: responseText,
-          groundingChunks: response.candidates?.[0]?.groundingMetadata?.groundingChunks
+        text: responseText,
+        groundingChunks: response.candidates?.[0]?.groundingMetadata?.groundingChunks
       };
 
     } catch (error) {
@@ -248,10 +247,10 @@ Return ONLY valid JSON with this exact structure (no markdown, no extra text):
         utterance.lang = languageMap[locale || 'en'] || 'en-US';
         utterance.rate = 0.95;
         utterance.pitch = 1;
-        
+
         utterance.onend = () => resolve();
         utterance.onerror = (event) => reject(new Error(`Speech synthesis error: ${event.error}`));
-        
+
         speechSynthesis.speak(utterance);
       } catch (error) {
         reject(error);
@@ -315,7 +314,7 @@ Return ONLY valid JSON with this exact structure (no markdown, no extra text):
 
       const candidate = response.candidates?.[0];
       const parts = candidate?.content?.parts || [];
-      
+
       let responseText = '';
       let audioData = '';
 

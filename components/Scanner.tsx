@@ -612,19 +612,19 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   };
 
   return (
-    <div className="fixed inset-0 z-50 bg-dark flex flex-col h-full animate-fade-in">
+    <div className="fixed inset-0 z-50 bg-black flex flex-col h-full animate-fade-in">
       {/* Header Overlay */}
-      <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-20 bg-gradient-to-b from-dark/80 to-transparent">
-        <button onClick={handleClose} className="w-10 h-10 rounded-full glass-lg flex items-center justify-center text-textLight hover:glass transition-all">
+      <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-20 bg-gradient-to-b from-black/80 to-transparent">
+        <button onClick={handleClose} className="w-10 h-10 rounded-full bg-white/20 backdrop-blur-md flex items-center justify-center text-white hover:bg-white/30 transition-all">
             <span className="material-icons">close</span>
         </button>
-        <h2 className="text-textLight font-semibold tracking-wide uppercase text-sm opacity-80">{t('scanner.headerTitle')}</h2>
+        <h2 className="text-white font-semibold tracking-wide uppercase text-sm opacity-80">{t('scanner.headerTitle')}</h2>
         <div className="w-10"></div>
       </div>
 
       {/* Error banner */}
       {errorMessage && (
-        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-30 px-4 py-2 bg-red-600/80 text-white rounded-lg shadow-lg glow-indigo flex items-center gap-3">
+        <div className="absolute top-20 left-1/2 transform -translate-x-1/2 z-30 px-4 py-2 bg-red-600 text-white rounded-xl shadow-lg flex items-center gap-3">
           <div className="text-sm">{errorMessage}</div>
           <button onClick={() => setErrorMessage(null)} className="ml-2 text-white/80 hover:text-white">{t('common.close')}</button>
         </div>
@@ -691,35 +691,35 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
           )}
 
           {isAnalyzing && (
-            <div className="absolute inset-0 bg-dark/80 flex flex-col items-center justify-center z-30 backdrop-blur-sm">
+            <div className="absolute inset-0 bg-black/70 flex flex-col items-center justify-center z-30 backdrop-blur-md">
               <div className="relative w-24 h-24">
-                <div className="absolute inset-0 border-4 border-glassMedium rounded-full"></div>
-                <div className="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin glow-cyan"></div>
+                <div className="absolute inset-0 border-4 border-white/20 rounded-full"></div>
+                <div className="absolute inset-0 border-4 border-primary rounded-full border-t-transparent animate-spin"></div>
               </div>
-              <p className="text-textLight font-bold text-lg mt-6 animate-pulse">{t('scanner.analyzing.title')}</p>
-              <p className="text-textMuted text-sm">{t('scanner.analyzing.description')}</p>
+              <p className="text-white font-bold text-lg mt-6 animate-pulse">{t('scanner.analyzing.title')}</p>
+              <p className="text-white/70 text-sm">{t('scanner.analyzing.description')}</p>
             </div>
           )}
 
           {/* Result Sheet */}
           {result && (
-            <div className="absolute bottom-0 left-0 right-0 glass-lg rounded-t-3xl p-4 md:p-6 shadow-2xl animate-slide-up z-20 max-h-[85vh] md:max-h-[80vh] overflow-y-auto">
-                 <div className="w-12 h-1 bg-glassMedium rounded-full mx-auto mb-4 md:mb-6"></div>
+            <div className="absolute bottom-0 left-0 right-0 bg-white dark:bg-gray-900 rounded-t-3xl p-4 md:p-6 shadow-[0_-10px_40px_rgba(0,0,0,0.15)] dark:shadow-[0_-5px_30px_rgba(0,0,0,0.6)] animate-slide-up z-20 max-h-[85vh] md:max-h-[80vh] overflow-y-auto transition-colors duration-300">
+                 <div className="w-12 h-1 bg-gray-300 dark:bg-gray-700 rounded-full mx-auto mb-4 md:mb-6"></div>
 
                  <div className="flex items-start justify-between mb-4">
                    <div className="flex-1">
-                     <h3 className="text-2xl font-bold text-primary mb-2 leading-tight text-glow">{result.foodName}</h3>
-                     <p className="text-white text-sm mb-4 leading-relaxed border-l-2 border-primary pl-3">{result.reasoning}</p>
+                     <h3 className="text-2xl font-bold text-gray-900 dark:text-gray-100 mb-2 leading-tight">{result.foodName}</h3>
+                     <p className="text-gray-600 dark:text-gray-400 text-sm mb-4 leading-relaxed border-l-2 border-primary pl-3">{result.reasoning}</p>
                    </div>
                    
                  </div>
 
                  <div className="flex items-center justify-between mb-4">
-                    <div className="text-sm text-primary">{t('scanner.confidence')}</div>
+                    <div className="text-sm font-semibold text-primary">{t('scanner.confidence')}</div>
                     <div className="flex items-center gap-3">
-                      <div className="font-bold text-textLight">{typeof result.confidence === 'number' ? `${Math.round(result.confidence)}%` : '—'}</div>
-                      <div className="w-40 h-2 bg-glassDark rounded-full overflow-hidden">
-                        <div className="h-full bg-gradient-to-r from-primary to-secondary" style={{ width: `${Math.min(100, result.confidence ?? 0)}%` }} />
+                      <div className="font-bold text-gray-900 dark:text-gray-100">{typeof result.confidence === 'number' ? `${Math.round(result.confidence)}%` : '—'}</div>
+                      <div className="w-40 h-2 bg-gray-200 dark:bg-gray-800 rounded-full overflow-hidden">
+                        <div className="h-full bg-primary" style={{ width: `${Math.min(100, result.confidence ?? 0)}%` }} />
                       </div>
                     </div>
                  </div>
@@ -731,30 +731,30 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
                    </div>
                  )}
 
-                 <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 md:mb-8">
-                    <NutrientBox label={t('scanner.nutrients.calories')} value={result.calories} unit="kcal" />
-                    <NutrientBox label={t('scanner.nutrients.protein')} value={result.protein} unit="g" color="text-emerald-400" />
-                    <NutrientBox label={t('scanner.nutrients.carbs')} value={result.carbs} unit="g" color="text-blue-400" />
-                    <NutrientBox label={t('scanner.nutrients.fats')} value={result.fats} unit="g" color="text-amber-400" />
+                  <div className="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6 md:mb-8">
+                    <NutrientBox label={t('scanner.nutrients.calories')} value={result.calories} unit="kcal" color="text-gray-900" />
+                    <NutrientBox label={t('scanner.nutrients.protein')} value={result.protein} unit="g" color="text-emerald-600" />
+                    <NutrientBox label={t('scanner.nutrients.carbs')} value={result.carbs} unit="g" color="text-blue-600" />
+                    <NutrientBox label={t('scanner.nutrients.fats')} value={result.fats} unit="g" color="text-amber-500" />
                  </div>
 
                  <div className="flex flex-col md:flex-row gap-3">
                    <button 
                     onClick={handleRetake}
-                    className="w-full md:flex-1 py-3 rounded-2xl font-bold text-gray-300 bg-gray-800 hover:bg-gray-700 transition-colors"
+                    className="w-full md:flex-1 py-3 rounded-2xl font-bold text-gray-700 dark:text-gray-300 bg-gray-100 dark:bg-gray-800 hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                    >
                      {t('scanner.actions.retake')}
                    </button>
                    <button 
                     onClick={reAnalyzeHighQuality}
                     disabled={isAnalyzing}
-                    className="w-full md:w-auto md:px-6 py-3 rounded-2xl font-bold text-white bg-gradient-to-r from-gray-700 to-gray-600 hover:opacity-90 transition-colors"
+                    className="w-full md:w-auto md:px-6 py-3 rounded-2xl font-bold text-primary bg-primary/10 hover:bg-primary/20 transition-colors"
                    >
                      {t('scanner.actions.reanalyze')}
                    </button>
                    <button 
                     onClick={handleConfirm}
-                    className="w-full md:flex-1 py-3 rounded-2xl font-bold text-black bg-primary hover:bg-emerald-400 transition-colors shadow-lg shadow-emerald-900/30"
+                    className="w-full md:flex-1 py-3 rounded-2xl font-bold text-white bg-primary hover:bg-primaryDark transition-colors shadow-lg shadow-emerald-600/30"
                    >
                      {t('scanner.actions.add')}
                    </button>
@@ -770,10 +770,10 @@ export const Scanner: React.FC<ScannerProps> = ({ onClose }) => {
   );
 };
 
-const NutrientBox = ({ label, value, unit, color = 'text-white' }: { label: string, value: number, unit: string, color?: string }) => (
-    <div className="bg-gray-800/50 p-3 rounded-2xl text-center border border-gray-700/50">
-        <div className="text-[10px] text-white-500 uppercase font-bold tracking-wider mb-1">{label}</div>
-        <div className={`font-bold text-lg ${color}`}>{value}</div>
-        <div className="text-[10px] text-gray-500 font-medium">{unit}</div>
+const NutrientBox = ({ label, value, unit, color = 'text-gray-900' }: { label: string, value: number, unit: string, color?: string }) => (
+    <div className="bg-gray-50 dark:bg-gray-800 p-3 rounded-2xl text-center border border-gray-100 dark:border-gray-700">
+        <div className="text-[10px] text-gray-500 dark:text-gray-400 uppercase font-bold tracking-wider mb-1">{label}</div>
+        <div className={`font-bold text-lg ${color} dark:text-inherit`}>{value}</div>
+        <div className="text-[10px] text-gray-400 dark:text-gray-500 font-medium">{unit}</div>
     </div>
 )

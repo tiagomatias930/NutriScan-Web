@@ -21,8 +21,8 @@ const LanguageSwitcher: React.FC = () => {
           onClick={() => setLocale(code)}
           aria-pressed={locale === code}
           aria-label={label}
-          className={`w-9 h-9 rounded-full border border-glassDark bg-glass flex items-center justify-center transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary/60 ${
-            locale === code ? 'ring-2 ring-primary/60' : ''
+          className={`w-9 h-9 rounded-full border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-800 flex items-center justify-center transition-transform hover:scale-105 focus:outline-none focus:ring-2 focus:ring-primary/60 ${
+            locale === code ? 'ring-2 ring-primary border-primary' : ''
           }`}
         >
           <img src={flag} alt={label} className="w-6 h-4 rounded-sm shadow-sm" />

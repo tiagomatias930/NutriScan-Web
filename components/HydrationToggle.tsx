@@ -13,7 +13,7 @@ const HydrationToggle: React.FC = () => {
     <button
       onClick={() => setEnabled(!enabled)}
       aria-pressed={enabled}
-      className={`px-3 py-2 rounded-lg flex items-center gap-2 text-sm font-medium transition-colors ${enabled ? 'bg-primary/20 text-primary' : 'bg-glassDark text-textMuted hover:bg-glass'}`}
+      className={`px-3 py-2 rounded-xl flex items-center gap-2 text-sm font-medium transition-colors ${enabled ? 'bg-primary/10 dark:bg-primary/20 text-primary dark:text-primary-light' : 'bg-gray-100 dark:bg-gray-800 text-gray-500 dark:text-gray-400 hover:bg-gray-200 dark:hover:bg-gray-700'}`}
       title={title}
       aria-label={title}
     >

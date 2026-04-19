@@ -24,7 +24,7 @@ export const OfflineStatusBanner: React.FC = () => {
   if (show && !isOnline) {
     return (
       <div className="fixed top-0 left-0 right-0 z-50 max-w-md mx-auto animate-slide-down">
-        <div className="glass-lg m-2 rounded-2xl p-4 border border-red-500/20 bg-gradient-to-r from-red-500/10 to-orange-500/10">
+        <div className="bg-white dark:bg-gray-900 m-2 rounded-2xl p-4 border border-red-200 dark:border-red-900/50 shadow-md transition-colors duration-300">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 flex-1">
               <div className="relative w-6 h-6">
@@ -32,8 +32,8 @@ export const OfflineStatusBanner: React.FC = () => {
                 <div className="absolute inset-1 bg-red-600 rounded-full" />
               </div>
               <div className="flex-1">
-                <p className="text-sm font-bold text-red-400">{t('offlineBanner.offlineTitle')}</p>
-                <p className="text-xs text-red-300/80">
+                <p className="text-sm font-bold text-red-600">{t('offlineBanner.offlineTitle')}</p>
+                <p className="text-xs text-red-500">
                   {pendingSyncCount > 0 
                     ? t('offlineBanner.offlinePending', { count: pendingSyncCount }) 
                     : t('offlineBanner.offlineReady')}
@@ -56,14 +56,14 @@ export const OfflineStatusBanner: React.FC = () => {
   if (lastSyncStatus === 'syncing') {
     return (
       <div className="fixed top-0 left-0 right-0 z-50 max-w-md mx-auto animate-slide-down">
-        <div className="glass-lg m-2 rounded-2xl p-4 border border-blue-500/20 bg-gradient-to-r from-blue-500/10 to-cyan-500/10">
+        <div className="bg-white dark:bg-gray-900 m-2 rounded-2xl p-4 border border-blue-200 dark:border-blue-900/50 shadow-md transition-colors duration-300">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 flex-1">
               <div className="relative w-6 h-6">
                 <div className="absolute inset-0 border-2 border-blue-500/20 rounded-full" />
                 <div className="absolute inset-0 border-2 border-transparent border-t-blue-500 rounded-full animate-spin" />
               </div>
-                <p className="text-sm font-semibold text-blue-300">{t('offlineBanner.syncing')}</p>
+                <p className="text-sm font-semibold text-blue-600">{t('offlineBanner.syncing')}</p>
             </div>
             <span className="text-xs px-2 py-1 rounded-full bg-blue-500/20 text-blue-300">
                 {t('offlineBanner.pendingCount', { count: pendingSyncCount })}
@@ -77,13 +77,13 @@ export const OfflineStatusBanner: React.FC = () => {
   if (lastSyncStatus === 'success') {
     return (
       <div className="fixed top-0 left-0 right-0 z-50 max-w-md mx-auto animate-slide-down">
-        <div className="glass-lg m-2 rounded-2xl p-4 border border-emerald-500/20 bg-gradient-to-r from-emerald-500/10 to-green-500/10">
+        <div className="bg-white dark:bg-gray-900 m-2 rounded-2xl p-4 border border-emerald-200 dark:border-emerald-900/50 shadow-md transition-colors duration-300">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 flex-1">
               <div className="flex items-center justify-center w-6 h-6 rounded-full bg-emerald-500/20">
                 <span className="text-emerald-400 text-sm">✓</span>
               </div>
-              <p className="text-sm font-semibold text-emerald-300">{t('offlineBanner.success')}</p>
+              <p className="text-sm font-semibold text-emerald-600">{t('offlineBanner.success')}</p>
             </div>
           </div>
         </div>
@@ -94,13 +94,13 @@ export const OfflineStatusBanner: React.FC = () => {
   if (lastSyncStatus === 'error') {
     return (
       <div className="fixed top-0 left-0 right-0 z-50 max-w-md mx-auto animate-slide-down">
-        <div className="glass-lg m-2 rounded-2xl p-4 border border-yellow-500/20 bg-gradient-to-r from-yellow-500/10 to-orange-500/10">
+        <div className="bg-white dark:bg-gray-900 m-2 rounded-2xl p-4 border border-yellow-200 dark:border-yellow-900/50 shadow-md transition-colors duration-300">
           <div className="flex items-center justify-between gap-3">
             <div className="flex items-center gap-3 flex-1">
               <span className="text-yellow-400 text-lg">⚠</span>
               <div>
-                <p className="text-sm font-semibold text-yellow-300">{t('offlineBanner.errorTitle')}</p>
-                <p className="text-xs text-yellow-300/80">{t('offlineBanner.errorSubtitle')}</p>
+                <p className="text-sm font-semibold text-yellow-600">{t('offlineBanner.errorTitle')}</p>
+                <p className="text-xs text-yellow-700">{t('offlineBanner.errorSubtitle')}</p>
               </div>
             </div>
             <button

@@ -15,6 +15,7 @@ interface AppState {
   lastDrinkAt?: number | null;
   hydrationReminderEnabled: boolean;
   locale: Locale;
+  theme: 'light' | 'dark';
   
   // Actions
   setUser: (user: UserProfile) => void;
@@ -24,6 +25,7 @@ interface AppState {
   setLastDrinkAt: (timestamp: number) => void;
   setHydrationReminderEnabled: (enabled: boolean) => void;
   setLocale: (locale: Locale) => void;
+  toggleTheme: () => void;
   resetDailyLog: () => void;
   clearStorage: () => void;
   deleteHistoryEntry: (timestamp: number) => void;
@@ -67,6 +69,7 @@ export const useAppStore = create<AppState>()(
       lastDrinkAt: null,
       hydrationReminderEnabled: true,
       locale: DEFAULT_LOCALE,
+      theme: 'light',
 
       setUser: (user) => {
         const targets = calculateTargets(user);
@@ -141,6 +144,10 @@ export const useAppStore = create<AppState>()(
 
       setLocale: (locale) => {
         set({ locale });
+      },
+
+      toggleTheme: () => {
+        set((state) => ({ theme: state.theme === 'light' ? 'dark' : 'light' }));
       },
 
       setLastDrinkAt: (timestamp: number) => {

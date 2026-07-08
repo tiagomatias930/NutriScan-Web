@@ -1,121 +1,504 @@
 <!DOCTYPE html>
-<html lang="pt-br">
-  <head>
-    <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
-    <meta name="google-adsense-account" content="ca-pub-5928359598785995">
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="NutriScan Mobile - A revolução nutricional na palma da sua mão. Monitorização inteligente com Gemini AI, análise por somatotipo, coaching 24/7 e gestão de hidratação.">
+    <meta name="keywords" content="NutriScan, nutrição, inteligência artificial, somatotipo, contador de calorias, gemini, dieta personalizada, hidratação">
+    <meta name="author" content="NutriScan App">
     
-    <!-- PWA Meta Tags -->
-    <meta name="application-name" content="NutriScan">
-    <meta name="apple-mobile-web-app-capable" content="yes">
-    <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-    <meta name="apple-mobile-web-app-title" content="NutriScan">
-    <meta name="mobile-web-app-capable" content="yes">
-    <meta name="theme-color" content="#1FAA70">
-    <meta name="description" content="Scan food with AI and track your daily nutrition, calories, and macros">
-    
-    <!-- Open Graph / Social -->
+    <!-- Open Graph / Facebook -->
     <meta property="og:type" content="website">
-    <meta property="og:title" content="NutriScan - Scan & Track Nutrition">
-    <meta property="og:description" content="Scan food with AI and track your daily nutrition">
-    <meta property="og:image" content="/iconApp.png">
-    
-    <!-- Twitter -->
-    <meta name="twitter:card" content="summary_large_image">
-    <meta name="twitter:title" content="NutriScan - Scan & Track Nutrition">
-    <meta name="twitter:description" content="Scan food with AI and track your daily nutrition">
-    <meta name="twitter:image" content="/iconApp.png">
-    
-    <!-- Security -->
-    <meta http-equiv="X-Content-Type-Options" content="nosniff">
-    <meta http-equiv="Referrer-Policy" content="strict-origin-when-cross-origin">
-    
-    <title>NutriScan Trainer</title>
+    <meta property="og:title" content="NutriScan Mobile - Monitorização Nutricional Avançada com IA">
+    <meta property="og:description" content="Transforme fotos de alimentos em dados nutricionais detalhados com o poder do Gemini AI e receba coaching personalizado.">
+    <meta property="og:image" content="./nova.jpeg">
+
+    <title>NutriScan Mobile - Monitorização Nutricional Avançada com IA</title>
+
+    <!-- Google Fonts -->
     <link rel="preconnect" href="https://fonts.googleapis.com">
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/icon?family=Material+Icons" rel="stylesheet">
-    <script src="https://cdn.tailwindcss.com"></script>
-     <script>
-      tailwind.config = {
-        darkMode: 'class',
-        theme: {
-          extend: {
-            fontFamily: {
-              sans: ['Inter', 'sans-serif'],
-            },
-            colors: {
-              primary: '#1FAA70', // Clay Food Emerald Green
-              primaryDark: '#128655', 
-              secondary: '#1A2846',
-              subtle: '#D1D5DB', // gray-300
-            },
-            animation: {
-              'fade-in': 'fadeIn 0.5s ease-out',
-              'slide-up': 'slideUp 0.5s ease-out',
-            },
-            keyframes: {
-              fadeIn: {
-                '0%': { opacity: '0' },
-                '100%': { opacity: '1' },
-              },
-              slideUp: {
-                '0%': { transform: 'translateY(20px)', opacity: '0' },
-                '100%': { transform: 'translateY(0)', opacity: '1' },
-              }
-            }
-          }
-        }
-      }
-    </script>
-    <style>
-      body {
-        font-family: 'Inter', sans-serif;
-        -webkit-font-smoothing: antialiased;
-        overflow: auto;
-      }
-      ::-webkit-scrollbar {
-        width: 0px;
-        background: transparent;
-      }
-      * {
-        transition: background-color 0.3s ease, border-color 0.3s ease, color 0.3s ease;
-      }
-      @keyframes skeleton-wave {
-        0% { background-position: -200% 0; }
-        100% { background-position: 200% 0; }
-      }
-      .skeleton-wave {
-        background: linear-gradient(90deg, #F3F4F6 25%, #E5E7EB 50%, #F3F4F6 75%);
-        background-size: 200% 100%;
-        animation: skeleton-wave 1.5s ease-in-out infinite;
-      }
-    </style>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=Outfit:wght@400;500;600;700;800&display=swap" rel="stylesheet">
 
-<link rel="manifest" href="/manifest.json">
-<meta name="theme-color" content="#1FAA70">
-<link rel="apple-touch-icon" href="/iconApp.png">
-<link rel="icon" href="/iconApp.png" sizes="any">
-<link rel="stylesheet" href="/index.css">
-<!-- Cordova Script for AppGyser support -->
-<script type="text/javascript" src="cordova.js"></script>
-  <script type="importmap">
-{
-  "imports": {
-    "react/": "https://aistudiocdn.com/react@^19.2.0/",
-    "react": "https://aistudiocdn.com/react@^19.2.0",
-    "zustand/": "https://aistudiocdn.com/zustand@^5.0.8/",
-    "zustand": "https://aistudiocdn.com/zustand@^5.0.8",
-    "recharts": "https://aistudiocdn.com/recharts@^3.4.1",
-    "react-dom/": "https://aistudiocdn.com/react-dom@^19.2.0/",
-    "@google/genai": "https://aistudiocdn.com/@google/genai@^1.30.0",
-    "uuid": "https://aistudiocdn.com/uuid@^13.0.0"
-  }
-}
-</script>
-  <script type="module" crossorigin src="/assets/index-BGfLFS10.js"></script>
+    <!-- CSS Link -->
+  <script type="module" crossorigin src="/assets/index-jJQ45ZDl.js"></script>
+  <link rel="stylesheet" crossorigin href="/assets/index-By51nR5y.css">
 </head>
-  <body class="bg-gray-50 dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition-colors duration-300">
-    <div id="root"></div>
+<body class="light-theme">
+    <!-- Navbar -->
+    <header class="navbar">
+        <div class="nav-container">
+            <a href="#" class="logo">
+                <svg width="32" height="32" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z" fill="var(--primary-color)"/>
+                    <path d="M12 3c-4.97 0-9 4.03-9 9 0 2.12.74 4.07 1.97 5.61L17.61 4.97C16.07 3.74 14.12 3 12 3z" fill="#1FAA70" opacity="0.3"/>
+                </svg>
+                <span>NutriScan <span class="logo-accent">Mobile</span></span>
+            </a>
+            
+            <nav class="nav-menu" id="navMenu">
+                <a href="#funcionalidades" class="nav-link">Funcionalidades</a>
+                <a href="#galeria" class="nav-link">Screenshots</a>
+                <a href="#novidades" class="nav-link">Novidades</a>
+                <a href="#sobre" class="nav-link">Ciência e Tecnologia</a>
+            </nav>
+
+            <div class="nav-actions">
+                <!-- Theme Toggle Button -->
+                <button class="theme-toggle" id="themeToggleBtn" aria-label="Alterar Tema">
+                    <!-- Sun Icon -->
+                    <svg class="sun-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 7C9.24 7 7 9.24 7 12c0 2.76 2.24 5 5 5s5-2.24 5-5c0-2.76-2.24-5-5-5zm0 8c-1.65 0-3-1.35-3-3s1.35-3 3-3 3 1.35 3 3-1.35 3-3 3zm0-11c.55 0 1-.45 1-1V2c0-.55-.45-1-1-1s-1 .45-1 1v1c0 .55.45 1 1 1zm0 16c-.55 0-1 .45-1 1v1c0 .55.45 1 1 1s1-.45 1-1v-1c0-.55-.45-1-1-1zm9-9c0-.55-.45-1-1-1h-1c-.55 0-1 .45-1 1s.45 1 1 1h1c.55 0 1-.45 1-1zm-16 0c0-.55-.45-1-1-1H2c-.55 0-1 .45-1 1s.45 1 1 1h1c.55 0 1-.45 1-1zm14.24-7.07c-.39-.39-1.02-.39-1.41 0l-.7.7c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l.7-.7c.39-.38.39-1.02 0-1.41zm-12.02 12c-.39-.39-1.02-.39-1.41 0l-.7.7c-.39.39-.39 1.02 0 1.41.39.39 1.02.39 1.41 0l.7-.7c.39-.38.39-1.02 0-1.41zm12.02 0c.39.39 1.02.39 1.41 0l.7-.7c.39-.39.39-1.02 0-1.41-.39-.39-1.02-.39-1.41 0l-.7.7c-.39.38-.39 1.02 0 1.41zM6.34 6.34c.39-.39.39-1.02 0-1.41l-.7-.7c-.39-.39-1.02-.39-1.41 0-.39.39-.39 1.02 0 1.41l.7.7c.39.38 1.02.38 1.41 0z" fill="currentColor"/>
+                    </svg>
+                    <!-- Moon Icon -->
+                    <svg class="moon-icon" width="20" height="20" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12.3 22c5.96 0 10.8-4.84 10.8-10.8 0-1.4-.27-2.74-.75-3.97-.24-.62-.93-.89-1.5-.54-.42.26-.92.41-1.45.41-5.18 0-9.4-4.22-9.4-9.4 0-.53.15-1.03.41-1.45.35-.57.08-1.26-.54-1.5C8.84 1.07 7.5 1 6.2 1 2.22 1 1 2.22 1 6.2c0 8.73 7.07 15.8 15.8 15.8.5 0 1-.02 1.5-.07.62-.06 1.06-.58.94-1.2-.18-.9-1.22-1.43-2.14-1.13C15.02 20.27 13.7 20 12.3 20c-4.42 0-8-3.58-8-8 0-3.3 2.01-6.14 4.88-7.35-.61.85-.98 1.88-.98 3 0 4.09 3.31 7.4 7.4 7.4 1.12 0 2.15-.37 3-1 .21-.14.47-.15.68-.02.21.13.33.37.31.62-.05.5-.07 1-.07 1.5 0 4.42-3.58 8-8 8z" fill="currentColor"/>
+                    </svg>
+                </button>
+                
+                <a href="#download" class="btn-cta btn-small">Descarregar</a>
+                
+                <button class="menu-hamburger" id="hamburgerBtn" aria-label="Abrir Menu">
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                    <span class="bar"></span>
+                </button>
+            </div>
+        </div>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="hero-section">
+        <div class="container hero-container">
+            <div class="hero-text-content">
+                <div class="badge">DO ZERO A UMA DIETA PERFEITA COM IA</div>
+                <h1 class="hero-title">O seu Nutricionista e Coach IA, sempre no seu bolso.</h1>
+                <p class="hero-description">
+                    Alcance os seus objetivos físicos com um método validado de monitorização inteligente e coach 24/7. O NutriScan Mobile utiliza o poder do <strong>Gemini AI</strong> para transformar fotos de alimentos em macronutrientes precisos.
+                </p>
+                <div class="hero-cta-group">
+                    <a href="#download" class="btn-cta">EU QUERO A APP AGORA</a>
+                    <a href="#funcionalidades" class="btn-secondary">VER FUNCIONALIDADES</a>
+                </div>
+                
+                <!-- Trust Elements -->
+                <div class="hero-trust">
+                    <div class="avatars">
+                        <span class="avatar" style="background-color: #3b82f6;">E</span>
+                        <span class="avatar" style="background-color: #1faa70;">M</span>
+                        <span class="avatar" style="background-color: #f59e0b;">A</span>
+                    </div>
+                    <p class="trust-text">Junte-se a milhares de utilizadores a atingir os seus macros diários!</p>
+                </div>
+            </div>
+            
+            <div class="hero-visual-content">
+                <!-- Mobile Mockup Overlap inspired by nova.jpeg structure -->
+                <div class="mockup-wrapper">
+                    <div class="bg-shape-grid"></div>
+                    <div class="phone-mockup hero-phone-1">
+                        <div class="screen-glass">
+                            <img src="/assets/afd620a563cc0514d8851c770d8db92ea3cdc5a626a32604d970e9705ccb2e0d_300-DRh_h4Ol.webp" alt="NutriScan Dashboard" class="app-screen">
+                        </div>
+                    </div>
+                    <div class="phone-mockup hero-phone-2">
+                        <div class="screen-glass">
+                            <img src="data:image/webp;base64,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" alt="NutriScan Scanner" class="app-screen">
+                        </div>
+                    </div>
+                    <!-- Floating Widget Card -->
+                    <div class="floating-widget widget-macros">
+                        <div class="widget-dot green"></div>
+                        <div>
+                            <h4>Proteínas Atingidas!</h4>
+                            <p>+32g no almoço</p>
+                        </div>
+                    </div>
+                    <div class="floating-widget widget-water">
+                        <div class="widget-dot blue"></div>
+                        <div>
+                            <h4>Meta de Água</h4>
+                            <p>75% concluído</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Features Section ("O que você vai aprender") -->
+    <section class="features-section" id="funcionalidades">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-subtitle">FUNCIONALIDADES CHAVE</span>
+                <h2 class="section-title">O que o NutriScan Mobile faz por si</h2>
+                <div class="divider"></div>
+            </div>
+            
+            <div class="features-grid">
+                <!-- Card 1 -->
+                <div class="feature-card">
+                    <div class="card-image-container">
+                        <img src="data:image/webp;base64,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" alt="Scanner de Alimentos" class="card-img">
+                        <div class="card-badge">Scanner IA</div>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-meta">Método Gemini Flash</div>
+                        <h3 class="card-title">Análise Instantânea por Imagem</h3>
+                        <p class="card-description">
+                            Basta apontar a câmara ou carregar uma foto do seu prato. A nossa IA reconhece os alimentos e estima instantaneamente as calorias e macros (proteínas, hidratos e gorduras).
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card 2 -->
+                <div class="feature-card">
+                    <div class="card-image-container">
+                        <img src="/assets/203fa19df245abc5a9bffd00aabdc14167f5ce6b737861095ae5273289436353_300-DkHpTraR.webp" alt="Cálculo por Somatotipo" class="card-img">
+                        <div class="card-badge">Ciência Corporal</div>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-meta">Ecto, Meso ou Endomorfo</div>
+                        <h3 class="card-title">Análise por Somatotipo</h3>
+                        <p class="card-description">
+                            Não existem dietas genéricas. Configuramos os seus objetivos nutricionais (TDEE e macros) baseando-nos cientificamente no seu tipo de corpo para garantir resultados reais.
+                        </p>
+                    </div>
+                </div>
+
+                <!-- Card 3 -->
+                <div class="feature-card">
+                    <div class="card-image-container">
+                        <img src="data:image/webp;base64,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" alt="IA Chat Coach" class="card-img">
+                        <div class="card-badge">Coach IA 24/7</div>
+                    </div>
+                    <div class="card-content">
+                        <div class="card-meta">Chat Contextual</div>
+                        <h3 class="card-title">Suporte Nutricional Inteligente</h3>
+                        <p class="card-description">
+                            Fale com o seu Coach IA a qualquer hora. Ele lembra-se do seu histórico de refeições, ajuda-o a substituir alimentos, sugere receitas e dá-lhe motivação diária.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Blue Mid Banner CTA (from template) -->
+    <section class="mid-cta-banner">
+        <div class="container mid-cta-container">
+            <div class="mid-cta-text">
+                <h2>Chegou a hora de viver a vida saudável que sempre sonhou.</h2>
+                <p>Inscreva-se com o seu email para receber acesso antecipado às builds de desenvolvimento e atualizações exclusivas.</p>
+            </div>
+            <div class="mid-cta-form">
+                <form class="cta-inline-form" id="leadForm">
+                    <div class="input-wrapper">
+                        <input type="email" id="userEmail" placeholder="Insira o seu melhor email" required>
+                        <span class="validation-message">Por favor, insira um email válido.</span>
+                    </div>
+                    <button type="submit" class="btn-submit">Enviar Email</button>
+                </form>
+                <div class="form-feedback" id="formFeedback">Obrigado! Fique atento à sua caixa de entrada.</div>
+                <span class="disclaimer">Totalmente seguro. Sem spam. Disponível para Android e iOS.</span>
+            </div>
+        </div>
+    </section>
+
+    <!-- Screenshots Showcase Slider (Dynamic UX) -->
+    <section class="gallery-section" id="galeria">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-subtitle">INTERFACE DA APLICAÇÃO</span>
+                <h2 class="section-title">Explore o NutriScan de perto</h2>
+                <p class="section-intro">Descubra a interface limpa, moderna e fácil de usar. Deslize para explorar os diferentes ecrãs da app.</p>
+                <div class="divider"></div>
+            </div>
+
+            <!-- Interactive Carousel Carousel (Custom JS powered) -->
+            <div class="carousel-container">
+                <button class="carousel-nav prev" id="prevSlideBtn" aria-label="Slide anterior">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15.41 7.41L14 6l-6 6 6 6 1.41-1.41L10.83 12z" fill="currentColor"/>
+                    </svg>
+                </button>
+                
+                <div class="carousel-track-wrapper">
+                    <div class="carousel-track" id="carouselTrack">
+                        <!-- Slide 1 -->
+                        <div class="carousel-slide active" data-title="Dashboard Principal" data-desc="Acompanhe em tempo real as calorias ingeridas, o progresso das macros (proteínas, gorduras, hidratos) e o nível de hidratação atual.">
+                            <div class="showcase-mockup">
+                                <img src="/assets/afd620a563cc0514d8851c770d8db92ea3cdc5a626a32604d970e9705ccb2e0d_300-DRh_h4Ol.webp" alt="Ecrã de Dashboard" class="screenshot">
+                            </div>
+                        </div>
+                        <!-- Slide 2 -->
+                        <div class="carousel-slide" data-title="Scanner de Comida IA" data-desc="Tire uma foto ao seu prato de comida e assista à IA identificar os ingredientes e estimar o perfil nutricional total em segundos.">
+                            <div class="showcase-mockup">
+                                <img src="data:image/webp;base64,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" alt="Ecrã do Scanner" class="screenshot">
+                            </div>
+                        </div>
+                        <!-- Slide 3 -->
+                        <div class="carousel-slide" data-title="Sugestões Inteligentes" data-desc="Um carrossel de refeições recomendadas pela IA com base nos seus macros restantes e somatotipo, com fotos reais de pratos via Spoonacular.">
+                            <div class="showcase-mockup">
+                                <img src="/assets/48ff678ef7b65ebee7e7ae2242ee925853bc0557af9395e65c879ae32e34bfc2_300-B2X7fcKf.webp" alt="Sugestões Alimentares" class="screenshot">
+                            </div>
+                        </div>
+                        <!-- Slide 4 -->
+                        <div class="carousel-slide" data-title="Conversa com o Coach" data-desc="Um chat direto e com memória de contexto para tirar todas as dúvidas nutricionais, pedir receitas personalizadas e manter o foco.">
+                            <div class="showcase-mockup">
+                                <img src="data:image/webp;base64,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" alt="Ecrã de Chat Coach" class="screenshot">
+                            </div>
+                        </div>
+                        <!-- Slide 5 -->
+                        <div class="carousel-slide" data-title="Configuração de Somatotipo" data-desc="Defina o seu perfil de somatotipo no onboarding (Ectomorfo, Mesomorfo, Endomorfo) e veja as suas necessidades calóricas reajustarem-se.">
+                            <div class="showcase-mockup">
+                                <img src="/assets/203fa19df245abc5a9bffd00aabdc14167f5ce6b737861095ae5273289436353_300-DkHpTraR.webp" alt="Ecrã de Somatotipo" class="screenshot">
+                            </div>
+                        </div>
+                        <!-- Slide 6 -->
+                        <div class="carousel-slide" data-title="Lembretes de Hidratação" data-desc="Gerencie o registo de água com lembretes inteligentes locais e notificações push personalizadas para beber água ao longo do dia.">
+                            <div class="showcase-mockup">
+                                <img src="/assets/4cd5141301865daf21603dcd0feee96ee0fb73fd9067dccd358b41832b90275e_300-CCtAfb-5.webp" alt="Gestão de Água" class="screenshot">
+                            </div>
+                        </div>
+                        <!-- Slide 7 -->
+                        <div class="carousel-slide" data-title="Monitorização de Rede" data-desc="Funcionalidade offline resiliente que monitoriza a sua ligação e garante que os seus dados locais não se perdem e sincronizam mais tarde.">
+                            <div class="showcase-mockup">
+                                <img src="data:image/webp;base64,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" alt="Estado de Rede" class="screenshot">
+                            </div>
+                        </div>
+                        <!-- Slide 8 -->
+                        <div class="carousel-slide" data-title="Histórico de Registos" data-desc="Aceda aos seus registos dos últimos 7 dias com gráficos e análises detalhadas do seu progresso em calorias e macronutrientes.">
+                            <div class="showcase-mockup">
+                                <img src="/assets/8ee4027e277120441ada8bc09ec38f70071f1152ec17d68f93f8c94e4ff484dc_300-DD-GadQk.webp" alt="Ecrã de Histórico" class="screenshot">
+                            </div>
+                        </div>
+                        <!-- Slide 9 -->
+                        <div class="carousel-slide" data-title="Configurações e Temas" data-desc="Suporte multilingue (Português, Inglês, Chinês, Francês) e temas Light/Dark para uma utilização confortável em qualquer altura do dia.">
+                            <div class="showcase-mockup">
+                                <img src="/assets/9bee7ce6a369f286e141d314f879f92780bc60d6af29bd28f75153c3020e08c9_300-hv7Hj2Zm.webp" alt="Ecrã de Configurações" class="screenshot">
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <button class="carousel-nav next" id="nextSlideBtn" aria-label="Próximo slide">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M8.59 16.59L10 18l6-6-6-6-1.41 1.41L13.17 12z" fill="currentColor"/>
+                    </svg>
+                </button>
+            </div>
+
+            <!-- Slide Description Dynamic Banner -->
+            <div class="slide-description-box">
+                <h3 id="slideTitle">Dashboard Principal</h3>
+                <p id="slideDesc">Acompanhe em tempo real as calorias ingeridas, o progresso das macros (proteínas, gorduras, hidratos) e o nível de hidratação atual.</p>
+                <div class="carousel-dots" id="carouselDots">
+                    <!-- Dots generated by JS -->
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- New Updates Section (From roteiro_video.md / README.md) -->
+    <section class="updates-section" id="novidades">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-subtitle">ÚLTIMAS ATUALIZAÇÕES</span>
+                <h2 class="section-title">O que há de novo na versão v1.2</h2>
+                <div class="divider"></div>
+            </div>
+            
+            <div class="updates-timeline">
+                <!-- Update 1 -->
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <span class="timeline-date">Fase 1 - Inteligência Local</span>
+                        <h3>Personalização Local & Spoonacular</h3>
+                        <p>O NutriScan agora adapta as recomendações de alimentos ao seu país e cultura de forma nativa. Adicionámos integração total com a Spoonacular API, permitindo ver imagens reais e obter receitas exatas de pratos e ingredientes recomendados.</p>
+                    </div>
+                </div>
+                
+                <!-- Update 2 -->
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <span class="timeline-date">Fase 2 - Hidratação Ativa</span>
+                        <h3>Lembretes Inteligentes & Gestão de Água</h3>
+                        <p>Nunca mais se esqueça de beber água! Implementámos um módulo de gestão de hidratação avançada com registo rápido na dashboard e notificações locais com base na sua rotina diária.</p>
+                    </div>
+                </div>
+
+                <!-- Update 3 -->
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <span class="timeline-date">Fase 3 - Resiliência</span>
+                        <h3>Modo Offline & Sincronização em Background</h3>
+                        <p>Monitorização de rede inteligente integrada. Faça registos de refeições, consuma água ou converse com a base de dados local mesmo em locais sem internet. O NutriScan guarda tudo e sincroniza as atualizações de forma transparente assim que recuperar a rede.</p>
+                    </div>
+                </div>
+
+                <!-- Update 4 -->
+                <div class="timeline-item">
+                    <div class="timeline-dot"></div>
+                    <div class="timeline-content">
+                        <span class="timeline-date">Fase 4 - Notificações</span>
+                        <h3>Alertas Push Personalizados</h3>
+                        <p>Mantenha-se fiel ao seu plano nutricional. Receba alertas de final de dia caso esteja longe da sua meta de proteínas ou alertas motivacionais gerados dinamicamente com base nas suas metas físicas.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Quem te guiará/A Ciência por trás Section (Adaptation of bottom of nova.jpeg) -->
+    <section class="about-section" id="sobre">
+        <div class="container about-container">
+            <div class="about-text-content">
+                <span class="section-subtitle">MÉTODO VALIDADO</span>
+                <h2 class="section-title">O que guia os cálculos da sua dieta?</h2>
+                <div class="divider"></div>
+                
+                <p class="about-intro">
+                    O NutriScan Mobile não faz palpites. A nossa estrutura assenta em metodologias científicas consolidadas de nutrição e fisiologia:
+                </p>
+                
+                <div class="science-points">
+                    <div class="science-point">
+                        <div class="point-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-2 10h-4v4h-2v-4H7v-2h4V7h2v4h4v2z" fill="var(--primary-color)"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4>Fórmulas Fisiológicas Tradicionais</h4>
+                            <p>Utilizamos a fórmula de <strong>Harris-Benedict</strong> para estimar a Taxa Metabólica Basal (BMR) e calcular o Gasto Energético Total Diário (TDEE) com base no seu nível de atividade física real.</p>
+                        </div>
+                    </div>
+                    
+                    <div class="science-point">
+                        <div class="point-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M9 21c0 .55.45 1 1 1h4c.55 0 1-.45 1-1v-1H9v1zm3-19C8.14 2 5 5.14 5 9c0 2.38 1.19 4.47 3 5.74V17c0 .55.45 1 1 1h6c.55 0 1-.45 1-1v-2.26c1.81-1.27 3-3.36 3-5.74 0-3.86-3.14-7-7-7zm2.85 11.1l-.85.6V16h-4v-2.3l-.85-.6C7.8 12.16 7 10.63 7 9c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.63-.8 3.16-2.15 4.1z" fill="var(--primary-color)"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4>Somatotipo Adaptativo</h4>
+                            <p>As divisões de macronutrientes diferem consoante o seu somatotipo. Adaptamos as proporções de carboidratos, proteínas e gorduras para otimizar a queima de gordura e ganho muscular.</p>
+                        </div>
+                    </div>
+
+                    <div class="science-point">
+                        <div class="point-icon">
+                            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                                <path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z" fill="var(--primary-color)"/>
+                            </svg>
+                        </div>
+                        <div>
+                            <h4>Gemini AI v2.5 Flash</h4>
+                            <p>O motor de Inteligência Artificial mais rápido do Google atua como o seu assistente de visão computacional e chatbot de saúde pessoal, mantendo uma latência ultra-baixa.</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="about-visual-content">
+                <!-- Group image simulation from template -->
+                <div class="mockup-duo">
+                    <div class="phone-mockup about-phone-1">
+                        <div class="screen-glass">
+                            <img src="/assets/203fa19df245abc5a9bffd00aabdc14167f5ce6b737861095ae5273289436353_300-DkHpTraR.webp" alt="Onboarding NutriScan" class="app-screen">
+                        </div>
+                    </div>
+                    <div class="phone-mockup about-phone-2">
+                        <div class="screen-glass">
+                            <img src="data:image/webp;base64,UklGRnAPAABXRUJQVlA4IGQPAAAwSgCdASqHACwBPjEYikOiIaEQzP1sIAMEsrdjclOV+NP7N3Ds8+6/yX5PePoq73rR4Lb3+9/unsS+7H1Nv7v6V363e8P+vegD+U/3r9nve39CHoAf2nqLf2u9hP9mfTX/7H/C+EP+z/8X9r/aH9QDfgWY/4fw78dPsH2Q5QvU/bb/W+Y/+M8D/gP/heoF6m/v35X8G2AD8p/qn+7/vnj0ahfeb/Y/ar8n/6l/rvyq+Mv954Xn13/U+wB/KP6//zf8V+QHx0f8n+u/J72lfSH/m/0XwDfzr+zf8f+/e1d7FP3B9n39vhoLC5Yrea5oUgkgdCBiy0NAUTY5yxWhFOjmHQ5jnmPEfSJdUyO7YSgVNaJQlMIAdhrBEXf3wl7VdxfQv5/FA2PaKM3YIHndHvdleTbhW8D+fftGURAqdKVTyiloogUbPpT00If44ydfEwBY6Y8ZiR82rOzCzJvsr2u5dS1zbgZGUwnov22GAefU91TJQwIoB65loslaGGUk351c6mw/isqjnN5PKsl4sei7We1ZecVGY/Ew2VlaUuDml7DgT4x5jc/Ny5hi3xTLsyLvcESpYt65V3iZd+4B4Q23AXGbjRSexHHkzUIBvy+gYLcFQqrYvNTTFKfKdljOm21lp5uX/8qkZRNgsJQ55DMSN3m3wjDWzwgZhA3TzEMrwydy8Rj5QQCmHcvD+SAepSoLdUPwW6j7IJ+oEbu5k5fLlhSUplcpYSI52DwTZelQiKadzPV6MkajtajsT34/n4Gan3dQHNp80ngrgu9UduTffo3+HGn/bsy/IAD+qc9+c6OA8yTDabg7zsruE+iiZpiHQfH+D257AxrF5ylM4CSgto1klabG9R1k80nf+ahD1v+Uy/QU/mp47T/8jKdxNJqEXf3DeMV+n6Yt92vzfrmtg30IpOHgbkkguKDJtd1bTAXFpgI2VmWG6D7g+Mn15BphIU1H/vt1xg1h9ofj5TZLoseOKuMskiUOtxVd1+uoeTHs1tqubgLGZJ05XtpGaXgM0m/zCoVXJUYkWlK3oa2fxGV3xNBNdIy4+Bxy92ACtTX4QKzkoSFuUEQ9fjw+lfYy1ClfB4QVNOQyuDHATQ/e8vAlK3X/fggHXBG0ds6ktn9mv0G6z1qem6Tte2MhqiAQex7NWG9QCyikqDuZr+XnXjpwnfRH/DXXGANFCA3FqfYqMyMknLTPnZ+Lx8oLYwczl+ozqTYBSRZupJdEtTDN2luXBPRps+Bmtc648CuDhcyFPbIigQwK52ALabI02SPA/NQyY+ROtZOWwThKXxC1wZu2Hs8iPTgF4PwzRVqGX/4NZT2IoSP6VAi+FhZ41C6Kpf2EM0EZOSbI6/oeH4VvmAX+BhnRLXslXifpw676rb5Hp1h9OO2q5UqfJYBXSx+cSqfteVCwz8nuPcYOXz8Rori3hqlp6+7OswRH902vFMB+RB+MmbUxjCeRPRT0zdlPWoBAsvEiWBSh8LsIjqBdwfjQCPknSUORH9XyyHfATK+qzkF2EN+oFtlQqnQZ2/hS5qkbpythGMBiyiKFrhOBNXjQdAaoTFh0h7V+HZ7AepdwrVaLUj/g7JWMDoNZdCAvnIYtq2VCdd8l0MrwjotB7/An0GFCj1a4KlcTWVZ4p0RF11p1fXYUmTjXwFu+HGe85rMGWDLDUnKnGEXLb1WwRqbWC/tYvQTz6aQiYFt8OnBqOkLpAGh6IqVutGD+9g5xvSO3+KJRbX1bNP5mW8Jr6HZXEfCL96RNWuUHN2+WQnfVrfo3yt5j9Qq1lt7fOXaJscnJK7/xgukzwiOBrOAlWPgkGkTaHsvn/C9SfyamjldertxYwY6v/NCjXKygC4XSwIH3babKCnBThI2DsjaKyKKeOWtsyasOPgiEvtfnvGNDIXA6Z9Pic2cbtviz34uBjnuOnktIXTL4WcnQtMAedzTNiKeVuaBrwOTe6s6Lq2m7nzBlLP0o6Ryw209T7HrFw5JWd76GsK60liQ/70SCC+fvvvJvpln75MpjbhjzW1RhHFrdn0QaZy8Rc/vh/Cd/mCbkt5EoZ90Iz4skf0IBewmm/9UlAZT9GAU3PrJxl07gNYld9blBOVvjIlYG4sHRQbAFhgjdZnSBS5Vo3/5oMNUjBOnB7Hn29MPsyrc0Gyve+OhyfPhcHLskAynkkOZKW233dtNSzFeuD+hiQiz/roK1cjhtYMuv483sujoHvwhROAneSydJaMB9WU8aJjJ7h0QEnroq7wrUzu59ZvpJ8bgyUQt/dvXGtf4t/0kGkqBHJbnQTZMehinZrRYCpkcRg9A3ys/gciPxnZ39TglXE8C5NL6zdxGP0B5bK3iGFXl3g97VkNyiBEey/QxVQi1H5/jzY9XlxhGm98DFw0v3WogwLf1CUpb+7BJ/+lVR2TDDezUvnE59xC7vm9bWYSe3N5rCcpM2LvY4ZypVweQBXWvwRbc9hmkGDazYC9m1IQcX2UIhBP+oi5xx9lbZkf5MNSywY+780U5jGYrh0vH++0ElVpDjXO8BgVKcnhHTPEaNPZndTh27qlRNr6A6d4aWxYlEhHoumAwcksmy4Y4f6U6uky4RBX4X+bRU3YRNNsdVmoPPNgVNilqYNWFqdux0mDqne39r90RH1FjeF143X5oM31NoOdWDH2/5nXdLl2Db5qUnS2aO23jpBaqn+Ej1oBT2TiYyiUqxD6qyMjlKdSATRZ3b5xln6N2drY4/0zqT7pQSAVTVLt/K/geZ00Lflxce3Ko/r2yfCY9GgX+huex4E9ZpKh31HxCzygAZReVlBQWdliFQQnR3xqfCQUKWlVB98iQhSjoIFHfabWMTIwEIsZCsB88w1Tjx0hQh4tu/yY25UQYXnhSHXgi1ZazDBdvc8V68wNBqeX7T28NJM4COtxyKXhF90ftM5DfqHPZwa3QNGCAunbCTTL+6O/SWRpqclkOye38wAnwCFPNYrqzwn6HYUJneI1yjnQuE5VVuRCCqPCpTJabvpKK3t1jhzJ/RdIMLp3NpsNnj5Tzvik7MFc5fGhWrl6uq7iqDyFOpykAS3573NTimf/gv5wz+NZEFA0UAyXLYpsOJV5Yb0Wdo5vjdAdBmR+2w4Vm3CVE58+HU6cvSPM9Bmb9Wo0yYP2uhGhbCYZ1KlzmUNdlX85rEQIWVAtbWOZCmhZjafRB+fWVs6hOAddTyatdpa8qhpEVuZrnBUyKB9MzpdO85aAIJKEzADEfBFsVN6oJYkkb+D/bRT2dIft0Sj9oKWecefyaOdIZ1X1pNovyvAlnGE1+zS8Vvv3Kl+7Hap/fGlOCDQVLPfUmXlxfqnCSOIv/gNefefo319IS6ESkC07vYMelIybdqsd6Pm7V3eQAMvz9PvcsRMUGltk8AIuVyA9nWWHiJuV02Be9IRGv9CW5JbwBW8z6wsJs7OUfHruI2KJ8uLMZc8p/NalFncJ6v+JjO0SKxprsyCUAbG3XFCkE/j/PKy5nxKJJcwmifS8sF/m1TgFd8ePCFfHIyK1b2d1PCwTrmvK+nq5wec4vbGzbZM75+NCIgyc/IusXkzwAkSquQN/nWPdFjk2yV4MMBaUXj2HgcL79A2ihyK14yk6hMwBxRJIYTLzli3TbtNJRnvwUNGc3zOhpypM2bN5KHhJ1dgKk2WsnYpjQxGyp0PuxbT0OnCULeN2GdYes94yB+pEaATEdPsqGzSAOF8xic8HKjIgKquujF8d/voOtH63h9bm0WkwiygdsLsRwuvoZGvyAaHkKyt7dNsUhhQ9JjOjR54K3YKeiG2NRxF2btLbAKajrbDDI5rDelqFUoz9eWntCXRUfT1kPHAAqCv0HF3ZwKCOb0gjz60yZA8b/FfWIiXxuLCIhdLqZBfheOLRewL17FCm1FnHhQ5TV0DWGPz1L+dT9gbOFu1jhMhnCP/RlD3lJd5YbtCMoYBuPa5tyfgk8P0NwjGxLoR19/6yd6g5UbspiYSXglU4GUc3AVMgEr9+WM2zfBRJ55oeD0H6TwMtUvLZhsLjkVsBc7xx1EKXGNUFKm27FJp3FT5FBM+C1/As4RB7fWn78+b1v9dsQ9jMg72jxtNOdudcjVEOHGA5rQ56a//Hy99WOKY93beDBhP0N/iTvSmr11WX0KxPPC1t+a8SRv6lAtjc3Ear7oVkiL1V6k/v/qtOHKoJI575+X+ICjDiD4IMFi15wdifP3OlE7vx3BJOxQwzcVGwy/eYxD1f/SIDMsA225d5QwcnOXtlkpc6lGjqlvNuRMlsS6+U3Lei7WerP4MG8PbMU5dJWUVXtnZ69Nuvxj+N49T6T0cCusoswKv1SryuqG53l1BLFQFNv0en3gbykNlgPa1dFeDwIq8ONhG8AaWLIO67xdX70nA8Aj9sAi32fCDqS3aq9cqR6QzGqPEYBKkVuNUXH4R7M1OVsQb2/KHB6WWPHjH3TOKZoGoq3g0CKYcyep51Ibd32OXys6Ma4a01Rz67RAggn1p9Sbc6NUrecxncNpFnmE2HcMoJF4QmMyJEtjb/WEyp8ypwZ5O08Zgx5sJ1QXuc1nKmdwfy+gjtukN+UnhTNKY921Dm7EjykVN6QcsR/2LLM5A6N1k9fg8NK/9wvGd/XrbJTg5BpGt504Uso2lLjDAPDjE8GtV0KUqUirDcUBa7lPFc1pTdkuvY3HpHMY4C8Ud/l0JWqfhglcFqp5AAAAAAAAKBCBkVJVPgAA4t652mzatHS6E2RdYF/lX4WcIMOynIUvFWOs6tEsF0F8LtKcOn0s/f2EqC5vDKzs3S3UR1fhILYuAXLUSK2Q+FVGYIeRtvrYwlNQjp2kG4QtcFXkakCxrFqbZwyIXyMYV6h/AOzMoANl9slhYWmMqR0iGK6yrrh49ysBIhQslYQthzgG84mpm+YrGKElu0VfAKtZRbhpfb0SCRtcu/2bMlLB+Q49k8subBd9jjPHjR8Xtxh27uIk/qvKF3ZXbZOKDWLQQx2NJAQEwvoARAftWlGjnUQaF4G9fEPU+Qy9Ws6stqsp9b9hD5J7NCA33Gf6St81jA2h/ErfNYwNlTFKZ7i6EHtimUcCYWiMKdE2f+m3SOEf1Dny9F5OQBEcUk19VyMaEqcEM3/LSv9ORAkN3EmXadVg2rBmzLcut6zJnKcvoFa47ct3A3+Rh8/KspojWmdOEX1mMkiaEP/6v/FszADDIa5TqIpmrH9ZTbw/mG5J9KV8E3SQwgZsWvR7boGzsokN74d9I2+eyOZ1NB+wANZAAAAA" alt="NutriScan Chat Coach" class="app-screen">
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download CTA Section -->
+    <section class="download-section" id="download">
+        <div class="container download-container">
+            <div class="download-content">
+                <span class="badge badge-accent">COMECE HOJE</span>
+                <h2>Descarregue o NutriScan Mobile agora.</h2>
+                <p>Compatível com dispositivos iOS e Android através da aplicação Expo Go ou Builds de Desenvolvimento dedicadas.</p>
+                
+                <div class="download-buttons">
+                    <a href="#" class="btn-download-badge">
+                        <span class="btn-icon">🤖</span>
+                        <div class="btn-badge-text">
+                            <small>Descarregar para</small>
+                            <strong>Android (.APK)</strong>
+                        </div>
+                    </a>
+                    <a href="#" class="btn-download-badge app-store">
+                        <span class="btn-icon">🍏</span>
+                        <div class="btn-badge-text">
+                            <small>Descarregar na</small>
+                            <strong>App Store (iOS)</strong>
+                        </div>
+                    </a>
+                </div>
+                
+                <div class="requirements">
+                    <span>Requisitos mínimos: Android 9+ ou iOS 14+. Conexão à internet recomendada para análise de fotos por IA.</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container footer-container">
+            <div class="footer-info">
+                <div class="footer-logo">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="none" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 17h-2v-2h2v2zm2.07-7.75l-.9.92C13.45 12.9 13 13.5 13 15h-2v-.5c0-1.1.45-2.1 1.17-2.83l1.24-1.26c.37-.36.59-.86.59-1.41 0-1.1-.9-2-2-2s-2 .9-2 2H7c0-2.76 2.24-5 5-5s5 2.24 5 5c0 1.04-.42 1.99-1.07 2.75z" fill="var(--primary-color)"/>
+                    </svg>
+                    <span>NutriScan Mobile</span>
+                </div>
+                <p>Inteligência artificial e ciência para monitorização e acompanhamento nutricional personalizado.</p>
+                <div class="tech-stack-badges">
+                    <span class="tech-badge">React Native Expo</span>
+                    <span class="tech-badge">Google Gemini 2.5</span>
+                    <span class="tech-badge">Zustand</span>
+                </div>
+            </div>
+            
+            <div class="footer-links">
+                <div class="link-column">
+                    <h4>Aplicação</h4>
+                    <a href="#funcionalidades">Funcionalidades</a>
+                    <a href="#galeria">Screenshots</a>
+                    <a href="#novidades">Atualizações</a>
+                </div>
+                <div class="link-column">
+                    <h4>Ciência</h4>
+                    <a href="#sobre">Cálculo de TDEE</a>
+                    <a href="#sobre">Somatotipos</a>
+                    <a href="#sobre">Gemini Vision</a>
+                </div>
+                <div class="link-column">
+                    <h4>Legal</h4>
+                    <a href="#">Privacidade</a>
+                    <a href="#">Termos de Uso</a>
+                    <a href="#">Contacto</a>
+                </div>
+            </div>
+        </div>
+        
+        <div class="footer-bottom">
+            <p>Copyright &copy; 2026 - NutriScan App. Todos os direitos reservados. Desenvolvido com ❤️ para promover a saúde.</p>
+        </div>
+    </footer>
+
+    <!-- JS Link -->
 </body>
 </html>

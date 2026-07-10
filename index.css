@@ -236,8 +236,26 @@ img {
     color: var(--text-primary);
 }
 
+.logo-img {
+    font-family: 'Outfit', sans-serif;
+    font-weight: 800;
+    font-size: 1.4rem;
+    border-radius: 50%;
+    width: 40px; 
+    height: 40px; 
+    margin-right: 8px; 
+    color: var(--text-primary);
+}
+
 .logo-accent {
     color: var(--primary-color);
+    font-size: 1.5rem;
+}
+
+#chega
+{
+    text-align: center;
+    margin-left: 4%;
 }
 
 .nav-menu {
@@ -1367,6 +1385,7 @@ img {
     color: #F8FAFC;
     padding: 80px 0 20px 0;
     border-top: 1px solid #1E293B;
+    text-align: center;
 }
 
 .footer h4, .footer span {
@@ -1392,6 +1411,7 @@ img {
     gap: 8px;
     font-family: 'Outfit', sans-serif;
     font-weight: 800;
+    border-radius: 50%;
     font-size: 1.2rem;
 }
 
